@@ -1,4 +1,5 @@
 import pandas as pd
+import plotly.express as px
 
 
 class Field:
@@ -11,6 +12,7 @@ class Field:
     WORD_COUNT = "wordCount"
     CHANNEL_NAME = "channelName"
     SCENE_ID = "sceneId"
+    MESSAGES = "messages"
 
 
 class RPPlotBuilder:
@@ -18,4 +20,5 @@ class RPPlotBuilder:
         self._df = df
         self._actions = []
 
-    # def line(self, x, y):
+    def messages(self):
+        self._actions.append(Field.MESSAGES)
