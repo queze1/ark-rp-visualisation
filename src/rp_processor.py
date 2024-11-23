@@ -43,6 +43,14 @@ class RPProcessor:
         return df.assign(channelName=channel_name)
 
     @staticmethod
+    def _add_word_count(df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Add a 'wordCount' column to a DataFrame.
+        """
+        word_count = df["content"].str.split().str.len()
+        return df.assign(wordCount=word_count)
+
+    @staticmethod
     def _reactions_to_dict(reactions: str) -> dict[str, int]:
         """
         Transform a 'reactions' entry into a dictionary of reaction counts.
@@ -79,6 +87,7 @@ class RPProcessor:
         """
         df = pd.read_csv(path)
         df = RPProcessor._rename_columns(df)
+        df = RPProcessor._add_word_count(df)
         df = RPProcessor._add_channel_name(df, path)
         df = RPProcessor._process_reactions(df)
         df = RPProcessor._process_date(df)
