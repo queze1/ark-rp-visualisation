@@ -8,7 +8,7 @@ pd.options.display.max_columns = None
 
 DATA_PATH = "data/23-11-2024"
 DATE_FORMAT = "%Y-%m-%dT%H:%M:%S.%f%z"
-COUNTRY_NAME = "Australia/Sydney"
+TIME_ZONE = "Australia/Sydney"
 CHANNEL_NAME_REGEX = r".+ - (.+) \["
 REACTIONS_REGEX = r"(\w+)\s*\((\d+)\)"
 END_SCENE_REGEX = r"\/\s*(?:end\sscene)|(?:scene\send)|(?:SCENESHIFT)"
@@ -70,7 +70,7 @@ class RPProcessor:
         """
         df["date"] = pd.to_datetime(
             df["date"], format=DATE_FORMAT, utc=True
-        ).dt.tz_convert(COUNTRY_NAME)
+        ).dt.tz_convert(TIME_ZONE)
         return df
 
     @staticmethod
