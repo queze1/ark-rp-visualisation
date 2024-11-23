@@ -1,38 +1,21 @@
-# import pandas as pd
+import pandas as pd
 
 
-# class RPPlotBuilder:
-#     def __init__(self, df: pd.DataFrame):
-#         self._df = df
+class Field:
+    AUTHOR_ID = "authorId"
+    AUTHOR = "author"
+    DATE = "date"
+    CONTENT = "content"
+    ATTACHMENTS = "attachments"
+    REACTIONS = "reactions"
+    WORD_COUNT = "wordCount"
+    CHANNEL_NAME = "channelName"
+    SCENE_ID = "sceneId"
 
-#     @property
-#     def hours(self):
-#         return self._df["date"].dt.hour
 
-#     @property
-#     def days(self):
-#         return self._df["date"].dt.day
+class RPPlotBuilder:
+    def __init__(self, df: pd.DataFrame):
+        self._df = df
+        self._actions = []
 
-#     @property
-#     def scene_id(self):
-#         return self._df["sceneId"]
-
-#     @property
-#     def author(self):
-#         return self._df["author"]
-
-#     @property
-#     def author_id(self):
-#         return self._df["authorId"]
-
-#     @property
-#     def channel_name(self):
-#         return self._df["channelName"]
-
-#     @property
-#     def date(self):
-#         return self._df["date"]
-
-#     @property
-#     def word_count(self):
-#         return self._df["wordCount"]
+    # def line(self, x, y):

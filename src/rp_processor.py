@@ -100,6 +100,7 @@ class RPProcessor:
         csv_paths = glob.glob(os.path.join(DATA_PATH, "*.csv"))
         dfs = [self._read_csv(path) for path in csv_paths]
         self._df = pd.concat(dfs, ignore_index=True)
+        return self
 
     def add_scene_id(self):
         """
@@ -112,6 +113,7 @@ class RPProcessor:
         )
         scene_id = end_scene.shift(1).fillna(0).cumsum()
         self._df = self._df.assign(sceneId=scene_id)
+        return self
 
     @property
     def df(self) -> pd.DataFrame | None:
@@ -124,15 +126,13 @@ class RPProcessor:
 
     def process_df(self):
         """
-        Helper to build a clean RP dataset.
+        Helper to build a clean dataset.
         """
-        self.read_csvs()
-        self.add_scene_id()
+        return self.read_csvs().add_scene_id()
 
 
 def _main():
-    processor = RPProcessor()
-    processor.process_df()
+    processor = RPProcessor().process_df()
     return processor.df
 
 

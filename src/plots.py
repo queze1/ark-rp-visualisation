@@ -39,7 +39,3 @@ df = processor.df
 
 
 # display_html(messages_by_hour_bar())
-
-
-def summarise_by(field):
-    return df[field].value_counts().sort_values()
