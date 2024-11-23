@@ -1,6 +1,5 @@
 import os
 import glob
-from platform import processor
 import pandas as pd
 import re
 
@@ -16,7 +15,7 @@ END_SCENE_REGEX = r"\/\s*(?:end\sscene)|(?:scene\send)|(?:SCENESHIFT)"
 
 class RPProcessor:
     def __init__(self):
-        self._data = None
+        self._df = None
 
     @staticmethod
     def _rename_columns(df: pd.DataFrame) -> pd.DataFrame:
@@ -37,11 +36,11 @@ class RPProcessor:
     @staticmethod
     def _add_channel_name(df: pd.DataFrame, path: str) -> pd.DataFrame:
         """
-        Add a 'channel_name' column to a DataFrame.
+        Add a 'channelName' column to a DataFrame.
         """
         filename = os.path.basename(path)
         channel_name = re.search(CHANNEL_NAME_REGEX, filename).group(1)
-        return df.assign(channel_name=channel_name)
+        return df.assign(channelName=channel_name)
 
     @staticmethod
     def _reactions_to_dict(reactions: str) -> dict[str, int]:
@@ -91,7 +90,7 @@ class RPProcessor:
         """
         csv_paths = glob.glob(os.path.join(DATA_PATH, "*.csv"))
         dfs = [self._read_csv(path) for path in csv_paths]
-        self._data = pd.concat(dfs, ignore_index=True)
+        self._df = pd.concat(dfs, ignore_index=True)
 
     def add_scene_id(self):
         """
@@ -99,22 +98,34 @@ class RPProcessor:
         """
 
         # TODO: Handle scene messages not being contiguous.
-        end_scene = self._data["content"].str.contains(
+        end_scene = self._df["content"].str.contains(
             END_SCENE_REGEX, case=False, na=False
         )
         scene_id = end_scene.shift(1).fillna(0).cumsum()
-        self._data = self._data.assign(sceneId=scene_id)
+        self._df = self._df.assign(sceneId=scene_id)
 
     @property
-    def data(self) -> pd.DataFrame | None:
-        if self._data is None:
+    def df(self) -> pd.DataFrame | None:
+        """
+        Return the current DataFrame.
+        """
+        if self._df is None:
             raise ValueError("Data has not been read yet!")
-        return self._data
+        return self._df
+
+    def process_df(self):
+        """
+        Helper to build a clean RP dataset.
+        """
+        self.read_csvs()
+        self.add_scene_id()
+
+
+def _main():
+    processor = RPProcessor()
+    processor.process_df()
+    return processor.df
 
 
 if __name__ == "__main__":
-    processor = RPProcessor()
-    processor.read_csvs()
-    processor.add_scene_id()
-
-    print(processor.data)
+    print(_main())
