@@ -1,19 +1,19 @@
-# import subprocess
-from rp_processor import RPProcessor
+import subprocess
+# from rp_processor import RPProcessor
 # import plotly.express as px
 
 
-processor = RPProcessor()
-processor.process_df()
-df = processor.df
+# processor = RPProcessor()
+# processor.process_df()
+# df = processor.df
 
 
-# def display_html(fig):
-#     VIEW_COMMAND = "wslview"
-#     OUTPUT_PATH = "output/output.html"
+def display_html(fig):
+    VIEW_COMMAND = "wslview"
+    OUTPUT_PATH = "output/output.html"
 
-#     fig.write_html(OUTPUT_PATH)
-#     subprocess.run([VIEW_COMMAND, OUTPUT_PATH])
+    fig.write_html(OUTPUT_PATH)
+    subprocess.run([VIEW_COMMAND, OUTPUT_PATH])
 
 
 # def messages_by_hour_bar():

@@ -121,7 +121,7 @@ class RPProcessor:
         Return the current DataFrame.
         """
         if self._df is None:
-            raise ValueError("Data has not been read yet!")
+            raise ValueError("Data has not been read yet")
         return self._df
 
     def process_df(self):
