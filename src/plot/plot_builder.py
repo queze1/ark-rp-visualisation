@@ -1,13 +1,15 @@
 import pandas as pd
 
+
 from .enums import Field, GroupBy, Plot
 from .database_transformer import DatabaseTransformer
+from .plot_transformer import PlotTransformer
 
 
 class PlotBuilder:
     def __init__(self, df: pd.DataFrame):
-        # Transformer for database operations
         self._database = DatabaseTransformer(df)
+        self._plot = None
 
     # Aliases for data selection
     def author_id(self):
@@ -79,40 +81,47 @@ class PlotBuilder:
         self._database.sort(field, ascending)
         return self
 
-    def _plot(self, plot_type: Plot):
+    def _create_plot(self, plot_type: Plot):
         """
         Create a plot from the current DataFrame state.
         """
-        df = self._database.get_dataframe()
-        history = self._database.get_history()
+        # Pass current dataframe and history to transformer
+        df = self._database.dataframe
+        history = self._database.history
+        self._plot = PlotTransformer(df, history, plot_type)
+        return self
 
-        if len(df.columns) < 2:
-            raise ValueError("Not enough data columns to plot.")
-
-        x_field, y_field = df.columns[:2]
-        kwargs = {"x": x_field, "y": y_field}
-        # Generate figure
-        fig = plot_type(df, **kwargs)
-
-        # Add history-based labels
-        if history:
-            fig.update_layout(
-                title=" vs. ".join(
-                    op["field"] for op in history if op["operation"] == "add_field"
-                ),
-            )
-
-        return fig
-
+    # Aliases for _plot
     def bar(self):
-        return self._plot(Plot.BAR)
+        """
+        Create a bar plot from the current DataFrame state.
+        """
+        return self._create_plot(Plot.BAR)
 
     def scatter(self):
-        return self._plot(Plot.SCATTER)
+        """
+        Create a scatter plot from the current DataFrame state.
+        """
+        return self._create_plot(Plot.SCATTER)
 
     def line(self):
-        return self._plot(Plot.LINE)
+        """
+        Create a line plot from the current DataFrame state.
+        """
+        return self._create_plot(Plot.LINE)
 
     def reset(self):
+        """
+        Reset the current plot.
+        """
         self._database.reset()
         return self
+
+    @property
+    def figure(self) -> pd.DataFrame:
+        """
+        Return the current figure.
+        """
+        if self._plot is None:
+            raise ValueError("Plot has not been created yet")
+        return self._plot._fig

@@ -26,7 +26,7 @@ from plot.plot_builder import PlotBuilder, Field
 
 def date_by_unique_author_line(builder: PlotBuilder) -> PlotBuilder:
     # "X date by Y nunique author"
-    return builder.date().author().nunique().line()
+    return builder.date().author().nunique().line().figure
 
 
 def author_by_total_word_count_scatter(builder: PlotBuilder) -> PlotBuilder:
@@ -44,12 +44,12 @@ if __name__ == "__main__":
     df = DataLoader().load_data().df
     builder = PlotBuilder(df)
 
-    # date_by_unique_author_line(builder).show()
-    # builder.reset()
+    date_by_unique_author_line(builder).show()
+    builder.reset()
     # author_by_total_word_count_scatter(builder).show()
     # builder.reset()
-    fig = builder.hour().value_counts().bar()
-    fig.update_layout(xaxis={"dtick": 1})
-    fig.show()
-    builder.reset()
-    builder.date().value_counts().sort(Field.DATE).line().show()
+    # fig = builder.hour().value_counts().bar()
+    # fig.update_layout(xaxis={"dtick": 1})
+    # fig.show()
+    # builder.reset()
+    # builder.date().value_counts().sort(Field.DATE).line().show()

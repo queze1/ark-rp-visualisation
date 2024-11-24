@@ -137,7 +137,7 @@ class DataLoader:
         return self
 
     @property
-    def df(self) -> pd.DataFrame | None:
+    def df(self) -> pd.DataFrame:
         """
         Return the current DataFrame.
         """

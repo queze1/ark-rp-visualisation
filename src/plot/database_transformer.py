@@ -13,7 +13,7 @@ class DatabaseTransformer:
 
     def _log_operation(self, operation: str, details: dict):
         """
-        Log details of operations for serialization into labels or titles.
+        Log details of an operation.
         """
         self._history.append({"operation": operation, **details})
 
@@ -68,15 +68,17 @@ class DatabaseTransformer:
         self._log_operation("sort", {"field": field, "order": direction})
         return self
 
-    def get_dataframe(self) -> pd.DataFrame:
+    @property
+    def dataframe(self) -> pd.DataFrame:
         """
-        Retrieve the current DataFrame state.
+        Return the current DataFrame state.
         """
         return self._current
 
-    def get_history(self) -> list:
+    @property
+    def history(self) -> list:
         """
-        Retrieve the transformation history for labels and titles.
+        Return transformation history.
         """
         return self._history
 
