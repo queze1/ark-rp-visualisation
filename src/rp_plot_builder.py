@@ -38,9 +38,24 @@ class GroupBy(StrEnum):
         raise NotImplementedError(f"{self.value} groupby is not implemented.")
 
 
-class Order(StrEnum):
+class Mutator(StrEnum):
+    VALUE_COUNTS = "value_counts"
     ASCENDING = "ascending"
     DESCENDING = "descending"
+
+    def __call__(self, df: pd.DataFrame, *args):
+        if self is Mutator.VALUE_COUNTS:
+            # Assumes that the DataFrame has only one field (as this overwrites all others)
+            # Sorts by value, instead of count
+            (field,) = df
+            return df[field].value_counts().sort_index().reset_index()
+        elif self is Mutator.ASCENDING:
+            (field,) = args
+            return df.sort_values(by=field, ascending=True)
+        elif self is Mutator.DESCENDING:
+            (field,) = args
+            return df.sort_values(by=field, ascending=False)
+        raise NotImplementedError(f"{self.value} mutator is not implemented.")
 
 
 class Plot(StrEnum):
@@ -73,23 +88,13 @@ class RPPlotBuilder:
     @staticmethod
     def _generate_step_methods():
         """
-        Dynamically generate methods to add step enums for Field, GroupBy, Plot, Order, etc.
+        Dynamically generate methods to add step enums for Field, GroupBy, Plot, Mutator, etc.
         """
-        # 0 parameter methods
-        for step in chain(Field, GroupBy, Plot, Order):
+        for step in chain(Field, GroupBy, Plot, Mutator):
             name = step.name.lower()
 
-            def method(self, step=step):
-                return self._add_step(step)
-
-            setattr(RPPlotBuilder, name, method)
-
-        # 1 parameter methods
-        for order_step in Order:
-            name = order_step.name.lower()
-
-            def method(self, field, step=order_step):
-                return self._add_step(step, field)
+            def method(self, step=step, *args):
+                return self._add_step(step, *args)
 
             setattr(RPPlotBuilder, name, method)
 
@@ -106,6 +111,9 @@ class RPPlotBuilder:
         return self._df[field]
 
     def _plot(self, plot: Plot, df: pd.DataFrame):
+        """
+        First column for X-axis, second for Y-axis.
+        """
         x_field, y_field = df
         kwargs = {"x": x_field, "y": y_field}
         return plot(df, **kwargs)
@@ -128,12 +136,9 @@ class RPPlotBuilder:
             elif step in Plot:
                 # Create a plot from the current DataFrame
                 current = self._plot(step, current)
-            elif step in Order:
-                (field,) = args
-                # Sort by given field
-                current = current.sort_values(
-                    by=field, ascending=(step == Order.ASCENDING)
-                )
+            elif step in Mutator:
+                # Handle mutators on the DataFrame
+                current = step(current, *args)
 
         return current
 
