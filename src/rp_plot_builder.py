@@ -38,6 +38,11 @@ class GroupBy(StrEnum):
         raise NotImplementedError(f"{self.value} groupby is not implemented.")
 
 
+class Order(StrEnum):
+    ASCENDING = "ascending"
+    DESCENDING = "descending"
+
+
 class Plot(StrEnum):
     BAR = "bar"
     SCATTER = "scatter"
@@ -58,27 +63,34 @@ class RPPlotBuilder:
         self._df = df
         self._steps = []
 
-    def _add_step(self, step):
+    def _add_step(self, step, *args):
         """
-        Generic method to add a step.
+        Generic method to add a step with optional args.
         """
-        self._steps.append(step)
+        self._steps.append((step, *args))
         return self
 
     @staticmethod
     def _generate_step_methods():
         """
-        Dynamically generate `.author, `.sum()`, `.bar()`, etc.,
-        based on `Field`, `GroupBy` and `Plot` enums and bind them to the class.
+        Dynamically generate methods to add step enums for Field, GroupBy, Plot, Order, etc.
         """
-        for step in chain(Field, GroupBy, Plot):
-            # Convert enum names to lowercase for method names
+        # 0 parameter methods
+        for step in chain(Field, GroupBy, Plot, Order):
             name = step.name.lower()
 
             def method(self, step=step):
                 return self._add_step(step)
 
-            # Dynamically create and attach a method for each step
+            setattr(RPPlotBuilder, name, method)
+
+        # 1 parameter methods
+        for order_step in Order:
+            name = order_step.name.lower()
+
+            def method(self, field, step=order_step):
+                return self._add_step(step, field)
+
             setattr(RPPlotBuilder, name, method)
 
     def _field(self, field: Field):
@@ -103,7 +115,7 @@ class RPPlotBuilder:
         Build a plot by iterating over steps.
         """
         current = pd.DataFrame()
-        for step in self._steps:
+        for step, *args in self._steps:
             if step in Field:
                 # Join the new field to the current DataFrame
                 current = pd.concat([current, self._field(step)], axis=1)
@@ -116,6 +128,12 @@ class RPPlotBuilder:
             elif step in Plot:
                 # Create a plot from the current DataFrame
                 current = self._plot(step, current)
+            elif step in Order:
+                (field,) = args
+                # Sort by given field
+                current = current.sort_values(
+                    by=field, ascending=(step == Order.ASCENDING)
+                )
 
         return current
 

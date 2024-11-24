@@ -1,13 +1,5 @@
-# import subprocess
 from rp_processor import RPProcessor
-from rp_plot_builder import RPPlotBuilder
-
-# def display_html(fig):
-#     VIEW_COMMAND = "wslview"
-#     OUTPUT_PATH = "output/output.html"
-
-#     fig.write_html(OUTPUT_PATH)
-#     subprocess.run([VIEW_COMMAND, OUTPUT_PATH])
+from rp_plot_builder import RPPlotBuilder, Field
 
 
 # def messages_by_hour_bar():
@@ -38,4 +30,10 @@ from rp_plot_builder import RPPlotBuilder
 if __name__ == "__main__":
     df = RPProcessor().process_df().df
     builder = RPPlotBuilder(df)
+    # "X date by Y nunique author"
     builder.date().author().nunique().line().build().show()
+    builder.reset()
+    # "X author by Y sum word count in ascending order of word count"
+    builder.author().word_count().sum().ascending(
+        Field.WORD_COUNT
+    ).scatter().build().show()
