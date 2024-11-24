@@ -6,6 +6,7 @@ import re
 pd.options.display.max_columns = None
 
 DATA_PATH = "data/23-11-2024"
+CACHE_PATH = "data/cache/23-11-2024.csv"
 DATE_FORMAT = "%Y-%m-%dT%H:%M:%S.%f%z"
 TIME_ZONE = "Australia/Sydney"
 CHANNEL_NAME_REGEX = r".+ - (.+) \["
@@ -58,26 +59,27 @@ class RPProcessor:
         if pd.isna(reactions):
             return {}
         return {
-            reaction: count
+            reaction: int(count)
             for reaction, count in re.findall(REACTIONS_REGEX, reactions)
         }
 
     @staticmethod
     def _process_reactions(df: pd.DataFrame) -> pd.DataFrame:
         """
-        Process the 'reactions' column in a DataFrame.
+        Process the 'reactions' column and add a 'reactionCount' column to a DataFrame.
         """
         df["reactions"] = df["reactions"].apply(RPProcessor._reactions_to_dict)
+        df["reactionCount"] = [max(d.values(), default=0) for d in df["reactions"]]
         return df
 
     @staticmethod
-    def _process_date(df: pd.DataFrame) -> pd.DataFrame:
+    def _process_date(df: pd.DataFrame, format=DATE_FORMAT) -> pd.DataFrame:
         """
         Process the 'date' column in a DataFrame.
         """
-        df["date"] = pd.to_datetime(
-            df["date"], format=DATE_FORMAT, utc=True
-        ).dt.tz_convert(TIME_ZONE)
+        df["date"] = pd.to_datetime(df["date"], format=format, utc=True).dt.tz_convert(
+            TIME_ZONE
+        )
         return df
 
     @staticmethod
@@ -93,20 +95,37 @@ class RPProcessor:
         df = RPProcessor._process_date(df)
         return df
 
-    def read_csvs(self):
+    def _read_cache(self):
+        self._df = pd.read_csv(CACHE_PATH)
+        # Pandas writes in ISO8601 format
+        self._df = self._process_date(self._df, format="ISO8601")
+        return self
+
+    def _write_cache(self):
+        os.makedirs(os.path.dirname(CACHE_PATH), exist_ok=True)
+        self._df.to_csv(CACHE_PATH, index=False)
+
+    def read_csvs(self, force: bool = False):
         """
-        Read CSV files, process and concat them.
+        Read CSV files, process and cache them.
         """
+        if not force and os.path.exists(CACHE_PATH):
+            print(f"Cache found: Loading from {CACHE_PATH}")
+            return self._read_cache()
+
+        # If cache not used, process all files
         csv_paths = glob.glob(os.path.join(DATA_PATH, "*.csv"))
         dfs = [self._read_csv(path) for path in csv_paths]
         self._df = pd.concat(dfs, ignore_index=True)
+
+        self._write_cache()
+        print(f"Cache written: {CACHE_PATH}")
         return self
 
     def add_scene_id(self):
         """
         Add a 'sceneID' column to a DataFrame.
         """
-
         # TODO: Handle scene messages not being contiguous.
         end_scene = self._df["content"].str.contains(
             END_SCENE_REGEX, case=False, na=False
@@ -124,17 +143,13 @@ class RPProcessor:
             raise ValueError("Data has not been read yet")
         return self._df
 
-    def process_df(self):
+    def process_df(self, force: bool = False):
         """
-        Helper to build a clean dataset.
+        Helper to to build and cache a clean dataset.
         """
-        return self.read_csvs().add_scene_id()
-
-
-def _main():
-    processor = RPProcessor().process_df()
-    return processor.df
+        return self.read_csvs(force=force).add_scene_id()
 
 
 if __name__ == "__main__":
-    print(_main())
+    processor = RPProcessor().process_df(force=True)
+    print(processor.df)

@@ -1,0 +1,3 @@
+[tool.ruff.lint]
+# Ignore lambda ban
+ignore = ["E731"]
