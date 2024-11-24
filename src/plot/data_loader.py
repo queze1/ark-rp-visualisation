@@ -14,7 +14,7 @@ REACTIONS_REGEX = r"(\w+)\s*\((\d+)\)"
 END_SCENE_REGEX = r"\/\s*(?:end\sscene)|(?:scene\send)|(?:SCENESHIFT)"
 
 
-class RPProcessor:
+class DataLoader:
     def __init__(self):
         self._df = None
 
@@ -68,7 +68,7 @@ class RPProcessor:
         """
         Process the 'reactions' column and add a 'reactionCount' column to a DataFrame.
         """
-        df["reactions"] = df["reactions"].apply(RPProcessor._reactions_to_dict)
+        df["reactions"] = df["reactions"].apply(DataLoader._reactions_to_dict)
         df["reactionCount"] = [max(d.values(), default=0) for d in df["reactions"]]
         return df
 
@@ -88,11 +88,11 @@ class RPProcessor:
         Read a CSV file, return a processed DataFrame.
         """
         df = pd.read_csv(path)
-        df = RPProcessor._rename_columns(df)
-        df = RPProcessor._add_word_count(df)
-        df = RPProcessor._add_channel_name(df, path)
-        df = RPProcessor._process_reactions(df)
-        df = RPProcessor._process_date(df)
+        df = DataLoader._rename_columns(df)
+        df = DataLoader._add_word_count(df)
+        df = DataLoader._add_channel_name(df, path)
+        df = DataLoader._process_reactions(df)
+        df = DataLoader._process_date(df)
         return df
 
     def _read_cache(self):
@@ -143,13 +143,13 @@ class RPProcessor:
             raise ValueError("Data has not been read yet")
         return self._df
 
-    def process_df(self, force: bool = False):
+    def load_data(self, force: bool = False):
         """
-        Helper to to build and cache a clean dataset.
+        Helper to to build a clean dataset.
         """
         return self.read_csvs(force=force).add_scene_id()
 
 
 if __name__ == "__main__":
-    processor = RPProcessor().process_df(force=True)
+    processor = DataLoader().load_data(force=True)
     print(processor.df)

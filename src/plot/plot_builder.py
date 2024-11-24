@@ -73,7 +73,7 @@ class Plot(StrEnum):
         raise NotImplementedError(f"{self.value} plot is not implemented.")
 
 
-class RPPlotBuilder:
+class PlotBuilder:
     def __init__(self, df: pd.DataFrame):
         self._df = df
         self._steps = []
@@ -96,7 +96,7 @@ class RPPlotBuilder:
             def method(self, step=step, *args):
                 return self._add_step(step, *args)
 
-            setattr(RPPlotBuilder, name, method)
+            setattr(PlotBuilder, name, method)
 
     def _field(self, field: Field):
         """
@@ -150,4 +150,4 @@ class RPPlotBuilder:
         self._steps = []
 
 
-RPPlotBuilder._generate_step_methods()
+PlotBuilder._generate_step_methods()

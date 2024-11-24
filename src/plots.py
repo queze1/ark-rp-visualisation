@@ -1,5 +1,5 @@
-from rp_processor import RPProcessor
-from rp_plot_builder import RPPlotBuilder, Field
+from src.plot.data_loader import DataLoader
+from src.plot.plot_builder import PlotBuilder, Field
 
 
 # def messages_by_hour_bar():
@@ -24,21 +24,27 @@ from rp_plot_builder import RPPlotBuilder, Field
 #     return fig
 
 
-# display_html(messages_by_hour_bar())
+def date_by_unique_author_line(builder):
+    # "X date by Y nunique author"
+    return builder.date().author().nunique().line()
+
+
+def author_by_total_word_count_scatter(builder):
+    # "X author by Y sum word count in ascending order of word count"
+    return (
+        builder.author()
+        .word_count()
+        .sum()
+        .ascending(
+            Field.WORD_COUNT,
+        )
+        .scatter()
+    )
 
 
 if __name__ == "__main__":
-    df = RPProcessor().process_df().df
-    builder = RPPlotBuilder(df)
+    df = DataLoader().load_data().df
+    builder = PlotBuilder(df)
 
-    # "X date by Y nunique author"
-    # builder.date().author().nunique().line().build().show()
-    # builder.reset()
-
-    # "X author by Y sum word count in ascending order of word count"
-    # builder.author().word_count().sum().ascending(
-    #     Field.WORD_COUNT,
-    # ).scatter().build().show()
-    # builder.reset()
-
-    builder.hour().value_counts().line().build().show()
+    date_by_unique_author_line.build().show()
+    builder.reset()
