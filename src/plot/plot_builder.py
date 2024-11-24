@@ -1,153 +1,118 @@
-from enum import StrEnum
-from itertools import chain
-
 import pandas as pd
-import plotly.express as px
 
-
-class Field(StrEnum):
-    AUTHOR_ID = "authorId"
-    AUTHOR = "author"
-    DATE = "date"
-    HOUR = "hour"
-    DAY = "day"
-    CONTENT = "content"
-    ATTACHMENTS = "attachments"
-    REACTIONS = "reactions"
-    REACTION_COUNT = "reactionCount"
-    WORD_COUNT = "wordCount"
-    CHANNEL_NAME = "channelName"
-    SCENE_ID = "sceneId"
-
-
-class GroupBy(StrEnum):
-    SUM = "sum"
-    MEAN = "mean"
-    COUNT = "count"
-    NUNIQUE = "nunique"
-
-    def __call__(self, obj):
-        if self is GroupBy.SUM:
-            return obj.sum()
-        elif self is GroupBy.MEAN:
-            return obj.mean()
-        elif self is GroupBy.COUNT:
-            return obj.count()
-        elif self is GroupBy.NUNIQUE:
-            return obj.nunique()
-        raise NotImplementedError(f"{self.value} groupby is not implemented.")
-
-
-class Mutator(StrEnum):
-    VALUE_COUNTS = "value_counts"
-    ASCENDING = "ascending"
-    DESCENDING = "descending"
-
-    def __call__(self, df: pd.DataFrame, *args):
-        if self is Mutator.VALUE_COUNTS:
-            # Assumes that the DataFrame has only one field (as this overwrites all others)
-            # Sorts by value, instead of count
-            (field,) = df
-            return df[field].value_counts().sort_index().reset_index()
-        elif self is Mutator.ASCENDING:
-            (field,) = args
-            return df.sort_values(by=field, ascending=True)
-        elif self is Mutator.DESCENDING:
-            (field,) = args
-            return df.sort_values(by=field, ascending=False)
-        raise NotImplementedError(f"{self.value} mutator is not implemented.")
-
-
-class Plot(StrEnum):
-    BAR = "bar"
-    SCATTER = "scatter"
-    LINE = "line"
-
-    def __call__(self, *args, **kwargs):
-        if self is Plot.BAR:
-            return px.bar(*args, **kwargs)
-        elif self is Plot.SCATTER:
-            return px.scatter(*args, **kwargs)
-        elif self is Plot.LINE:
-            return px.line(*args, **kwargs)
-        raise NotImplementedError(f"{self.value} plot is not implemented.")
+from .enums import Field, GroupBy, Plot
+from .database_transformer import DatabaseTransformer
 
 
 class PlotBuilder:
     def __init__(self, df: pd.DataFrame):
-        self._df = df
-        self._steps = []
+        # Transformer for database operations
+        self._database = DatabaseTransformer(df)
 
-    def _add_step(self, step, *args):
-        """
-        Generic method to add a step with optional args.
-        """
-        self._steps.append((step, *args))
+    # Aliases for data selection
+    def author_id(self):
+        self._database.add_field(Field.AUTHOR_ID)
         return self
 
-    @staticmethod
-    def _generate_step_methods():
-        """
-        Dynamically generate methods to add step enums for Field, GroupBy, Plot, Mutator, etc.
-        """
-        for step in chain(Field, GroupBy, Plot, Mutator):
-            name = step.name.lower()
+    def author(self):
+        self._database.add_field(Field.AUTHOR)
+        return self
 
-            def method(self, step=step, *args):
-                return self._add_step(step, *args)
+    def date(self):
+        self._database.add_field(Field.DATE)
+        return self
 
-            setattr(PlotBuilder, name, method)
+    def hour(self):
+        self._database.add_field(Field.HOUR)
+        return self
 
-    def _field(self, field: Field):
-        """
-        Get a column of the specified field.
-        """
-        if field == Field.HOUR:
-            return self._df[Field.DATE].dt.hour
-        elif field == Field.DAY:
-            return self._df[Field.DATE].dt.day
-        elif field == Field.DATE:
-            return self._df[Field.DATE].dt.date
-        return self._df[field]
+    def day(self):
+        self._database.add_field(Field.DAY)
+        return self
 
-    def _plot(self, plot: Plot, df: pd.DataFrame):
+    def content(self):
+        self._database.add_field(Field.CONTENT)
+        return self
+
+    def attachments(self):
+        self._database.add_field(Field.ATTACHMENTS)
+        return self
+
+    def reactions(self):
+        self._database.add_field(Field.REACTIONS)
+        return self
+
+    def word_count(self):
+        self._database.add_field(Field.WORD_COUNT)
+        return self
+
+    def channel_name(self):
+        self._database.add_field(Field.CHANNEL_NAME)
+        return self
+
+    def scene_id(self):
+        self._database.add_field(Field.SCENE_ID)
+        return self
+
+    # Aliases for group by
+    def sum(self):
+        self._database.group_by(GroupBy.SUM)
+        return self
+
+    def mean(self):
+        self._database.group_by(GroupBy.MEAN)
+        return self
+
+    def count(self):
+        self._database.group_by(GroupBy.COUNT)
+        return self
+
+    def nunique(self):
+        self._database.group_by(GroupBy.NUNIQUE)
+        return self
+
+    def value_counts(self):
+        self._database.value_counts()
+        return self
+
+    def sort(self, field: Field, ascending: bool = True):
+        self._database.sort(field, ascending)
+        return self
+
+    def _plot(self, plot_type: Plot):
         """
-        First column for X-axis, second for Y-axis.
+        Create a plot from the current DataFrame state.
         """
-        x_field, y_field = df
+        df = self._database.get_dataframe()
+        history = self._database.get_history()
+
+        if len(df.columns) < 2:
+            raise ValueError("Not enough data columns to plot.")
+
+        x_field, y_field = df.columns[:2]
         kwargs = {"x": x_field, "y": y_field}
-        return plot(df, **kwargs)
+        # Generate figure
+        fig = plot_type(df, **kwargs)
 
-    def build(self):
-        """
-        Build a plot by iterating over steps.
-        """
-        current = pd.DataFrame()
-        for step, *args in self._steps:
-            if step in Field:
-                # Join the new field to the current DataFrame
-                current = pd.concat([current, self._field(step)], axis=1)
-            elif step in GroupBy:
-                field1, field2 = current
-                # Put second field (e.g. number of messages) in groups determined by first field (e.g. author)
-                groupby = current.groupby(field1)[field2]
-                # Aggregate the groups and convert back to Dataframe
-                current = step(groupby).reset_index()
-            elif step in Plot:
-                # Create a plot from the current DataFrame
-                current = self._plot(step, current)
-            elif step in Mutator:
-                # Handle mutators on the DataFrame
-                current = step(current, *args)
+        # Add history-based labels
+        if history:
+            fig.update_layout(
+                title=" vs. ".join(
+                    op["field"] for op in history if op["operation"] == "add_field"
+                ),
+            )
 
-        return current
+        return fig
 
-    @property
-    def steps(self):
-        return self._steps
+    def bar(self):
+        return self._plot(Plot.BAR)
+
+    def scatter(self):
+        return self._plot(Plot.SCATTER)
+
+    def line(self):
+        return self._plot(Plot.LINE)
 
     def reset(self):
-        self._steps = []
-
-
-PlotBuilder._generate_step_methods()
+        self._database.reset()
+        return self

@@ -39,8 +39,10 @@ def load_data_cache():
 
 
 def test_nocache_column_keys_and_dtypes(load_data_nocache):
-    """Test that the DataFrame matches the required columns
-    and the dtype of each column satisfies the associated functions."""
+    """
+    Test that the DataFrame matches the required columns
+    and the dtype of each column satisfies the associated functions.
+    """
 
     df = load_data_nocache
 
