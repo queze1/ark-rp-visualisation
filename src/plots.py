@@ -1,5 +1,5 @@
-from src.plot.data_loader import DataLoader
-from src.plot.plot_builder import PlotBuilder, Field
+from plot.data_loader import DataLoader
+from plot.plot_builder import PlotBuilder, Field
 
 
 # def messages_by_hour_bar():
@@ -46,5 +46,5 @@ if __name__ == "__main__":
     df = DataLoader().load_data().df
     builder = PlotBuilder(df)
 
-    date_by_unique_author_line.build().show()
+    date_by_unique_author_line(builder).build().show()
     builder.reset()

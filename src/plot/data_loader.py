@@ -2,6 +2,7 @@ import os
 import glob
 import pandas as pd
 import re
+import ast
 
 pd.options.display.max_columns = None
 
@@ -48,7 +49,7 @@ class DataLoader:
         """
         Add a 'wordCount' column to a DataFrame.
         """
-        word_count = df["content"].str.split().str.len()
+        word_count = df["content"].str.split().str.len().fillna(0)
         return df.assign(wordCount=word_count)
 
     @staticmethod
@@ -97,8 +98,9 @@ class DataLoader:
 
     def _read_cache(self):
         self._df = pd.read_csv(CACHE_PATH)
-        # Pandas writes in ISO8601 format
+        # Unstringify date and reactions
         self._df = self._process_date(self._df, format="ISO8601")
+        self._df["reactions"] = self._df["reactions"].apply(ast.literal_eval)
         return self
 
     def _write_cache(self):
@@ -151,5 +153,5 @@ class DataLoader:
 
 
 if __name__ == "__main__":
-    processor = DataLoader().load_data(force=True)
-    print(processor.df)
+    df = DataLoader().load_data(force=False).df
+    print(df)
