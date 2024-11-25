@@ -51,6 +51,12 @@ class PlotBuilder:
         """
         return self._queue_operation(self._database.group_by, *args, **kwargs)
 
+    def _queue_filter(self, *args, **kwargs):
+        """
+        Queue a filter operation.
+        """
+        return self._queue_operation(self._database.filter, *args, **kwargs)
+
     def sort(self, field: Field, ascending: bool = True):
         """
         Queue a sort operation.
@@ -112,6 +118,13 @@ class PlotBuilder:
 
     def nunique(self, field=None):
         return self._queue_group_by(GroupBy.NUNIQUE, field=field)
+
+    # Aliases for filters
+    def filter_min(self, field: Field, min):
+        return self._queue_filter(field, lambda x: min <= x)
+
+    def filter_max(self, field: Field, max):
+        return self._queue_filter(field, lambda x: x <= max)
 
     # Aliases for plot creation
     def bar(self, x_field=None, y_field=None):

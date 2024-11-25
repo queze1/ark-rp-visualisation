@@ -4,14 +4,12 @@ from .enums import Field, GroupBy
 
 field_metadata = {
     Field.AUTHOR_ID: {
-        "description": "User",
-        "label": "User",
-        "needs_plural": True,
+        "description": "Users",
+        "label": "Users",
     },
     Field.AUTHOR: {
-        "description": "User",
-        "label": "User",
-        "needs_plural": True,
+        "description": "Users",
+        "label": "Users",
     },
     Field.DATE: {"description": "Day", "label": "Date"},
     Field.HOUR: {"description": "Hour of Day", "label": "Hour of Day"},
@@ -60,22 +58,8 @@ class DatabaseTransformer:
             new_column = self._df[Field.DATE].dt.date
         else:
             new_column = self._df[field]
-        self._current[field] = new_column
 
-        # Plurals for Y-axis (TODO: Move to PlotTransformer)
-        # needs_plural = (
-        #     field_metadata[field].get("needs_plural")
-        #     # Check if current index position corresponds to Y-axis
-        #     and self._current.columns.get_loc(field) != 0
-        # )
-        # if needs_plural:
-        #     # Add "s" to the end
-        #     self._metadata[field] = {
-        #         "description": field_metadata[field]["description"] + "s",
-        #         "label": field_metadata[field]["label"] + "s",
-        #     }
-        # else:
-        #     self._metadata[field] = field_metadata[field]
+        self._current[field] = new_column
         self._metadata[field] = field_metadata[field]
         return self
 
@@ -115,6 +99,14 @@ class DatabaseTransformer:
 
     def sort(self, field: Field, ascending: bool = True):
         self._current = self._current.sort_values(by=field, ascending=ascending)
+        return self
+
+    def filter(self, field: Field, condition):
+        """
+        Apply a filter to the DataFrame via a condition.
+        `condition` is a lambda function or callable that takes the column values and returns a boolean mask.
+        """
+        self._current = self._current[condition(self._current[field])]
         return self
 
     @property
