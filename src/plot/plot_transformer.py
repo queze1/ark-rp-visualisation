@@ -32,7 +32,7 @@ class PlotTransformer:
             return "Hour of Day"
         elif field == Field.DAY:
             return "Day of Month"
-        return field.replace("_", " ").title()
+        return field.name.replace("_", " ").title()
 
     def _generate_labels_and_title(self):
         x_label, y_label = map(self._field_friendly_name, (self.x_field, self.y_field))

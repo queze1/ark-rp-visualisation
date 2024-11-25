@@ -9,112 +9,139 @@ from .plot_transformer import PlotTransformer
 class PlotBuilder:
     def __init__(self, df: pd.DataFrame):
         self._database = DatabaseTransformer(df)
+        self._operations = []
         self._plot = None
 
-    # Aliases for data selection
-    def author_id(self):
-        self._database.add_field(Field.AUTHOR_ID)
-        return self
-
-    def author(self):
-        self._database.add_field(Field.AUTHOR)
-        return self
-
-    def date(self):
-        self._database.add_field(Field.DATE)
-        return self
-
-    def hour(self):
-        self._database.add_field(Field.HOUR)
-        return self
-
-    def day(self):
-        self._database.add_field(Field.DAY)
-        return self
-
-    def content(self):
-        self._database.add_field(Field.CONTENT)
-        return self
-
-    def attachments(self):
-        self._database.add_field(Field.ATTACHMENTS)
-        return self
-
-    def reactions(self):
-        self._database.add_field(Field.REACTIONS)
-        return self
-
-    def word_count(self):
-        self._database.add_field(Field.WORD_COUNT)
-        return self
-
-    def channel_name(self):
-        self._database.add_field(Field.CHANNEL_NAME)
-        return self
-
-    def scene_id(self):
-        self._database.add_field(Field.SCENE_ID)
-        return self
-
-    # Aliases for group by
-    def sum(self):
-        self._database.group_by(GroupBy.SUM)
-        return self
-
-    def mean(self):
-        self._database.group_by(GroupBy.MEAN)
-        return self
-
-    def count(self):
-        self._database.group_by(GroupBy.COUNT)
-        return self
-
-    def nunique(self):
-        self._database.group_by(GroupBy.NUNIQUE)
-        return self
-
-    def value_counts(self):
-        self._database.value_counts()
-        return self
-
-    def sort(self, field: Field, ascending: bool = True):
-        self._database.sort(field, ascending)
-        return self
-
-    def _create_plot(self, plot_type: Plot):
+    def _build_plot(self, plot_type: Plot):
         """
-        Create a plot from the current DataFrame state.
+        Build a plot from the current state.
         """
-        # Pass current dataframe and history to transformer
+        if self._plot is not None:
+            raise ValueError("Plot already created!")
+
         df = self._database.dataframe
         history = self._database.history
         self._plot = PlotTransformer(df, history, plot_type)
         return self
 
-    # Aliases for _plot
+    def _queue_operation(self, func, *args, **kwargs):
+        """
+        Queue a lazy operation.
+        """
+        self._operations.append((func, args, kwargs))
+        return self
+
+    def build(self):
+        """
+        Execute all queued operations.
+        """
+        for func, args, kwargs in self._operations:
+            func(*args, **kwargs)
+        return self
+
+    def _queue_add_field(self, field: Field):
+        """
+        Queue an add field operation.
+        """
+        return self._queue_operation(self._database.add_field, field)
+
+    def _queue_group_by(self, operation: GroupBy):
+        """
+        Queue a group by operation.
+        """
+        return self._queue_operation(self._database.group_by, operation)
+
+    def sort(self, field: Field, ascending: bool = True):
+        """
+        Queue a sort operation.
+        """
+        return self._queue_operation(self._database.sort, field, ascending=ascending)
+
+    def value_counts(self):
+        """
+        Queue a value counts operation.
+        """
+        return self._queue_operation(self._database.value_counts)
+
+    def _queue_build_plot(self, plot_type: Plot):
+        """
+        Queue a build plot operation.
+        """
+        return self._queue_operation(self._build_plot, plot_type)
+
+    # Aliases for data selection
+    def author_id(self):
+        return self._queue_add_field(Field.AUTHOR_ID)
+
+    def author(self):
+        return self._queue_add_field(Field.AUTHOR)
+
+    def date(self):
+        return self._queue_add_field(Field.DATE)
+
+    def hour(self):
+        return self._queue_add_field(Field.HOUR)
+
+    def day(self):
+        return self._queue_add_field(Field.DAY)
+
+    def content(self):
+        return self._queue_add_field(Field.CONTENT)
+
+    def attachments(self):
+        return self._queue_add_field(Field.ATTACHMENTS)
+
+    def reactions(self):
+        return self._queue_add_field(Field.REACTIONS)
+
+    def word_count(self):
+        return self._queue_add_field(Field.WORD_COUNT)
+
+    def channel_name(self):
+        return self._queue_add_field(Field.CHANNEL_NAME)
+
+    def scene_id(self):
+        return self._queue_add_field(Field.SCENE_ID)
+
+    # Aliases for group by
+    def sum(self):
+        return self._queue_group_by(GroupBy.SUM)
+
+    def mean(self):
+        return self._queue_group_by(GroupBy.MEAN)
+
+    def count(self):
+        return self._queue_group_by(GroupBy.COUNT)
+
+    def nunique(self):
+        return self._queue_group_by(GroupBy.NUNIQUE)
+
+    # Aliases for plot creation
     def bar(self):
         """
-        Create a bar plot from the current DataFrame state.
+        Create a bar plot.
         """
-        return self._create_plot(Plot.BAR)
+        return self._queue_build_plot(Plot.BAR)
 
     def scatter(self):
         """
-        Create a scatter plot from the current DataFrame state.
+        Create a scatter plot.
         """
-        return self._create_plot(Plot.SCATTER)
+        return self._queue_build_plot(Plot.SCATTER)
 
     def line(self):
         """
-        Create a line plot from the current DataFrame state.
+        Create a line plot.
         """
-        return self._create_plot(Plot.LINE)
+        return self._queue_build_plot(Plot.LINE)
 
     def reset(self):
         """
         Reset the current plot.
         """
         self._database.reset()
+        self._operations = []
+        self._plot = None
         return self
 
     @property
@@ -123,5 +150,5 @@ class PlotBuilder:
         Return the current figure.
         """
         if self._plot is None:
-            raise ValueError("Plot has not been created yet")
+            raise ValueError("Plot has not been created yet!")
         return self._plot._fig

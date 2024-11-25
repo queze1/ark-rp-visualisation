@@ -2,53 +2,43 @@ from plot.data_loader import DataLoader
 from plot.plot_builder import PlotBuilder, Field
 
 
-# def messages_by_hour_bar():
-#     messages_by_hour = df["date"].dt.hour.value_counts().sort_index()
-#     messages_by_hour = messages_by_hour.reset_index()
-#     messages_by_hour.columns = ["hour", "count"]
-#     fig = px.bar(
-#         messages_by_hour,
-#         x="hour",
-#         y="count",
-#         labels={"hour": "Hour of the Day", "count": "Number of Messages"},
-#         title="Messages by Hour",
-#     )
+class PlotBuilderHelper:
+    """
+    Plot building pipelines for testing.
+    """
 
-#     fig.update_layout(
-#         xaxis=dict(
-#             tickmode="linear",  # Ensure ticks are evenly spaced (not auto-selected)
-#             tick0=0,  # Start ticks at 0
-#             dtick=1,  # Show ticks every 1 unit
-#         )
-#     )
-#     return fig
+    def __init__(self):
+        df = DataLoader().load_data().df
+        self._builder = PlotBuilder(df)
 
+    def show(self):
+        """Build the current plot, show it, then reset."""
+        self._builder.build().figure.show()
+        self._builder.reset()
+        return self
 
-def date_by_unique_author_line(builder: PlotBuilder) -> PlotBuilder:
-    # "X date by Y nunique author"
-    return builder.date().author().nunique().line()
+    def date_by_unique_author_line(self):
+        self._builder.date().author().nunique().line()
+        return self
 
+    def author_by_total_word_count_scatter(self):
+        self._builder.author().word_count().sum().sort(
+            Field.WORD_COUNT, ascending=True
+        ).scatter()
+        return self
 
-def author_by_total_word_count_scatter(builder: PlotBuilder) -> PlotBuilder:
-    # "X author by Y sum word count in ascending order of word count"
-    return (
-        builder.author()
-        .word_count()
-        .sum()
-        .sort(Field.WORD_COUNT, ascending=True)
-        .scatter()
-    )
+    def messages_by_hour_bar(self):
+        self._builder.hour().value_counts().bar()
+        return self
+
+    def messages_by_date_line(self):
+        self._builder.date().value_counts().sort(Field.DATE).line()
+        return self
 
 
 if __name__ == "__main__":
-    df = DataLoader().load_data().df
-    builder = PlotBuilder(df)
-
-    date_by_unique_author_line(builder).figure.show()
-    builder.reset()
-    author_by_total_word_count_scatter(builder).figure.show()
-    builder.reset()
-    builder.hour().value_counts().bar().figure.show()
-    builder.reset()
-    builder.date().value_counts().sort(Field.DATE).line().figure.show()
-    builder.reset()
+    builder = PlotBuilderHelper()
+    builder.date_by_unique_author_line().show()
+    builder.author_by_total_word_count_scatter().show()
+    builder.messages_by_hour_bar().show()
+    builder.messages_by_date_line().show()
