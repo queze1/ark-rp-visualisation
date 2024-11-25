@@ -11,11 +11,11 @@ class DatabaseTransformer:
         # Track the pipeline of what was applied
         self._history = []
 
-    def _log_operation(self, operation: str, details: dict):
+    def _log_operation(self, type: str, details: dict):
         """
         Log details of an operation.
         """
-        self._history.append({"operation": operation, **details})
+        self._history.append({"type": type, **details})
 
     def add_field(self, field: Field):
         if field == Field.HOUR:
