@@ -1,5 +1,5 @@
 import pandas as pd
-
+from plotly.graph_objects import Figure
 
 from .enums import Field, GroupBy, Plot
 from .database_transformer import DatabaseTransformer
@@ -9,19 +9,19 @@ from .plot_transformer import PlotTransformer
 class PlotBuilder:
     def __init__(self, df: pd.DataFrame):
         self._database = DatabaseTransformer(df)
+        self._plot = PlotTransformer()
         self._operations = []
-        self._plot = None
 
     def _build_plot(self, plot_type: Plot):
         """
         Build a plot from the current state.
         """
-        if self._plot is not None:
+        if self._plot.figure is not None:
             raise ValueError("Plot already created!")
 
         df = self._database.dataframe
         metadata = self._database.metadata
-        self._plot = PlotTransformer(df, metadata, plot_type)
+        self._plot.initialize(df, metadata, plot_type)
         return self
 
     def _queue_operation(self, func, *args, **kwargs):
@@ -132,20 +132,27 @@ class PlotBuilder:
         """
         return self._queue_build_plot(Plot.LINE)
 
+    # Aliases for plot mutations
+    def xlog(self):
+        return self._queue_operation(self._plot.xlog)
+
+    def ylog(self):
+        return self._queue_operation(self._plot.ylog)
+
     def reset(self):
         """
         Reset the current plot.
         """
         self._database.reset()
+        self._plot = PlotTransformer()
         self._operations = []
-        self._plot = None
         return self
 
     @property
-    def figure(self) -> pd.DataFrame:
+    def figure(self) -> Figure:
         """
         Return the current figure.
         """
-        if self._plot is None:
+        if self._plot.figure is None:
             raise ValueError("Plot has not been created yet!")
-        return self._plot._fig
+        return self._plot.figure

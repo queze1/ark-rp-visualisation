@@ -24,7 +24,7 @@ class PlotBuilderHelper:
     def author_by_total_word_count_scatter(self):
         self._builder.author().word_count().sum().sort(
             Field.WORD_COUNT, ascending=True
-        ).scatter()
+        ).scatter().ylog()
         return self
 
     def messages_by_hour_bar(self):
@@ -38,7 +38,7 @@ class PlotBuilderHelper:
 
 if __name__ == "__main__":
     builder = PlotBuilderHelper()
-    builder.date_by_unique_author_line().show()
+    # builder.date_by_unique_author_line().show()
     builder.author_by_total_word_count_scatter().show()
-    builder.messages_by_hour_bar().show()
-    builder.messages_by_date_line().show()
+    # builder.messages_by_hour_bar().show()
+    # builder.messages_by_date_line().show()
