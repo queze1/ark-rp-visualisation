@@ -62,28 +62,34 @@ class DatabaseTransformer:
             new_column = self._df[field]
         self._current[field] = new_column
 
-        # Plurals for Y-axis
-        needs_plural = (
-            field_metadata[field].get("needs_plural")
-            # Check if current index position corresponds to Y-axis
-            and self._current.columns.get_loc(field) != 0
-        )
-        if needs_plural:
-            # Add "s" to the end
-            self._metadata[field] = {
-                "description": field_metadata[field]["description"] + "s",
-                "label": field_metadata[field]["label"] + "s",
-            }
-        else:
-            self._metadata[field] = field_metadata[field]
+        # Plurals for Y-axis (TODO: Move to PlotTransformer)
+        # needs_plural = (
+        #     field_metadata[field].get("needs_plural")
+        #     # Check if current index position corresponds to Y-axis
+        #     and self._current.columns.get_loc(field) != 0
+        # )
+        # if needs_plural:
+        #     # Add "s" to the end
+        #     self._metadata[field] = {
+        #         "description": field_metadata[field]["description"] + "s",
+        #         "label": field_metadata[field]["label"] + "s",
+        #     }
+        # else:
+        #     self._metadata[field] = field_metadata[field]
+        self._metadata[field] = field_metadata[field]
         return self
 
-    def group_by(self, operation: GroupBy):
+    def group_by(self, operation: GroupBy, field=None):
         """
-        Group by the oldest field and aggregate with the specified operation.
-        By default, sorts in ascending order of group.
+        Group by a field and aggregate with the specified operation.
+        By default, groups by the oldest field and sorts in ascending order of group.
         """
-        field, *rest = self._current
+        if field:
+            rest = self._current.columns != field
+        else:
+            # Destructure columns
+            field, *rest = self._current
+
         grouped = self._current.groupby(field)[rest]
         self._current = operation(grouped).reset_index()
 

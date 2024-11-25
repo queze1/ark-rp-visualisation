@@ -12,7 +12,7 @@ class PlotBuilder:
         self._plot = PlotTransformer()
         self._operations = []
 
-    def _build_plot(self, plot_type: Plot):
+    def _build_plot(self, plot_type: Plot, x_field=None, y_field=None):
         """
         Build a plot from the current state.
         """
@@ -21,7 +21,7 @@ class PlotBuilder:
 
         df = self._database.dataframe
         metadata = self._database.metadata
-        self._plot.initialize(df, metadata, plot_type)
+        self._plot.initialize(df, metadata, plot_type, x_field=x_field, y_field=y_field)
         return self
 
     def _queue_operation(self, func, *args, **kwargs):
@@ -45,11 +45,11 @@ class PlotBuilder:
         """
         return self._queue_operation(self._database.add_field, field)
 
-    def _queue_group_by(self, operation: GroupBy):
+    def _queue_group_by(self, *args, **kwargs):
         """
         Queue a group by operation.
         """
-        return self._queue_operation(self._database.group_by, operation)
+        return self._queue_operation(self._database.group_by, *args, **kwargs)
 
     def sort(self, field: Field, ascending: bool = True):
         """
@@ -63,11 +63,11 @@ class PlotBuilder:
         """
         return self._queue_operation(self._database.value_counts)
 
-    def _queue_build_plot(self, plot_type: Plot):
+    def _queue_build_plot(self, *args, **kwargs):
         """
         Queue a build plot operation.
         """
-        return self._queue_operation(self._build_plot, plot_type)
+        return self._queue_operation(self._build_plot, *args, **kwargs)
 
     # Aliases for data selection
     def author_id(self):
@@ -104,33 +104,33 @@ class PlotBuilder:
         return self._queue_add_field(Field.SCENE_ID)
 
     # Aliases for group by
-    def sum(self):
-        return self._queue_group_by(GroupBy.SUM)
+    def sum(self, field=None):
+        return self._queue_group_by(GroupBy.SUM, field=field)
 
-    def mean(self):
-        return self._queue_group_by(GroupBy.MEAN)
+    def mean(self, field=None):
+        return self._queue_group_by(GroupBy.MEAN, field=field)
 
-    def nunique(self):
-        return self._queue_group_by(GroupBy.NUNIQUE)
+    def nunique(self, field=None):
+        return self._queue_group_by(GroupBy.NUNIQUE, field=field)
 
     # Aliases for plot creation
-    def bar(self):
+    def bar(self, x_field=None, y_field=None):
         """
         Create a bar plot.
         """
-        return self._queue_build_plot(Plot.BAR)
+        return self._queue_build_plot(Plot.BAR, x_field=x_field, y_field=y_field)
 
-    def scatter(self):
+    def scatter(self, x_field=None, y_field=None):
         """
         Create a scatter plot.
         """
-        return self._queue_build_plot(Plot.SCATTER)
+        return self._queue_build_plot(Plot.SCATTER, x_field=x_field, y_field=y_field)
 
-    def line(self):
+    def line(self, x_field=None, y_field=None):
         """
         Create a line plot.
         """
-        return self._queue_build_plot(Plot.LINE)
+        return self._queue_build_plot(Plot.LINE, x_field=x_field, y_field=y_field)
 
     # Aliases for plot mutations
     def xlog(self):

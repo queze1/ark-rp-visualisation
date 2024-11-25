@@ -16,9 +16,10 @@ class PlotTransformer:
         self.plot_type = None
         self._fig = None
 
-    def initialize(self, df, metadata, plot_type: Plot):
+    def initialize(self, df, metadata, plot_type: Plot, x_field=None, y_field=None):
         """
         Populate the PlotTransformer with data and create the plot.
+        By default, plots by the two most recent fields.
 
         This method must be called before using any operations on the transformer.
         """
@@ -26,7 +27,12 @@ class PlotTransformer:
         if len(df.columns) < 2:
             raise ValueError("Not enough data columns to plot.")
 
-        self.x_field, self.y_field = df.columns[:2]
+        if x_field and y_field:
+            self.x_field, self.y_field = x_field, y_field
+        else:
+            # If either x or y fields are unset, use last two columns
+            self.x_field, self.y_field = df.columns[-2:]
+
         self.plot_type = plot_type
         # Create labels and title from metadata
         kwargs = {

@@ -23,8 +23,8 @@ class PlotBuilderHelper:
 
     def author_by_total_word_count_scatter(self):
         self._builder.author().word_count().sum().sort(
-            Field.WORD_COUNT, ascending=True
-        ).scatter().ylog()
+            Field.WORD_COUNT, ascending=False
+        ).scatter(Field.WORD_COUNT, Field.AUTHOR).xlog()
         return self
 
     def messages_by_hour_bar(self):
