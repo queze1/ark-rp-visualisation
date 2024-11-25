@@ -6,16 +6,7 @@ from .enums import Field, GroupBy
 class DatabaseTransformer:
     def __init__(self, df: pd.DataFrame):
         self._df = df
-        # Initialise current state as empty
         self._current = pd.DataFrame()
-        # Track the pipeline of what was applied
-        self._history = []
-
-    def _log_operation(self, type: str, details: dict):
-        """
-        Log details of an operation.
-        """
-        self._history.append({"type": type, **details})
 
     def add_field(self, field: Field):
         if field == Field.HOUR:
@@ -27,8 +18,6 @@ class DatabaseTransformer:
         else:
             new_column = self._df[field]
         self._current[field] = new_column
-
-        self._log_operation("add_field", {"field": field})
         return self
 
     def group_by(self, operation: GroupBy):
@@ -39,14 +28,6 @@ class DatabaseTransformer:
         field, *rest = self._current
         grouped = self._current.groupby(field)[rest]
         self._current = operation(grouped).reset_index()
-
-        self._log_operation(
-            "group_by",
-            {
-                "field": field,
-                "operation": operation.value,
-            },
-        )
         return self
 
     def value_counts(self):
@@ -57,15 +38,10 @@ class DatabaseTransformer:
         (field,) = self._current
         counts = self._current[field].value_counts()
         self._current = counts.reset_index()
-
-        self._log_operation("value_counts", {"field": field})
         return self
 
     def sort(self, field: Field, ascending: bool = True):
         self._current = self._current.sort_values(by=field, ascending=ascending)
-
-        direction = "ascending" if ascending else "descending"
-        self._log_operation("sort", {"field": field, "order": direction})
         return self
 
     @property
@@ -75,16 +51,8 @@ class DatabaseTransformer:
         """
         return self._current
 
-    @property
-    def history(self) -> list:
-        """
-        Return transformation history.
-        """
-        return self._history
-
     def reset(self):
         """
-        Reset history and current state.
+        Reset current state.
         """
         self._current = pd.DataFrame()
-        self._history = []

@@ -20,8 +20,7 @@ class PlotBuilder:
             raise ValueError("Plot already created!")
 
         df = self._database.dataframe
-        history = self._database.history
-        self._plot = PlotTransformer(df, history, plot_type)
+        self._plot = PlotTransformer(df, plot_type)
         return self
 
     def _queue_operation(self, func, *args, **kwargs):

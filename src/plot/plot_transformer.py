@@ -4,14 +4,13 @@ from .enums import Field, Plot
 
 
 class PlotTransformer:
-    def __init__(self, df, history, plot_type: Plot):
+    def __init__(self, df, plot_type: Plot):
         if len(df.columns) < 2:
             raise ValueError("Not enough data columns to plot.")
 
         # Track the x and y fields to be used for plotting
         self.x_field, self.y_field = df.columns[:2]
         self.plot_type = plot_type
-        self.history = history
         kwargs = {
             "x": self.x_field,
             "y": self.y_field,
@@ -48,7 +47,7 @@ class PlotTransformer:
 
     def _create_layout(self):
         """
-        Create a history-based layout for the current figure.
+        Create a layout for the current figure.
         """
         layout = {}
 
