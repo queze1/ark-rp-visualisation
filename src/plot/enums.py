@@ -23,7 +23,6 @@ class Field(StrEnum):
 class GroupBy(StrEnum):
     SUM = "sum"
     MEAN = "mean"
-    COUNT = "count"
     NUNIQUE = "nunique"
 
     def __call__(self, obj):
@@ -31,8 +30,6 @@ class GroupBy(StrEnum):
             return obj.sum()
         elif self is GroupBy.MEAN:
             return obj.mean()
-        elif self is GroupBy.COUNT:
-            return obj.count()
         elif self is GroupBy.NUNIQUE:
             return obj.nunique()
         raise NotImplementedError(f"{self.value} groupby is not implemented.")

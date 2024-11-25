@@ -1,49 +1,31 @@
 from plotly.graph_objects import Figure
 
-from .enums import Field, Plot
+from .enums import Plot
+
+
+DTICK_CUTOFF = 50
 
 
 class PlotTransformer:
-    def __init__(self, df, plot_type: Plot):
+    def __init__(self, df, metadata, plot_type: Plot):
         if len(df.columns) < 2:
             raise ValueError("Not enough data columns to plot.")
 
-        # Track the x and y fields to be used for plotting
         self.x_field, self.y_field = df.columns[:2]
         self.plot_type = plot_type
+        # Create labels and title from metadata
         kwargs = {
             "x": self.x_field,
             "y": self.y_field,
-            **self._generate_labels_and_title(),
+            "labels": {
+                self.x_field: metadata[self.x_field]["label"],
+                self.y_field: metadata[self.y_field]["label"],
+            },
+            "title": f"{metadata[self.y_field]['description']} by {metadata[self.x_field]['description']}",
         }
 
         self._fig = plot_type(df, **kwargs)
         self._fig.update_layout(**self._create_layout())
-
-    @staticmethod
-    def _field_friendly_name(field: str) -> str:
-        """
-        Convert a field name into a friendly, human-readable name.
-        """
-        if field == Field.COUNT:
-            return "Messages"
-        elif field == Field.HOUR:
-            return "Hour of Day"
-        elif field == Field.DAY:
-            return "Day of Month"
-        return field.name.replace("_", " ").title()
-
-    def _generate_labels_and_title(self):
-        x_label, y_label = map(self._field_friendly_name, (self.x_field, self.y_field))
-
-        kwargs = {
-            "labels": {self.x_field: x_label, self.y_field: y_label},
-            "title": None,
-        }
-
-        # TODO: Figure out axis and title metadata setting
-
-        return kwargs
 
     def _create_layout(self):
         """
@@ -51,8 +33,8 @@ class PlotTransformer:
         """
         layout = {}
 
-        # If the x-axis is HOUR, DAY, or REACTION_COUNT, show ticks every unit (categorical & numerical)
-        if self.x_field in {Field.HOUR, Field.DAY, Field.REACTION_COUNT}:
+        # Set 1 tick per unit if X-axis is small
+        if len(self.x_field) < DTICK_CUTOFF:
             layout["xaxis"] = {"dtick": 1}
 
         return layout

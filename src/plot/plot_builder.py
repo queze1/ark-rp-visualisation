@@ -20,7 +20,8 @@ class PlotBuilder:
             raise ValueError("Plot already created!")
 
         df = self._database.dataframe
-        self._plot = PlotTransformer(df, plot_type)
+        metadata = self._database.metadata
+        self._plot = PlotTransformer(df, metadata, plot_type)
         return self
 
     def _queue_operation(self, func, *args, **kwargs):
@@ -108,9 +109,6 @@ class PlotBuilder:
 
     def mean(self):
         return self._queue_group_by(GroupBy.MEAN)
-
-    def count(self):
-        return self._queue_group_by(GroupBy.COUNT)
 
     def nunique(self):
         return self._queue_group_by(GroupBy.NUNIQUE)
