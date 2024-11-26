@@ -29,7 +29,7 @@ class DatabaseTransformer:
         self._metadata = Metadata()
 
     def add_field(self, field: Field):
-        # Create new field if needed
+        # Create new derivative fields if needed
         if field == Field.HOUR:
             self._df[field] = self._original[Field.DATE].dt.hour
         elif field == Field.DAY:
@@ -40,6 +40,9 @@ class DatabaseTransformer:
             self._df[field] = [
                 max(d.values(), default=0) for d in self._original[Field.REACTIONS]
             ]
+        elif field == Field.COUNT:
+            # For counting messages, intended to be combined with `.sum`
+            self._df[field] = 1
 
         self._fields.append(field)
         return self
@@ -93,6 +96,9 @@ class DatabaseTransformer:
         (field,) = self._fields
         counts = self._df[field].value_counts()
         self._df = counts.reset_index()
+
+        # Equivalent to grouping by and summing Field.COUNT
+        self._metadata.set_group_by(Field.COUNT, GroupBy.SUM)
         return self
 
     def sort(self, field: Field, ascending: bool = True):

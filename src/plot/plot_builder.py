@@ -118,6 +118,9 @@ class PlotBuilder:
     def scene_id(self):
         return self._queue_add_field(Field.SCENE_ID)
 
+    def count(self):
+        return self._queue_add_field(Field.COUNT)
+
     # Aliases for group by
     def sum(self, field=None):
         return self._queue_group_by(GroupBy.SUM, field=field)

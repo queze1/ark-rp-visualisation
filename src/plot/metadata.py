@@ -36,7 +36,7 @@ class Metadata:
             },
             Field.CHANNEL_NAME: {"description": "Channels"},
             Field.SCENE_ID: {"description": "Scenes"},
-            Field.COUNT: {"description": "Messages", "label": "Number of Messages"},
+            Field.COUNT: {"description": "Messages"},
         }
 
         self._aggregation_metadata = {

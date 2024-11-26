@@ -54,6 +54,10 @@ class PlotBuilderHelper:
         ).word_count().value_counts().scatter()
         return self
 
+    def total_word_count_by_messages_by_user_scatter(self):
+        self._builder.author().word_count().count().sum().scatter().xlog().ylog()
+        return self
+
 
 if __name__ == "__main__":
     builder = PlotBuilderHelper()
@@ -61,6 +65,7 @@ if __name__ == "__main__":
     # builder.total_word_count_by_authors_scatter().show()
     # builder.messages_by_hour_bar().show()
     # builder.messages_by_date_line().show()
-    builder.total_reactions_by_date().show()
+    # builder.total_reactions_by_date().show()
     # builder.total_word_count_by_unique_days_by_user_scatter().show()
     # builder.word_counts_by_queze().show()
+    # builder.total_word_count_by_messages_by_user_scatter().show()
