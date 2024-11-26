@@ -43,15 +43,15 @@ class PlotTransformer:
 
         self.plot_type = plot_type
         self._fig = plot_type(df, **kwargs)
-        self._create_layout()
+        self._create_layout(df)
 
-    def _create_layout(self):
+    def _create_layout(self, df):
         """
         Create a starting layout for the current figure.
         """
         layout = {}
         # Set 1 tick per unit if X-axis is small
-        if len(self.x_field) < DTICK_CUTOFF:
+        if len(df[self.x_field]) < DTICK_CUTOFF:
             layout["xaxis"] = {"dtick": 1}
         self._fig.update_layout(**layout)
 

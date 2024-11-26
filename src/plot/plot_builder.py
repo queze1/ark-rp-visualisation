@@ -100,6 +100,9 @@ class PlotBuilder:
     def reactions(self):
         return self._queue_add_field(Field.REACTIONS)
 
+    def reaction_count(self):
+        return self._queue_add_field(Field.REACTION_COUNT)
+
     def word_count(self):
         return self._queue_add_field(Field.WORD_COUNT)
 

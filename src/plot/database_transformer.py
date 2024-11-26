@@ -84,3 +84,4 @@ class DatabaseTransformer:
         Reset current state.
         """
         self._current = pd.DataFrame()
+        self._metadata = Metadata()

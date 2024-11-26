@@ -17,11 +17,11 @@ class PlotBuilderHelper:
         self._builder.reset()
         return self
 
-    def date_by_unique_author_line(self):
+    def unique_authors_by_date_line(self):
         self._builder.date().author().nunique().line()
         return self
 
-    def author_by_total_word_count_scatter(self):
+    def total_word_count_by_authors_catter(self):
         self._builder.author().word_count().sum().sort(
             Field.WORD_COUNT, ascending=False
         ).filter_min(Field.WORD_COUNT, 50).scatter(
@@ -37,15 +37,15 @@ class PlotBuilderHelper:
         self._builder.date().value_counts().sort(Field.DATE).line()
         return self
 
-    def messages_by_author_scatter(self):
-        self._builder.author().value_counts().scatter()
+    def total_reactions_by_date(self):
+        self._builder.date().reaction_count().sum().sort(Field.DATE).line()
         return self
 
 
 if __name__ == "__main__":
     builder = PlotBuilderHelper()
-    # builder.date_by_unique_author_line().show()
-    builder.author_by_total_word_count_scatter().show()
+    # builder.unique_authors_by_date_line().show()
+    # builder.total_word_count_by_authors_catter().show()
     # builder.messages_by_hour_bar().show()
     # builder.messages_by_date_line().show()
-    # builder.messages_by_author_scatter().show()
+    # builder.total_reactions_by_date().show()

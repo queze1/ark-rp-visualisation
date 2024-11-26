@@ -46,7 +46,7 @@ class Metadata:
                 "label_prefix": "Avg. ",
             },
             GroupBy.NUNIQUE: {
-                "description_prefix": "Number of Unique ",
+                "description_prefix": "Unique ",
                 "label_prefix": "Unique ",
             },
         }
@@ -86,7 +86,7 @@ class Metadata:
         """
         Return the combined description of all applied filters.
         """
-        return f"({', '.join(self._filters)})"
+        return f"({', '.join(self._filters)})" if self._filters else ""
 
     def generate_plot_labels(
         self,
