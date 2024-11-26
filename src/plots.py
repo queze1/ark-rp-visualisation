@@ -22,7 +22,7 @@ class PlotBuilderHelper:
         self._builder.date().author().nunique().line()
         return self
 
-    def total_word_count_by_authors_catter(self):
+    def total_word_count_by_authors_scatter(self):
         self._builder.author().word_count().sum().sort(
             Field.WORD_COUNT, ascending=False
         ).filter_min(Field.WORD_COUNT, 50).scatter(
@@ -31,7 +31,7 @@ class PlotBuilderHelper:
         return self
 
     def messages_by_hour_bar(self):
-        self._builder.hour().value_counts().bar()
+        self._builder.hour().value_counts().scatter()
         return self
 
     def messages_by_date_line(self):
@@ -48,12 +48,19 @@ class PlotBuilderHelper:
         ).scatter().xlog().ylog()
         return self
 
+    def word_counts_by_queze(self):
+        self._builder.filter_equals(
+            Field.AUTHOR, "queze"
+        ).word_count().value_counts().scatter()
+        return self
+
 
 if __name__ == "__main__":
     builder = PlotBuilderHelper()
-    builder.unique_authors_by_date_line().show()
-    builder.total_word_count_by_authors_catter().show()
-    builder.messages_by_hour_bar().show()
-    builder.messages_by_date_line().show()
-    builder.total_reactions_by_date().show()
-    builder.total_word_count_by_unique_days_by_user_scatter().show()
+    # builder.unique_authors_by_date_line().show()
+    # builder.total_word_count_by_authors_scatter().show()
+    # builder.messages_by_hour_bar().show()
+    # builder.messages_by_date_line().show()
+    # builder.total_reactions_by_date().show()
+    # builder.total_word_count_by_unique_days_by_user_scatter().show()
+    # builder.word_counts_by_queze().show()

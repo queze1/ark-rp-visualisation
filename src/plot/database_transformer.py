@@ -40,30 +40,9 @@ class DatabaseTransformer:
         self._fields.append(field)
         return self
 
-    def group_by(self, aggregation: GroupBy, field=None):
-        """
-        Group by a field and aggregate with the specified operation.
-        By default, groups by the oldest field and sorts in ascending order of group.
-        """
-        # Drop extraneous columns
-        self._df = self._df[self._fields]
-
-        if field:
-            rest = self._df.columns[self._df.columns != field]
-        else:
-            field, *rest = self._df
-        grouped = self._df.groupby(field)[rest]
-        self._df = aggregation(grouped).reset_index()
-
-        # Add metadata
-        for grouped_field in rest:
-            self._metadata.set_group_by(grouped_field, aggregation)
-        return self
-
     def group_by_multiple(self, aggregations: dict[Field, GroupBy]):
         """
-        Group by a field and aggregate the rest with the specified operations.
-        By default, groups by the oldest field and sorts in ascending order of group.
+        Aggregate multiple fields by the specified operations.
         """
         # Drop extraneous columns
         self._df = self._df[self._fields]
@@ -84,15 +63,30 @@ class DatabaseTransformer:
             self._metadata.set_group_by(grouped_field, aggregation)
         return self
 
+    def group_by(self, aggregation: GroupBy, field=None):
+        """
+        Group by a field and aggregate with the specified operation.
+        By default, groups by the oldest field and sorts in ascending order of group.
+        """
+        if field:
+            rest = [
+                grouped_field
+                for grouped_field in self._fields
+                if grouped_field != field
+            ]
+        else:
+            field, *rest = self._fields
+
+        # Reuse logic in `group_by_multiple`
+        aggregations = {grouped_field: aggregation for grouped_field in rest}
+        return self.group_by_multiple(aggregations)
+
     def value_counts(self):
         """
         Special case of group-by: Value counts of a single field.
         By default, sorts in ascending order of count.
         """
-        # Drop extraneous columns
-        self._df = self._df[self._fields]
-
-        (field,) = self._df
+        (field,) = self._fields
         counts = self._df[field].value_counts()
         self._df = counts.reset_index()
         return self
