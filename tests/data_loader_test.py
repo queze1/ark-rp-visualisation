@@ -9,15 +9,15 @@ from pandas.testing import assert_frame_equal
 import pytest
 
 DTYPES = {
-    "authorId": is_integer_dtype,
+    "author_id": is_integer_dtype,
     "author": is_object_dtype,
     "date": is_datetime64_any_dtype,
     "content": is_object_dtype,
     "attachments": is_object_dtype,
     "reactions": is_object_dtype,
-    "wordCount": is_any_real_numeric_dtype,
-    "channelName": is_object_dtype,
-    "reactionCount": is_integer_dtype,
+    "word_count": is_any_real_numeric_dtype,
+    "channel_name": is_object_dtype,
+    "reaction_count": is_integer_dtype,
     "sceneId": is_object_dtype,
 }
 

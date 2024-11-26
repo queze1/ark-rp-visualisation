@@ -51,9 +51,9 @@ class PlotBuilderHelper:
 
 if __name__ == "__main__":
     builder = PlotBuilderHelper()
-    # builder.unique_authors_by_date_line().show()
-    # builder.total_word_count_by_authors_catter().show()
-    # builder.messages_by_hour_bar().show()
-    # builder.messages_by_date_line().show()
-    # builder.total_reactions_by_date().show()
+    builder.unique_authors_by_date_line().show()
+    builder.total_word_count_by_authors_catter().show()
+    builder.messages_by_hour_bar().show()
+    builder.messages_by_date_line().show()
+    builder.total_reactions_by_date().show()
     builder.total_word_count_by_unique_days_by_user_scatter().show()

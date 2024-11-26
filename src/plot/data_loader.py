@@ -22,11 +22,11 @@ class DataLoader:
     @staticmethod
     def _rename_columns(df: pd.DataFrame) -> pd.DataFrame:
         """
-        Rename columns of a DataFrame to camelCase.
+        Rename columns of a DataFrame to snake_case.
         """
         return df.rename(
             columns={
-                "AuthorID": "authorId",
+                "AuthorID": "author_id",
                 "Author": "author",
                 "Date": "date",
                 "Content": "content",
@@ -38,19 +38,19 @@ class DataLoader:
     @staticmethod
     def _add_channel_name(df: pd.DataFrame, path: str) -> pd.DataFrame:
         """
-        Add a 'channelName' column to a DataFrame.
+        Add a 'channel_name' column to a DataFrame.
         """
         filename = os.path.basename(path)
         channel_name = re.search(CHANNEL_NAME_REGEX, filename).group(1)
-        return df.assign(channelName=channel_name)
+        return df.assign(channel_name=channel_name)
 
     @staticmethod
     def _add_word_count(df: pd.DataFrame) -> pd.DataFrame:
         """
-        Add a 'wordCount' column to a DataFrame.
+        Add a 'word_count' column to a DataFrame.
         """
         word_count = df["content"].str.split().str.len().fillna(0)
-        return df.assign(wordCount=word_count)
+        return df.assign(word_count=word_count)
 
     @staticmethod
     def _reactions_to_dict(reactions: str) -> dict[str, int]:
@@ -67,10 +67,10 @@ class DataLoader:
     @staticmethod
     def _process_reactions(df: pd.DataFrame) -> pd.DataFrame:
         """
-        Process the 'reactions' column and add a 'reactionCount' column to a DataFrame.
+        Process the 'reactions' column and add a 'reaction_count' column to a DataFrame.
         """
         df["reactions"] = df["reactions"].apply(DataLoader._reactions_to_dict)
-        df["reactionCount"] = [max(d.values(), default=0) for d in df["reactions"]]
+        df["reaction_count"] = [max(d.values(), default=0) for d in df["reactions"]]
         return df
 
     @staticmethod
