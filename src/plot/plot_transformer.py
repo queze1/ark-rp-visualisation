@@ -1,9 +1,8 @@
 from plotly.graph_objects import Figure
+import pandas as pd
 
+from .enums import Plot, Field
 from .metadata import Metadata
-
-from .enums import Plot
-
 
 DTICK_CUTOFF = 50
 
@@ -46,30 +45,30 @@ class PlotTransformer:
             "x": self.x_field,
             "y": self.y_field,
             **metadata.generate_plot_labels(self.x_field, self.y_field),
-            **self._generate_annotations(df),
+            **self._generate_annotations(df, plot_type),
         }
 
         self.plot_type = plot_type
         self._fig = plot_type(df, **kwargs)
         self._create_layout(df, plot_type)
 
-    def _create_layout(self, df, plot_type):
+    def _create_layout(self, df, plot_type: Plot):
         """
         Create a starting layout for the current figure.
         """
-        layout = {}
         # Set 1 tick per unit if X-axis is small
         if len(df[self.x_field]) < DTICK_CUTOFF:
-            layout["xaxis"] = {"dtick": 1}
+            self._fig.update_layout(xaxis={"dtick": 1})
 
-        self._fig.update_layout(**layout)
-
+        # Format annotations if scatter
         if plot_type == Plot.SCATTER:
-            # Format annotations if scatter
             self._fig.update_traces(textposition="top center", textfont_size=10)
 
-    def _generate_annotations(self, df):
-        if len(df.columns) <= 2:
+    def _generate_annotations(self, df, plot_type: Plot):
+        """
+        Generate annotations for scatter plots.
+        """
+        if len(df.columns) <= 2 or plot_type != Plot.SCATTER:
             return {}
 
         # Assume the grouping field is any third column
@@ -80,6 +79,9 @@ class PlotTransformer:
         """
         Adds a log scale to the X-axis.
         """
+        if self._fig is None:
+            raise ValueError("Figure has not been initialized yet.")
+
         new_x_title = f"{self._fig.layout.xaxis.title.text} (log scale)"
         self._fig.update_layout(xaxis={"type": "log", "title": new_x_title})
 
@@ -87,8 +89,50 @@ class PlotTransformer:
         """
         Adds a log scale to the Y-axis.
         """
+        if self._fig is None:
+            raise ValueError("Figure has not been initialized yet.")
+
         new_y_title = f"{self._fig.layout.yaxis.title.text} (log scale)"
         self._fig.update_layout(yaxis={"type": "log", "title": new_y_title})
+
+    def add_moving_average_line(self, window: int, label: str = None):
+        """
+        Adds a new line trace for a moving average of the Y-axis.
+
+        Parameters:
+        - window: The window size (e.g., 7 for weekly, 30 for monthly).
+        - label: Optional label for the trace in the legend. Defaults to "Weekly/Monthly Moving Avg", or "(window)-Day Moving Avg".
+        """
+        if self._fig is None:
+            raise ValueError("Figure has not been initialized yet.")
+        if self.x_field != Field.DATE:
+            raise ValueError("Invalid X-axis, must be date.")
+        if self.plot_type != Plot.LINE:
+            raise ValueError("Invalid plot type, must be line.")
+
+        # Calculate the rolling average
+        x_values = self._fig.data[0].x
+        y_values = pd.Series(self._fig.data[0].y)
+        ma_values = y_values.rolling(window=window, min_periods=3).mean()
+
+        if label is None:
+            periods = {7: "Weekly", 30: "Monthly"}
+            label = f"{periods.get(window, f'{window}-Day')} Moving Avg"
+
+        # Add a new trace for the moving average
+        self._fig.add_trace(
+            dict(
+                x=x_values,
+                y=ma_values,
+                mode="lines",
+                name=label,
+                line=dict(dash="dot"),
+            )
+        )
+
+        # Add legend if not added already
+        self._fig.update_traces(selector=0, name="Daily", showlegend=True)
+        return self
 
     @property
     def figure(self) -> Figure:

@@ -35,11 +35,15 @@ class PlotBuilderHelper:
         return self
 
     def messages_by_date_line(self):
-        self._builder.date().value_counts().sort(Field.DATE).line()
+        self._builder.date().value_counts().sort(Field.DATE).line().moving_average(
+            window=7
+        ).moving_average(window=30)
         return self
 
     def total_reactions_by_date(self):
-        self._builder.date().reaction_count().sum().sort(Field.DATE).line()
+        self._builder.date().reaction_count().sum().sort(
+            Field.DATE
+        ).line().moving_average(window=30)
         return self
 
     def total_word_count_by_unique_days_by_user_scatter(self):

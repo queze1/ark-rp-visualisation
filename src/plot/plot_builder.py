@@ -174,6 +174,16 @@ class PlotBuilder:
     def ylog(self):
         return self._queue_operation(self._plot.ylog)
 
+    def moving_average(self, window: int, label: str = None):
+        """
+        Queue an operation to add a moving average line to the figure.
+
+        Parameters:
+        - window: The size of the rolling window (e.g., 7 for weekly, 30 for monthly).
+        - label: Optional label for the line trace.
+        """
+        return self._queue_operation(self._plot.add_moving_average_line, window, label)
+
     def reset(self):
         """
         Reset the current plot.
