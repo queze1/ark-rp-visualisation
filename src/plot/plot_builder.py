@@ -121,10 +121,10 @@ class PlotBuilder:
 
     # Aliases for filters
     def filter_min(self, field: Field, min):
-        return self._queue_filter(field, lambda x: min <= x)
+        return self._queue_filter(field, lambda x: min <= x, description=f"≥ {min}")
 
     def filter_max(self, field: Field, max):
-        return self._queue_filter(field, lambda x: x <= max)
+        return self._queue_filter(field, lambda x: x <= max, description=f"≤ {max}")
 
     # Aliases for plot creation
     def bar(self, x_field=None, y_field=None):

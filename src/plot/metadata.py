@@ -4,11 +4,13 @@ from .enums import Field, GroupBy
 class Metadata:
     def __init__(self):
         """
-        Metadata for fields, aggregations, and plot types.
+        Metadata for plot operations.
         """
+        self._filters = []
+
         self._field_metadata = {
             Field.AUTHOR: {
-                "description": "Author",
+                "description": "Users",
             },
             Field.AUTHOR_ID: {
                 "description": "Users",
@@ -74,6 +76,18 @@ class Metadata:
             "label": f"{agg_label_prefix}{self.get_field_label(field)}",
         }
 
+    def add_filter(self, field: Field, description: str):
+        """
+        Add a filter description to the metadata.
+        """
+        self._filters.append(f"{field}: {description}")
+
+    def get_filters_description(self) -> str:
+        """
+        Return the combined description of all applied filters.
+        """
+        return f"({', '.join(self._filters)})"
+
     def generate_plot_labels(
         self,
         x_field: Field,
@@ -87,7 +101,8 @@ class Metadata:
         x_description = self.get_field_description(x_field)
         y_description = self.get_field_description(y_field)
 
-        title = f"{y_description} by {x_description}"
+        filters_description = self.get_filters_description()
+        title = f"{y_description} by {x_description} {filters_description}"
 
         return {
             "labels": {

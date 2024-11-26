@@ -56,12 +56,13 @@ class DatabaseTransformer:
         self._current = self._current.sort_values(by=field, ascending=ascending)
         return self
 
-    def filter(self, field: Field, condition):
+    def filter(self, field: Field, condition, description):
         """
         Apply a filter to the DataFrame via a condition.
         `condition` is a lambda function or callable that takes the column values and returns a boolean mask.
         """
         self._current = self._current[condition(self._current[field])]
+        self._metadata.add_filter(field, description)
         return self
 
     @property
