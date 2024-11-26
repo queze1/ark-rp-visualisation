@@ -1,7 +1,7 @@
 import pandas as pd
 from plotly.graph_objects import Figure
 
-from .enums import Field, GroupBy, Plot
+from .enums import Field, Filter, GroupBy, Plot
 from .database_transformer import DatabaseTransformer
 from .plot_transformer import PlotTransformer
 
@@ -135,14 +135,14 @@ class PlotBuilder:
         return self._queue_operation(self._database.group_by_multiple, aggregations)
 
     # Aliases for filters
-    def filter_min(self, field: Field, min):
-        return self._queue_filter(field, lambda x: min <= x, description=f"≥ {min}")
+    def filter_min(self, field: Field, value):
+        return self._queue_filter(Filter.MIN, field, value)
 
-    def filter_max(self, field: Field, max):
-        return self._queue_filter(field, lambda x: x <= max, description=f"≤ {max}")
+    def filter_max(self, field: Field, value):
+        return self._queue_filter(Filter.MAX, field, value)
 
     def filter_equals(self, field: Field, value):
-        return self._queue_filter(field, lambda x: x == value, description=f"= {value}")
+        return self._queue_filter(Filter.EQUAL, field, value)
 
     # Aliases for other operations
     def cumulative(self, field: Field):

@@ -48,3 +48,17 @@ class Plot(StrEnum):
         elif self is Plot.LINE:
             return px.line(*args, **kwargs)
         raise NotImplementedError(f"{self.value} plot is not implemented.")
+
+
+class Filter(StrEnum):
+    MIN = "min"
+    MAX = "max"
+    EQUAL = "equal"
+
+    def __call__(self, field, value):
+        if self is Filter.MIN:
+            return value <= field
+        if self is Filter.MAX:
+            return field <= value
+        if self is Filter.EQUAL:
+            return field == value

@@ -1,4 +1,4 @@
-from .enums import Field, GroupBy
+from .enums import Field, GroupBy, Filter
 
 
 class Metadata:
@@ -51,6 +51,17 @@ class Metadata:
             },
         }
 
+        self._filter_metadata = {
+            Filter.MIN: "≥",
+            Filter.MAX: "≤",
+            Filter.EQUAL: "=",
+        }
+
+        self._cumulative_metadata = {
+            "description_prefix": "Cumulative ",
+            "label_prefix": "Number of ",
+        }
+
     def get_field_description(self, field: Field) -> str:
         return self._field_metadata.get(field, {}).get("description", str(field))
 
@@ -68,7 +79,7 @@ class Metadata:
     def get_aggregation_label(self, aggregation: GroupBy) -> str:
         return self._aggregation_metadata.get(aggregation, {}).get("label_prefix", "")
 
-    def set_group_by(self, field: Field, aggregation: GroupBy):
+    def add_group_by(self, field: Field, aggregation: GroupBy):
         agg_description_prefix = self.get_aggregation_description(aggregation)
         agg_label_prefix = self.get_aggregation_label(aggregation)
         self._field_metadata[field] = {
@@ -76,17 +87,26 @@ class Metadata:
             "label": f"{agg_label_prefix}{self.get_field_label(field)}",
         }
 
-    def add_filter(self, field: Field, description: str):
-        """
-        Add a filter description to the metadata.
-        """
-        self._filters.append(f"{field}: {description}")
-
     def get_filters_description(self) -> str:
         """
         Return the combined description of all applied filters.
         """
         return f"({', '.join(self._filters)})" if self._filters else ""
+
+    def add_filter(self, filter: Filter, field: Field, value):
+        """
+        Add a filter description to the metadata.
+        """
+        self._filters.append(f"{field} {self._filter_metadata[filter]} {value}")
+
+    def add_cumulative(self, field: Field):
+        """
+        Add a cumulative field description to the metadata.
+        """
+        self._field_metadata[field] = {
+            "description": f"{self._cumulative_metadata['description_prefix']}{self.get_field_description(field)}",
+            "label": f"{self._cumulative_metadata['label_prefix']}{self.get_field_label(field)}",
+        }
 
     def generate_plot_labels(
         self,

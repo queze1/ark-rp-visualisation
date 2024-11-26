@@ -1,7 +1,7 @@
 import pandas as pd
 
 from .metadata import Metadata
-from .enums import Field, GroupBy
+from .enums import Field, Filter, GroupBy
 
 
 class DatabaseTransformer:
@@ -67,7 +67,7 @@ class DatabaseTransformer:
 
         # Add metadata
         for grouped_field, aggregation in aggregations.items():
-            self._metadata.set_group_by(grouped_field, aggregation)
+            self._metadata.add_group_by(grouped_field, aggregation)
         return self
 
     def group_by(self, aggregation: GroupBy, field=None):
@@ -98,7 +98,7 @@ class DatabaseTransformer:
         self._df = counts.reset_index()
 
         # Equivalent to grouping by and summing Field.COUNT
-        self._metadata.set_group_by(Field.COUNT, GroupBy.SUM)
+        self._metadata.add_group_by(Field.COUNT, GroupBy.SUM)
         return self
 
     def cumulative(self, field: Field, ascending: bool = True):
@@ -111,21 +111,19 @@ class DatabaseTransformer:
             index = range(len(self._df) - 1, -1, -1)
         self._df[field] = index
 
-        # Use sum metadata as a placeholder
-        self._metadata.set_group_by(field, GroupBy.SUM)
+        self._metadata.add_cumulative(field)
         return self
 
     def sort(self, field: Field, ascending: bool = True):
         self._df = self._df.sort_values(by=field, ascending=ascending)
         return self
 
-    def filter(self, field: Field, condition, description):
+    def filter(self, filter: Filter, field: Field, value):
         """
-        Apply a filter to the DataFrame via a condition.
-        `condition` is a lambda function or callable that takes the column values and returns a boolean mask.
+        Apply a filter to the DataFrame.
         """
-        self._df = self._df[condition(self._df[field])]
-        self._metadata.add_filter(field, description)
+        self._df = self._df[filter(self._df[field], value)]
+        self._metadata.add_filter(filter, field, value)
         return self
 
     @property
