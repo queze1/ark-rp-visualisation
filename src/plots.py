@@ -37,6 +37,10 @@ class PlotBuilderHelper:
         self._builder.date().value_counts().sort(Field.DATE).line()
         return self
 
+    def messages_by_author_scatter(self):
+        self._builder.author().value_counts().scatter()
+        return self
+
 
 if __name__ == "__main__":
     builder = PlotBuilderHelper()
@@ -44,3 +48,4 @@ if __name__ == "__main__":
     builder.author_by_total_word_count_scatter().show()
     # builder.messages_by_hour_bar().show()
     # builder.messages_by_date_line().show()
+    # builder.messages_by_author_scatter().show()

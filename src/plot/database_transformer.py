@@ -1,53 +1,14 @@
 import pandas as pd
+
+from .metadata import Metadata
 from .enums import Field, GroupBy
-
-
-field_metadata = {
-    Field.AUTHOR_ID: {
-        "description": "Users",
-        "label": "Users",
-    },
-    Field.AUTHOR: {
-        "description": "Users",
-        "label": "Users",
-    },
-    Field.DATE: {"description": "Day", "label": "Date"},
-    Field.HOUR: {"description": "Hour of Day", "label": "Hour of Day"},
-    Field.DAY: {"description": "Day of Month", "label": "Day of Month"},
-    Field.CONTENT: {"description": "Messages", "label": "Number of Messages"},
-    Field.ATTACHMENTS: {"description": "Attachments", "label": "Attachments"},
-    Field.REACTIONS: {"description": "Reactions", "label": "Reactions"},
-    Field.REACTION_COUNT: {
-        "description": "Reactions",
-        "label": "Reactions",
-    },
-    Field.WORD_COUNT: {"description": "Words", "label": "Words"},
-    Field.CHANNEL_NAME: {"description": "Channels", "label": "Channels"},
-    Field.SCENE_ID: {"description": "Scenes", "label": "Scenes"},
-    Field.COUNT: {"description": "Messages", "label": "Number of Messages"},
-}
-
-group_by_metadata = {
-    GroupBy.SUM: lambda x: {
-        "description": f"{x['description']}",
-        "label": f"Number of {x['label']}",
-    },
-    GroupBy.MEAN: lambda x: {
-        "description": f"Average {x['description']}",
-        "label": f"Average {x['label']}",
-    },
-    GroupBy.NUNIQUE: lambda x: {
-        "description": f"Unique {x['description']}",
-        "label": f"Unique {x['label']}",
-    },
-}
 
 
 class DatabaseTransformer:
     def __init__(self, df: pd.DataFrame):
         self._df = df
         self._current = pd.DataFrame()
-        self._metadata = {}
+        self._metadata = Metadata()
 
     def add_field(self, field: Field):
         if field == Field.HOUR:
@@ -60,10 +21,9 @@ class DatabaseTransformer:
             new_column = self._df[field]
 
         self._current[field] = new_column
-        self._metadata[field] = field_metadata[field]
         return self
 
-    def group_by(self, operation: GroupBy, field=None):
+    def group_by(self, aggregation: GroupBy, field=None):
         """
         Group by a field and aggregate with the specified operation.
         By default, groups by the oldest field and sorts in ascending order of group.
@@ -75,13 +35,11 @@ class DatabaseTransformer:
             field, *rest = self._current
 
         grouped = self._current.groupby(field)[rest]
-        self._current = operation(grouped).reset_index()
+        self._current = aggregation(grouped).reset_index()
 
         # Add metadata
         for grouped_field in rest:
-            self._metadata[grouped_field] = group_by_metadata[operation](
-                self._metadata[grouped_field]
-            )
+            self._metadata.set_group_by(grouped_field, aggregation)
         return self
 
     def value_counts(self):
@@ -92,9 +50,6 @@ class DatabaseTransformer:
         (field,) = self._current
         counts = self._current[field].value_counts()
         self._current = counts.reset_index()
-
-        # Add metadata
-        self._metadata[Field.COUNT] = field_metadata[Field.COUNT]
         return self
 
     def sort(self, field: Field, ascending: bool = True):
@@ -117,7 +72,7 @@ class DatabaseTransformer:
         return self._current
 
     @property
-    def metadata(self) -> dict:
+    def metadata(self) -> Metadata:
         """
         Return the current DataFrame metadata.
         """

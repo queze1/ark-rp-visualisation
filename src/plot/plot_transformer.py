@@ -1,5 +1,7 @@
 from plotly.graph_objects import Figure
 
+from .metadata import Metadata
+
 from .enums import Plot
 
 
@@ -16,7 +18,9 @@ class PlotTransformer:
         self.plot_type = None
         self._fig = None
 
-    def initialize(self, df, metadata, plot_type: Plot, x_field=None, y_field=None):
+    def initialize(
+        self, df, metadata: Metadata, plot_type: Plot, x_field=None, y_field=None
+    ):
         """
         Populate the PlotTransformer with data and create the plot.
         By default, plots by the two most recent fields.
@@ -33,18 +37,11 @@ class PlotTransformer:
             # If either x or y fields are unset, use last two columns
             self.x_field, self.y_field = df.columns[-2:]
 
-        self.plot_type = plot_type
         # Create labels and title from metadata
-        kwargs = {
-            "x": self.x_field,
-            "y": self.y_field,
-            "labels": {
-                self.x_field: metadata[self.x_field]["label"],
-                self.y_field: metadata[self.y_field]["label"],
-            },
-            "title": f"{metadata[self.y_field]['description']} by {metadata[self.x_field]['description']}",
-        }
+        plot_labels = metadata.generate_plot_labels(self.x_field, self.y_field)
+        kwargs = {"x": self.x_field, "y": self.y_field, **plot_labels}
 
+        self.plot_type = plot_type
         self._fig = plot_type(df, **kwargs)
         self._create_layout()
 
