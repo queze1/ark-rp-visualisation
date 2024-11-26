@@ -7,6 +7,12 @@ from .plot_transformer import PlotTransformer
 
 
 class PlotBuilder:
+    """
+    Pipeline for creating a plot through a series of operations.
+
+    Wrapper over `DatabaseTransformer` and `PlotTransformer`. Operations are evaluated lazily on `.build()`.
+    """
+
     def __init__(self, df: pd.DataFrame):
         self._database = DatabaseTransformer(df)
         self._plot = PlotTransformer()

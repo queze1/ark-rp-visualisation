@@ -9,6 +9,10 @@ DTICK_CUTOFF = 50
 
 
 class PlotTransformer:
+    """
+    Class which creates and manipulates a plot using a series of operations.
+    """
+
     def __init__(self):
         """
         Initialize an empty PlotTransformer.

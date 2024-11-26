@@ -5,6 +5,10 @@ from .enums import Field, GroupBy
 
 
 class DatabaseTransformer:
+    """
+    Transformer which manipulates a DataFrame using a series of operations.
+    """
+
     def __init__(self, df: pd.DataFrame):
         self._df = df
         self._current = pd.DataFrame()
