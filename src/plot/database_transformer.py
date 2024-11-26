@@ -36,6 +36,10 @@ class DatabaseTransformer:
             self._df[field] = self._original[Field.DATE].dt.day
         elif field == Field.DATE:
             self._df[field] = self._original[Field.DATE].dt.date
+        elif field == Field.REACTION_COUNT:
+            self._df[field] = [
+                max(d.values(), default=0) for d in self._original[Field.REACTIONS]
+            ]
 
         self._fields.append(field)
         return self

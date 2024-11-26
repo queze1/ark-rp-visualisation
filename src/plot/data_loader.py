@@ -67,10 +67,9 @@ class DataLoader:
     @staticmethod
     def _process_reactions(df: pd.DataFrame) -> pd.DataFrame:
         """
-        Process the 'reactions' column and add a 'reaction_count' column to a DataFrame.
+        Process the 'reactions' column.
         """
         df["reactions"] = df["reactions"].apply(DataLoader._reactions_to_dict)
-        df["reaction_count"] = [max(d.values(), default=0) for d in df["reactions"]]
         return df
 
     @staticmethod
