@@ -1,5 +1,6 @@
 from plot.data_loader import DataLoader
 from plot.plot_builder import PlotBuilder, Field
+from plot.enums import GroupBy
 
 
 class PlotBuilderHelper:
@@ -41,6 +42,12 @@ class PlotBuilderHelper:
         self._builder.date().reaction_count().sum().sort(Field.DATE).line()
         return self
 
+    def total_word_count_by_unique_days_by_user_scatter(self):
+        self._builder.author().word_count().date().agg(
+            {Field.WORD_COUNT: GroupBy.SUM, Field.DATE: GroupBy.NUNIQUE}
+        ).scatter().xlog().ylog()
+        return self
+
 
 if __name__ == "__main__":
     builder = PlotBuilderHelper()
@@ -49,3 +56,4 @@ if __name__ == "__main__":
     # builder.messages_by_hour_bar().show()
     # builder.messages_by_date_line().show()
     # builder.total_reactions_by_date().show()
+    builder.total_word_count_by_unique_days_by_user_scatter().show()

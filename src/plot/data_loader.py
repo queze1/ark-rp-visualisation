@@ -22,7 +22,7 @@ class DataLoader:
     @staticmethod
     def _rename_columns(df: pd.DataFrame) -> pd.DataFrame:
         """
-        Rename columns of a DataFrame to snake_case.
+        Rename columns of a DataFrame to camelCase.
         """
         return df.rename(
             columns={

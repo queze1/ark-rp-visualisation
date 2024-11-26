@@ -128,12 +128,18 @@ class PlotBuilder:
     def nunique(self, field=None):
         return self._queue_group_by(GroupBy.NUNIQUE, field=field)
 
+    def agg(self, aggregations: dict[Field, GroupBy]):
+        return self._queue_operation(self._database.group_by_multiple, aggregations)
+
     # Aliases for filters
     def filter_min(self, field: Field, min):
         return self._queue_filter(field, lambda x: min <= x, description=f"≥ {min}")
 
     def filter_max(self, field: Field, max):
         return self._queue_filter(field, lambda x: x <= max, description=f"≤ {max}")
+
+    def filter_equals(self, field: Field, value):
+        return self._queue_filter(field, lambda x: x == value, description=f"= {value}")
 
     # Aliases for plot creation
     def bar(self, x_field=None, y_field=None):
