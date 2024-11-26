@@ -101,6 +101,20 @@ class DatabaseTransformer:
         self._metadata.set_group_by(Field.COUNT, GroupBy.SUM)
         return self
 
+    def cumulative(self, field: Field, ascending: bool = True):
+        """
+        Replace a field by its cumulative index.
+        """
+        if ascending:
+            index = self._df.reset_index().index + 1
+        else:
+            index = range(len(self._df) - 1, -1, -1)
+        self._df[field] = index
+
+        # Use sum metadata as a placeholder
+        self._metadata.set_group_by(field, GroupBy.SUM)
+        return self
+
     def sort(self, field: Field, ascending: bool = True):
         self._df = self._df.sort_values(by=field, ascending=ascending)
         return self

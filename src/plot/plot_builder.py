@@ -144,6 +144,10 @@ class PlotBuilder:
     def filter_equals(self, field: Field, value):
         return self._queue_filter(field, lambda x: x == value, description=f"= {value}")
 
+    # Aliases for other operations
+    def cumulative(self, field: Field):
+        return self._queue_operation(self._database.cumulative, field)
+
     # Aliases for plot creation
     def bar(self, x_field=None, y_field=None):
         """
