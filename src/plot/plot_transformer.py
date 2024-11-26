@@ -42,14 +42,18 @@ class PlotTransformer:
             self.x_field, self.y_field = df.columns[-2:]
 
         # Create labels and title from metadata
-        plot_labels = metadata.generate_plot_labels(self.x_field, self.y_field)
-        kwargs = {"x": self.x_field, "y": self.y_field, **plot_labels}
+        kwargs = {
+            "x": self.x_field,
+            "y": self.y_field,
+            **metadata.generate_plot_labels(self.x_field, self.y_field),
+            **self._generate_annotations(df),
+        }
 
         self.plot_type = plot_type
         self._fig = plot_type(df, **kwargs)
-        self._create_layout(df)
+        self._create_layout(df, plot_type)
 
-    def _create_layout(self, df):
+    def _create_layout(self, df, plot_type):
         """
         Create a starting layout for the current figure.
         """
@@ -57,7 +61,20 @@ class PlotTransformer:
         # Set 1 tick per unit if X-axis is small
         if len(df[self.x_field]) < DTICK_CUTOFF:
             layout["xaxis"] = {"dtick": 1}
+
         self._fig.update_layout(**layout)
+
+        if plot_type == Plot.SCATTER:
+            # Format annotations if scatter
+            self._fig.update_traces(textposition="top center", textfont_size=10)
+
+    def _generate_annotations(self, df):
+        if len(df.columns) <= 2:
+            return {}
+
+        # Assume the grouping field is any third column
+        grouping_field = df.columns.difference([self.x_field, self.y_field])[0]
+        return {"text": df[grouping_field]}
 
     def xlog(self):
         """

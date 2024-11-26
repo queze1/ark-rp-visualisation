@@ -26,12 +26,12 @@ class PlotBuilderHelper:
         self._builder.author().word_count().sum().sort(
             Field.WORD_COUNT, ascending=False
         ).filter_min(Field.WORD_COUNT, 50).cumulative(Field.AUTHOR).scatter(
-            Field.WORD_COUNT, Field.AUTHOR
+            Field.WORD_COUNT, f"cumulative_{Field.AUTHOR}"
         ).xlog()
         return self
 
     def messages_by_hour_bar(self):
-        self._builder.hour().value_counts().scatter()
+        self._builder.hour().value_counts().bar()
         return self
 
     def messages_by_date_line(self):
@@ -62,7 +62,7 @@ class PlotBuilderHelper:
 if __name__ == "__main__":
     builder = PlotBuilderHelper()
     # builder.unique_authors_by_date_line().show()
-    builder.total_word_count_by_authors_scatter().show()
+    # builder.total_word_count_by_authors_scatter().show()
     # builder.messages_by_hour_bar().show()
     # builder.messages_by_date_line().show()
     # builder.total_reactions_by_date().show()

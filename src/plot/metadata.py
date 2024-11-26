@@ -103,7 +103,8 @@ class Metadata:
         """
         Add a cumulative field description to the metadata.
         """
-        self._field_metadata[field] = {
+        # Set for the new field based on the derived field
+        self._field_metadata[f"cumulative_{field}"] = {
             "description": f"{self._cumulative_metadata['description_prefix']}{self.get_field_description(field)}",
             "label": f"{self._cumulative_metadata['label_prefix']}{self.get_field_label(field)}",
         }

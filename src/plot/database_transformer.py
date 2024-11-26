@@ -55,7 +55,7 @@ class DatabaseTransformer:
         self._df = self._df[self._fields]
 
         # Find the (one) field which is not aggregated
-        (field,) = self._df.columns[~self._df.columns.isin(aggregations.keys())]
+        (field,) = self._df.columns.difference(aggregations.keys())
         rest = self._df.columns[self._df.columns != field]
 
         grouped = self._df.groupby(field)[rest]
@@ -103,13 +103,21 @@ class DatabaseTransformer:
 
     def cumulative(self, field: Field, ascending: bool = True):
         """
-        Replace a field by its cumulative index.
+        Add a field's cumulative index.
+
+        Creates a new field of the format f"cumulative_{field}", and inserts it in front of the original field.
         """
         if ascending:
             index = self._df.reset_index().index + 1
         else:
             index = range(len(self._df) - 1, -1, -1)
-        self._df[field] = index
+
+        # Insert in front of the specified field
+        self._df.insert(
+            loc=self._df.columns.get_loc(field) + 1,
+            column=f"cumulative_{field}",
+            value=index,
+        )
 
         self._metadata.add_cumulative(field)
         return self
