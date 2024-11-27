@@ -1,3 +1,4 @@
+from multiprocessing import Value
 import pandas as pd
 
 from .metadata import Metadata
@@ -29,6 +30,9 @@ class DatabaseTransformer:
         self._metadata = Metadata()
 
     def add_field(self, field: Field):
+        # Check if `field` is a field by calling it
+        field = Field(field)
+
         # Create new derivative fields if needed
         if field == Field.HOUR:
             self._df[field] = self._original[Field.DATE].dt.hour
@@ -101,24 +105,27 @@ class DatabaseTransformer:
         self._metadata.add_group_by(Field.COUNT, GroupBy.SUM)
         return self
 
-    def cumulative(self, field: Field, ascending: bool = True, result_field=None):
+    def cumulative(self, field: Field, result_field=None):
         """
-        Generate a field's cumulative index and insert it in front of the original field.
+        Generate a field's cumulative sum if numeric, or its index otherwise.
 
         By default, the result field is of the format f"cumulative_{field}".
         """
-        if ascending:
-            index = self._df.reset_index().index + 1
-        else:
-            index = range(len(self._df) - 1, -1, -1)
         if result_field is None:
-            result_field = "cumulative_{field}"
+            result_field = f"cumulative_{field}"
 
-        # Insert in front of the specified field
+        if pd.api.types.is_numeric_dtype(self._df[field]):
+            # Generate cumulative sum
+            cumulative_values = self._df[field].cumsum()
+        else:
+            # Generate index
+            cumulative_values = range(1, len(self._df) + 1)
+
+        # Insert the result as a new column
         self._df.insert(
             loc=self._df.columns.get_loc(field) + 1,
             column=result_field,
-            value=index,
+            value=cumulative_values,
         )
 
         self._metadata.add_cumulative(field, result_field)
