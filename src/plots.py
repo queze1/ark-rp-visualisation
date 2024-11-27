@@ -5,12 +5,18 @@ from plot.enums import GroupBy
 
 class PlotBuilderHelper:
     """
-    Plot building pipelines for testing.
+    Sample plot building pipelines.
     """
 
     def __init__(self):
         df = DataLoader().load_data().df
         self._builder = PlotBuilder(df)
+
+    def build(self):
+        """Build the current plot, return its figure, then reset."""
+        fig = self._builder.build().figure
+        self._builder.reset()
+        return fig
 
     def show(self):
         """Build the current plot, show it, then reset."""
@@ -68,7 +74,7 @@ if __name__ == "__main__":
     # builder.unique_authors_by_date_line().show()
     # builder.total_word_count_by_authors_scatter().show()
     # builder.messages_by_hour_bar().show()
-    # builder.messages_by_date_line().show()
+    builder.messages_by_date_line().show()
     # builder.total_reactions_by_date().show()
     # builder.total_word_count_by_unique_days_by_user_scatter().show()
     # builder.word_counts_by_queze().show()
