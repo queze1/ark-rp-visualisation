@@ -99,12 +99,12 @@ class Metadata:
         """
         self._filters.append(f"{field} {self._filter_metadata[filter]} {value}")
 
-    def add_cumulative(self, field: Field):
+    def add_cumulative(self, field: Field, result_field):
         """
         Add a cumulative field description to the metadata.
         """
         # Set for the new field based on the derived field
-        self._field_metadata[f"cumulative_{field}"] = {
+        self._field_metadata[result_field] = {
             "description": f"{self._cumulative_metadata['description_prefix']}{self.get_field_description(field)}",
             "label": f"{self._cumulative_metadata['label_prefix']}{self.get_field_label(field)}",
         }

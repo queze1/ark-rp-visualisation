@@ -101,25 +101,27 @@ class DatabaseTransformer:
         self._metadata.add_group_by(Field.COUNT, GroupBy.SUM)
         return self
 
-    def cumulative(self, field: Field, ascending: bool = True):
+    def cumulative(self, field: Field, ascending: bool = True, result_field=None):
         """
-        Add a field's cumulative index.
+        Generate a field's cumulative index and insert it in front of the original field.
 
-        Creates a new field of the format f"cumulative_{field}", and inserts it in front of the original field.
+        By default, the result field is of the format f"cumulative_{field}".
         """
         if ascending:
             index = self._df.reset_index().index + 1
         else:
             index = range(len(self._df) - 1, -1, -1)
+        if result_field is None:
+            result_field = "cumulative_{field}"
 
         # Insert in front of the specified field
         self._df.insert(
             loc=self._df.columns.get_loc(field) + 1,
-            column=f"cumulative_{field}",
+            column=result_field,
             value=index,
         )
 
-        self._metadata.add_cumulative(field)
+        self._metadata.add_cumulative(field, result_field)
         return self
 
     def sort(self, field: Field, ascending: bool = True):
