@@ -12,19 +12,12 @@ class Metadata:
             Field.AUTHOR: {
                 "description": "Users",
             },
-            Field.AUTHOR_ID: {
-                "description": "Users",
-            },
             Field.DATE: {
                 "description": "Day",
                 "label": "Date",
             },
             Field.HOUR: {"description": "Hour of Day"},
             Field.DAY: {"description": "Day of Month"},
-            Field.CONTENT: {"description": "Messages", "label": "Number of Messages"},
-            Field.ATTACHMENTS: {
-                "description": "Attachments",
-            },
             Field.REACTIONS: {"description": "Reactions"},
             Field.REACTION_COUNT: {
                 "description": "Number of Reactions",

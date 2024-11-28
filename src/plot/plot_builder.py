@@ -82,9 +82,6 @@ class PlotBuilder:
         return self._queue_operation(self._build_plot, *args, **kwargs)
 
     # Aliases for data selection
-    def author_id(self):
-        return self._queue_add_field(Field.AUTHOR_ID)
-
     def author(self):
         return self._queue_add_field(Field.AUTHOR)
 
@@ -96,12 +93,6 @@ class PlotBuilder:
 
     def day(self):
         return self._queue_add_field(Field.DAY)
-
-    def content(self):
-        return self._queue_add_field(Field.CONTENT)
-
-    def attachments(self):
-        return self._queue_add_field(Field.ATTACHMENTS)
 
     def reactions(self):
         return self._queue_add_field(Field.REACTIONS)

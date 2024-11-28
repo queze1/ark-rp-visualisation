@@ -4,13 +4,10 @@ import plotly.express as px
 
 
 class Field(StrEnum):
-    AUTHOR_ID = "author_id"
     AUTHOR = "author"
     DATE = "date"
     HOUR = "hour"
     DAY = "day"
-    CONTENT = "content"
-    ATTACHMENTS = "attachments"
     REACTIONS = "reactions"
     REACTION_COUNT = "reaction_count"
     WORD_COUNT = "word_count"
