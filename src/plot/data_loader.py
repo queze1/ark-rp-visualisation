@@ -135,6 +135,12 @@ class DataLoader:
         self._df = self._df.assign(sceneId=scene_id)
         return self
 
+    def load_data(self, force: bool = False):
+        """
+        Helper to to build a clean dataset.
+        """
+        return self.read_csvs(force=force).add_scene_id()
+
     @property
     def df(self) -> pd.DataFrame:
         """
@@ -143,12 +149,6 @@ class DataLoader:
         if self._df is None:
             raise ValueError("Data has not been read yet")
         return self._df
-
-    def load_data(self, force: bool = False):
-        """
-        Helper to to build a clean dataset.
-        """
-        return self.read_csvs(force=force).add_scene_id()
 
 
 if __name__ == "__main__":
