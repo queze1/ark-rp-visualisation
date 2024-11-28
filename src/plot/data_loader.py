@@ -4,7 +4,6 @@ import pandas as pd
 import re
 import ast
 
-pd.options.display.max_columns = None
 
 DATA_PATH = "data/23-11-2024"
 CACHE_PATH = "data/cache/23-11-2024.csv"
@@ -22,7 +21,7 @@ class DataLoader:
     @staticmethod
     def _rename_columns(df: pd.DataFrame) -> pd.DataFrame:
         """
-        Rename columns of a DataFrame to snake_case.
+        Rename columns to snake_case.
         """
         return df.rename(
             columns={
@@ -38,7 +37,7 @@ class DataLoader:
     @staticmethod
     def _add_channel_name(df: pd.DataFrame, path: str) -> pd.DataFrame:
         """
-        Add a 'channel_name' column to a DataFrame.
+        Add a 'channel_name' column.
         """
         filename = os.path.basename(path)
         channel_name = re.search(CHANNEL_NAME_REGEX, filename).group(1)
@@ -47,7 +46,7 @@ class DataLoader:
     @staticmethod
     def _add_word_count(df: pd.DataFrame) -> pd.DataFrame:
         """
-        Add a 'word_count' column to a DataFrame.
+        Add a 'word_count' column.
         """
         word_count = df["content"].str.split().str.len().fillna(0)
         return df.assign(word_count=word_count)
@@ -75,7 +74,7 @@ class DataLoader:
     @staticmethod
     def _process_date(df: pd.DataFrame, format=DATE_FORMAT) -> pd.DataFrame:
         """
-        Process the 'date' column in a DataFrame.
+        Process the 'date' column.
         """
         df["date"] = pd.to_datetime(df["date"], format=format, utc=True).dt.tz_convert(
             TIME_ZONE
@@ -125,7 +124,7 @@ class DataLoader:
 
     def add_scene_id(self):
         """
-        Add a 'sceneID' column to a DataFrame.
+        Add a 'sceneID' column.
         """
         # TODO: Handle scene messages not being contiguous.
         end_scene = self._df["content"].str.contains(
@@ -135,11 +134,21 @@ class DataLoader:
         self._df = self._df.assign(sceneId=scene_id)
         return self
 
-    def load_data(self, force: bool = False):
+    def clean(self):
         """
-        Helper to to build a clean dataset.
+        Remove potentially sensitive data from the dataset.
         """
-        return self.read_csvs(force=force).add_scene_id()
+        self._df = self._df.drop(columns=["author_id", "content", "attachments"])
+        return self
+
+    def load_data(self, force: bool = False, clean: bool = True):
+        """
+        Helper to load the dataset.
+        """
+        self.read_csvs(force=force).add_scene_id()
+        if clean:
+            return self.clean()
+        return self
 
     @property
     def df(self) -> pd.DataFrame:
@@ -152,5 +161,7 @@ class DataLoader:
 
 
 if __name__ == "__main__":
-    df = DataLoader().load_data(force=False).df
+    pd.options.display.max_columns = None
+
+    df = DataLoader().load_data(force=True).df
     print(df)

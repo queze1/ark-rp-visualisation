@@ -3,17 +3,13 @@ from pandas.api.types import (
     is_object_dtype,
     is_datetime64_any_dtype,
     is_any_real_numeric_dtype,
-    is_integer_dtype,
 )
 from pandas.testing import assert_frame_equal
 import pytest
 
 DTYPES = {
-    "author_id": is_integer_dtype,
     "author": is_object_dtype,
     "date": is_datetime64_any_dtype,
-    "content": is_object_dtype,
-    "attachments": is_object_dtype,
     "reactions": is_object_dtype,
     "word_count": is_any_real_numeric_dtype,
     "channel_name": is_object_dtype,
@@ -61,11 +57,10 @@ def test_nocache_column_keys_and_dtypes(load_data_nocache):
 
 def test_nocache_missing_values(load_data_nocache):
     """
-    Test that the DataFrame contains no missing values, except for 'attachments' and 'content'.
+    Test that the DataFrame contains no missing values.
     """
     df = load_data_nocache
-    df_dropped = df.drop(columns=["attachments", "content"])
-    columns_with_na = df_dropped.columns[df_dropped.isna().any()].tolist()
+    columns_with_na = df.columns[df.isna().any()].tolist()
 
     assert (
         not columns_with_na
