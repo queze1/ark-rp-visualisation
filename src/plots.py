@@ -1,6 +1,6 @@
-from plot.data_loader import DataLoader
-from plot.plot_builder import PlotBuilder, Field
-from plot.enums import GroupBy
+from backend.data_loader import DataLoader
+from backend.plot_builder import PlotBuilder, Field
+from backend.enums import GroupBy
 
 
 class PlotBuilderHelper:
@@ -71,7 +71,7 @@ class PlotBuilderHelper:
 
 if __name__ == "__main__":
     builder = PlotBuilderHelper()
-    # builder.unique_authors_by_date_line().show()
+    builder.unique_authors_by_date_line().show()
     # builder.total_word_count_by_authors_scatter().show()
     # builder.messages_by_hour_bar().show()
     # builder.messages_by_date_line().show()
