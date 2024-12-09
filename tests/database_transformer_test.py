@@ -1,7 +1,7 @@
 import pytest
 import pandas as pd
-from src.plot.database_transformer import DatabaseTransformer
-from src.plot.enums import Field, GroupBy, Filter
+from src.backend.database_transformer import DatabaseTransformer
+from src.backend.enums import Field, GroupBy, Filter
 
 
 @pytest.fixture

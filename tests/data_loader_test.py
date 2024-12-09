@@ -1,4 +1,4 @@
-from src.plot.data_loader import DataLoader
+from src.backend.data_loader import DataLoader
 from pandas.api.types import (
     is_object_dtype,
     is_datetime64_any_dtype,
