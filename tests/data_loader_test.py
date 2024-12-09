@@ -1,11 +1,12 @@
-from src.backend.data_loader import DataLoader
+import pytest
 from pandas.api.types import (
-    is_object_dtype,
-    is_datetime64_any_dtype,
     is_any_real_numeric_dtype,
+    is_datetime64_any_dtype,
+    is_object_dtype,
 )
 from pandas.testing import assert_frame_equal
-import pytest
+
+from src.backend.data_loader import DataLoader
 
 DTYPES = {
     "author": is_object_dtype,

@@ -1,7 +1,7 @@
-from plotly.graph_objects import Figure
 import pandas as pd
+from plotly.graph_objects import Figure
 
-from .enums import Plot, Field
+from .enums import Field, Plot
 from .metadata import Metadata
 
 DTICK_CUTOFF = 50

@@ -1,7 +1,7 @@
 import pandas as pd
 
-from .metadata import Metadata
 from .enums import Field, Filter, GroupBy
+from .metadata import Metadata
 
 
 class DatabaseTransformer:
