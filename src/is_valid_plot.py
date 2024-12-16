@@ -82,3 +82,32 @@ def is_valid_scatter(x, y, context):
     # Exclude hour and day because then there would always be the same number of points on the plot, exclude count because that's meaningless
     if context not in ("author", "date", "word_count", "reaction_count"):
         return False
+
+
+def print_valid_combinations():
+    # Get a list of all fields
+    field_names = list(fields.keys())
+
+    print("Valid Line Plots:")
+    for x in field_names:
+        for y in field_names:
+            result = is_valid_line(x, y)
+            if result:
+                plot_type, aggregation = result
+                print(
+                    f"  X: {x}, Y: {y}, Plot: {plot_type}, Aggregation: {aggregation}"
+                )
+
+    print("\nValid Bar Plots:")
+    for x in field_names:
+        for y in field_names:
+            result = is_valid_bar(x, y)
+            if result:
+                plot_type, aggregation = result
+                print(
+                    f"  X: {x}, Y: {y}, Plot: {plot_type}, Aggregation: {aggregation}"
+                )
+
+
+if __name__ == "__main__":
+    print_valid_combinations()
