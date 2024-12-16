@@ -1,6 +1,12 @@
-from enum import StrEnum
+from enum import Enum, StrEnum, auto
 
 import plotly.express as px
+
+
+class FieldType(Enum):
+    NUMERICAL = auto()
+    CATEGORICAL = auto()
+    TEMPORAl = auto()
 
 
 class Field(StrEnum):
@@ -18,27 +24,47 @@ class Field(StrEnum):
     @property
     def _metadata(self):
         return {
-            "AUTHOR": {
-                "description": "Users",
-            },
+            "AUTHOR": {"description": "Users", FieldType.CATEGORICAL: True},
             "DATE": {
                 "description": "Day",
                 "label": "Date",
+                FieldType.TEMPORAl: True,
+                FieldType.CATEGORICAL: True,
             },
-            "HOUR": {"description": "Hour of Day"},
-            "DAY": {"description": "Day of Month"},
+            "HOUR": {
+                "description": "Hour of Day",
+                FieldType.TEMPORAl: True,
+                FieldType.CATEGORICAL: True,
+            },
+            "DAY": {
+                "description": "Day of Month",
+                FieldType.TEMPORAl: True,
+                FieldType.CATEGORICAL: True,
+            },
             "REACTIONS": {"description": "Reactions"},
             "REACTION_COUNT": {
                 "description": "Number of Reactions",
                 "label": "Reactions",
+                FieldType.NUMERICAL: True,
             },
             "WORD_COUNT": {
                 "description": "Word Count",
                 "label": "Words",
+                FieldType.NUMERICAL: True,
             },
-            "CHANNEL_NAME": {"description": "Channels"},
-            "SCENE_ID": {"description": "Scenes"},
-            "COUNT": {"description": "Messages"},
+            "CHANNEL_NAME": {
+                "description": "Channels",
+                FieldType.CATEGORICAL: True,
+            },
+            "SCENE_ID": {
+                # TODO: Change to scene end, Y/N, more reliable that way
+                "description": "Scenes",
+                FieldType.CATEGORICAL: True,
+            },
+            "COUNT": {
+                "description": "Messages",
+                FieldType.NUMERICAL: True,
+            },
         }
 
     @property
@@ -49,6 +75,18 @@ class Field(StrEnum):
     def label(self):
         # Label defaults to description
         return self._metadata[self.name].get("label", self.description)
+
+    @property
+    def numerical(self):
+        return self._metadata[self.name].get(FieldType.NUMERICAL, False)
+
+    @property
+    def categorical(self):
+        return self._metadata[self.name].get(FieldType.CATEGORICAL, False)
+
+    @property
+    def temporal(self):
+        return self._metadata[self.name].get(FieldType.TEMPORAl, False)
 
 
 class GroupBy(StrEnum):

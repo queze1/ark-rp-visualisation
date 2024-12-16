@@ -33,17 +33,17 @@ class DatabaseTransformer:
         field = Field(field)
 
         # Create new derivative fields if needed
-        if field == Field.HOUR:
+        if field is Field.HOUR:
             self._df[field] = self._df[Field.DATE].dt.hour
-        elif field == Field.DAY:
+        elif field is Field.DAY:
             self._df[field] = self._df[Field.DATE].dt.day
-        elif field == Field.DATE:
+        elif field is Field.DATE:
             self._df[field] = self._df[Field.DATE].dt.date
-        elif field == Field.REACTION_COUNT:
+        elif field is Field.REACTION_COUNT:
             self._df[field] = [
                 max(d.values(), default=0) for d in self._df[Field.REACTIONS]
             ]
-        elif field == Field.COUNT:
+        elif field is Field.COUNT:
             # For counting messages, intended to be combined with `.sum`
             self._df[field] = 1
 
