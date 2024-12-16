@@ -136,11 +136,10 @@ class PlotBuilder:
         return self._queue_filter(Filter.EQUAL, field, value)
 
     # Aliases for creating derived fields
-    def cumulative(self, field: Field, ascending: bool = True, result_field=None):
+    def cumulative(self, field: Field, result_field=None):
         return self._queue_operation(
             self._database.cumulative,
             field,
-            ascending=ascending,
             result_field=result_field,
         )
 

@@ -3,70 +3,28 @@ from dash import Dash, dcc, html, Output, Input
 
 from backend.data_loader import DataLoader
 from backend.plot_builder import PlotBuilder
-from backend.enums import Field, GroupBy, Plot
 from frontend.layout import layout
 
 # df = DataLoader().load_data().df
 
 app = Dash(external_stylesheets=[dbc.themes.BOOTSTRAP])
 
-# controls = dbc.Card(
-#     [
-#         html.Div(
-#             [
-#                 dbc.Label("X variable"),
-#                 dcc.Dropdown(
-#                     id="x-variable",
-#                     options=[{"label": field, "value": field} for field in Field],
-#                 ),
-#             ]
-#         ),
-#         html.Div(
-#             [
-#                 dbc.Label("Y variable"),
-#                 dcc.Dropdown(
-#                     id="y-variable",
-#                     options=[{"label": field, "value": field} for field in Field],
-#                 ),
-#             ]
-#         ),
-#         html.Div(
-#             [
-#                 dbc.Label("Groupby"),
-#                 dcc.Dropdown(
-#                     id="groupby",
-#                     options=[
-#                         {"label": groupby, "value": groupby} for groupby in GroupBy
-#                     ],
-#                 ),
-#             ]
-#         ),
-#         html.Div(
-#             [
-#                 dbc.Label("Plot Type"),
-#                 dcc.Dropdown(
-#                     id="plot-type",
-#                     options=[{"label": plot, "value": plot} for plot in Plot],
-#                 ),
-#             ]
-#         ),
-#     ],
-#     body=True,
-# )
 
 # app.layout = [
 #     html.H1("ARK RP Channel Visualisation"),
 #     html.Hr(),
-#     dbc.Row(
-#         [
-#             dbc.Col(controls, md=4),
-#             dbc.Col(dcc.Graph(id="rp-graph"), md=8),
-#         ],
-#         align="center",
-#     ),
 # ]
 
 app.layout = layout
+
+
+# @app.callback(Output("content", "children"), [Input("tabs", "active_tab")])
+# def switch_tab(at):
+#     if at == "tab-1":
+#         return "test"
+#     elif at == "tab-2":
+#         return "test"
+#     return html.P("This shouldn't ever be displayed...")
 
 
 # @app.callback(
