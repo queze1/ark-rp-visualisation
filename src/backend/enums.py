@@ -12,8 +12,43 @@ class Field(StrEnum):
     REACTION_COUNT = "reaction_count"
     WORD_COUNT = "word_count"
     CHANNEL_NAME = "channel_name"
-    SCENE_ID = "sceneId"
+    SCENE_ID = "scene_id"
     COUNT = "count"
+
+    @property
+    def _metadata(self):
+        return {
+            "AUTHOR": {
+                "description": "Users",
+            },
+            "DATE": {
+                "description": "Day",
+                "label": "Date",
+            },
+            "HOUR": {"description": "Hour of Day"},
+            "DAY": {"description": "Day of Month"},
+            "REACTIONS": {"description": "Reactions"},
+            "REACTION_COUNT": {
+                "description": "Number of Reactions",
+                "label": "Reactions",
+            },
+            "WORD_COUNT": {
+                "description": "Word Count",
+                "label": "Words",
+            },
+            "CHANNEL_NAME": {"description": "Channels"},
+            "SCENE_ID": {"description": "Scenes"},
+            "COUNT": {"description": "Messages"},
+        }
+
+    @property
+    def description(self):
+        return self._metadata[self.name]["description"]
+
+    @property
+    def label(self):
+        # Label defaults to description
+        return self._metadata[self.name].get("label", self.description)
 
 
 class GroupBy(StrEnum):
@@ -29,6 +64,29 @@ class GroupBy(StrEnum):
         elif self is GroupBy.NUNIQUE:
             return obj.nunique()
         raise NotImplementedError(f"{self.value} groupby is not implemented.")
+
+    @property
+    def _metadata(self):
+        return {
+            "SUM": {"label_prefix": "Number of "},
+            "MEAN": {
+                "description_prefix": "Average ",
+                "label_prefix": "Avg. ",
+            },
+            "NUNIQUE": {
+                "description_prefix": "Unique ",
+                "label_prefix": "Unique ",
+            },
+        }
+
+    @property
+    def description_prefix(self):
+        return self._metadata[self.name].get("description_prefix", "")
+
+    @property
+    def label_prefix(self):
+        # Label defaults to description
+        return self._metadata[self.name].get("label_prefix", "")
 
 
 class Plot(StrEnum):
@@ -58,3 +116,11 @@ class Filter(StrEnum):
             return field <= value
         if self is Filter.EQUAL:
             return field == value
+
+    @property
+    def symbol(self):
+        return {
+            "MIN": "≥",
+            "MAX": "≤",
+            "EQUAL": "=",
+        }[self.name]

@@ -131,7 +131,7 @@ class DataLoader:
             END_SCENE_REGEX, case=False, na=False
         )
         scene_id = end_scene.shift(1).fillna(0).cumsum()
-        self._df = self._df.assign(sceneId=scene_id)
+        self._df = self._df.assign(scene_id=scene_id)
         return self
 
     def clean(self):

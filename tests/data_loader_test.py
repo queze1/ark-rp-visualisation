@@ -14,7 +14,7 @@ DTYPES = {
     "reactions": is_object_dtype,
     "word_count": is_any_real_numeric_dtype,
     "channel_name": is_object_dtype,
-    "sceneId": is_object_dtype,
+    "scene_id": is_object_dtype,
 }
 
 
