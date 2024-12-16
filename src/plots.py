@@ -28,6 +28,10 @@ class PlotBuilderHelper:
         self._builder.date().author().nunique().line()
         return self
 
+    def scene_ends_by_date_line(self):
+        self._builder.date().scene_end().sum().line()
+        return self
+
     def messages_by_date_line(self):
         self._builder.date().value_counts().sort(Field.DATE).line().moving_average(
             window=7
@@ -81,4 +85,4 @@ class PlotBuilderHelper:
 
 if __name__ == "__main__":
     builder = PlotBuilderHelper()
-    builder.unique_authors_by_date_line().show()
+    builder.scene_ends_by_date_line().show()

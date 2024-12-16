@@ -28,7 +28,7 @@ class Metadata:
                 "label": "Words",
             },
             Field.CHANNEL_NAME: {"description": "Channels"},
-            Field.SCENE_ID: {"description": "Scenes"},
+            Field.SCENE_END: {"description": "Scenes"},
             Field.COUNT: {"description": "Messages"},
         }
 

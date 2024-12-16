@@ -11,7 +11,7 @@ DATE_FORMAT = "%Y-%m-%dT%H:%M:%S.%f%z"
 TIME_ZONE = "Australia/Sydney"
 CHANNEL_NAME_REGEX = r".+ - (.+) \["
 REACTIONS_REGEX = r"(\w+)\s*\((\d+)\)"
-END_SCENE_REGEX = r"\/\s*(?:end\sscene)|(?:scene\send)|(?:SCENESHIFT)"
+SCENE_END_REGEX = r"\/\s*(?:end\sscene)|(?:scene\send)|(?:SCENESHIFT)"
 
 
 class DataLoader:
@@ -50,6 +50,14 @@ class DataLoader:
         """
         word_count = df["content"].str.split().str.len().fillna(0)
         return df.assign(word_count=word_count)
+
+    @staticmethod
+    def _add_scene_end(df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Add an 'scene_end' column.
+        """
+        scene_end = df["content"].str.contains(SCENE_END_REGEX, case=False, na=False)
+        return df.assign(scene_end=scene_end)
 
     @staticmethod
     def _reactions_to_dict(reactions: str) -> dict[str, int]:
@@ -92,6 +100,7 @@ class DataLoader:
         df = DataLoader._add_channel_name(df, path)
         df = DataLoader._process_reactions(df)
         df = DataLoader._process_date(df)
+        df = DataLoader._add_scene_end(df)
         return df
 
     def _read_cache(self):
@@ -122,18 +131,6 @@ class DataLoader:
         print(f"Cache written: {CACHE_PATH}")
         return self
 
-    def add_scene_id(self):
-        """
-        Add a 'sceneID' column.
-        """
-        # TODO: Handle scene messages not being contiguous.
-        end_scene = self._df["content"].str.contains(
-            END_SCENE_REGEX, case=False, na=False
-        )
-        scene_id = end_scene.shift(1).fillna(0).cumsum()
-        self._df = self._df.assign(scene_id=scene_id)
-        return self
-
     def clean(self):
         """
         Remove potentially sensitive data from the dataset.
@@ -145,7 +142,7 @@ class DataLoader:
         """
         Helper to load the dataset.
         """
-        self.read_csvs(force=force).add_scene_id()
+        self.read_csvs(force=force)
         if clean:
             return self.clean()
         return self

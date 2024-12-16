@@ -48,7 +48,7 @@ def is_valid_bar(x: Field, y: Field):
         return False
 
     # Too many scene ids for bar
-    if x is Field.SCENE_ID:
+    if x is Field.SCENE_END:
         return False
 
     # Can only have one temporal variable

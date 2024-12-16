@@ -106,8 +106,8 @@ class PlotBuilder:
     def channel_name(self):
         return self._queue_add_field(Field.CHANNEL_NAME)
 
-    def scene_id(self):
-        return self._queue_add_field(Field.SCENE_ID)
+    def scene_end(self):
+        return self._queue_add_field(Field.SCENE_END)
 
     def count(self):
         return self._queue_add_field(Field.COUNT)

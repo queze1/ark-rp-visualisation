@@ -18,7 +18,7 @@ class Field(StrEnum):
     REACTION_COUNT = "reaction_count"
     WORD_COUNT = "word_count"
     CHANNEL_NAME = "channel_name"
-    SCENE_ID = "scene_id"
+    SCENE_END = "scene_end"
     COUNT = "count"
 
     @property
@@ -41,6 +41,7 @@ class Field(StrEnum):
                 FieldType.TEMPORAl: True,
                 FieldType.CATEGORICAL: True,
             },
+            # TODO: Allow for counting specific reactions
             "REACTIONS": {"description": "Reactions"},
             "REACTION_COUNT": {
                 "description": "Number of Reactions",
@@ -56,10 +57,10 @@ class Field(StrEnum):
                 "description": "Channels",
                 FieldType.CATEGORICAL: True,
             },
-            "SCENE_ID": {
-                # TODO: Change to scene end, Y/N, more reliable that way
-                "description": "Scenes",
-                FieldType.CATEGORICAL: True,
+            "SCENE_END": {
+                "description": "Scene Ends",
+                "label": "Scenes",
+                FieldType.NUMERICAL: True,
             },
             "COUNT": {
                 "description": "Messages",
