@@ -6,78 +6,37 @@ class Metadata:
         """
         Metadata for plot operations.
         """
+        self._store = {}
         self._filters = []
 
-        self._field_metadata = {
-            Field.AUTHOR: {
-                "description": "Users",
-            },
-            Field.DATE: {
-                "description": "Day",
-                "label": "Date",
-            },
-            Field.HOUR: {"description": "Hour of Day"},
-            Field.DAY: {"description": "Day of Month"},
-            Field.REACTIONS: {"description": "Reactions"},
-            Field.REACTION_COUNT: {
-                "description": "Number of Reactions",
-                "label": "Reactions",
-            },
-            Field.WORD_COUNT: {
-                "description": "Word Count",
-                "label": "Words",
-            },
-            Field.CHANNEL_NAME: {"description": "Channels"},
-            Field.SCENE_END: {"description": "Scenes"},
-            Field.COUNT: {"description": "Messages"},
-        }
-
-        self._aggregation_metadata = {
-            GroupBy.SUM: {"label_prefix": "Number of "},
-            GroupBy.MEAN: {
-                "description_prefix": "Average ",
-                "label_prefix": "Avg. ",
-            },
-            GroupBy.NUNIQUE: {
-                "description_prefix": "Unique ",
-                "label_prefix": "Unique ",
-            },
-        }
-
-        self._filter_metadata = {
-            Filter.MIN: "≥",
-            Filter.MAX: "≤",
-            Filter.EQUAL: "=",
-        }
-
-        self._cumulative_metadata = {
-            "description_prefix": "Cumulative ",
-            "label_prefix": "Number of ",
-        }
-
-    def get_field_description(self, field: Field) -> str:
-        return self._field_metadata.get(field, {}).get("description", str(field))
-
-    def get_field_label(self, field: Field) -> str:
-        # Label defaults to description
-        return self._field_metadata.get(field, {}).get(
-            "label", self.get_field_description(field)
-        )
-
-    def get_aggregation_description(self, aggregation: GroupBy) -> str:
-        return self._aggregation_metadata.get(aggregation, {}).get(
-            "description_prefix", ""
-        )
-
-    def get_aggregation_label(self, aggregation: GroupBy) -> str:
-        return self._aggregation_metadata.get(aggregation, {}).get("label_prefix", "")
-
     def add_group_by(self, field: Field, aggregation: GroupBy):
-        agg_description_prefix = self.get_aggregation_description(aggregation)
-        agg_label_prefix = self.get_aggregation_label(aggregation)
-        self._field_metadata[field] = {
-            "description": f"{agg_description_prefix}{self.get_field_description(field)}",
-            "label": f"{agg_label_prefix}{self.get_field_label(field)}",
+        """
+        Apply a group-by operation to a field.
+        """
+        # Ensure the field has a dynamic metadata store
+        if field not in self._store:
+            self._store[field] = {}
+
+        # Mutate the description and label for the specific aggregation
+        self._store[field]["description"] = (
+            f"{aggregation.description_prefix}{field.description}"
+        )
+        self._store[field]["label"] = f"{aggregation.label_prefix}{field.label}"
+
+    def add_filter(self, filter: Filter, field: Field, value):
+        """
+        Add a filter description to the internal state.
+        """
+        self._filters.append(f"{field.label} {filter.symbol} {value}")
+
+    def add_cumulative(self, field: Field, result_field_name: str):
+        """
+        Add metadata for a cumulative field.
+        """
+        # Add a new dynamic entry in the store
+        self._store[result_field_name] = {
+            "description": f"Cumulative {field.description}",
+            "label": f"Number of {field.label}",
         }
 
     def get_filters_description(self) -> str:
@@ -86,42 +45,33 @@ class Metadata:
         """
         return f"({', '.join(self._filters)})" if self._filters else ""
 
-    def add_filter(self, filter: Filter, field: Field, value):
+    def get_field_metadata(self, field: Field):
         """
-        Add a filter description to the metadata.
+        Return the metadata for a field. If it's not dynamically
+        modified in the `_store`, return the default metadata from `Field`.
         """
-        self._filters.append(f"{field} {self._filter_metadata[filter]} {value}")
+        # Check if the key exists in the internal store
+        if field in self._store:
+            return self._store[field]
 
-    def add_cumulative(self, field: Field, result_field):
-        """
-        Add a cumulative field description to the metadata.
-        """
-        # Set for the new field based on the derived field
-        self._field_metadata[result_field] = {
-            "description": f"{self._cumulative_metadata['description_prefix']}{self.get_field_description(field)}",
-            "label": f"{self._cumulative_metadata['label_prefix']}{self.get_field_label(field)}",
-        }
+        # Fall back to the default metadata in the Field enum
+        field_enum = Field(field)
+        return {"description": field_enum.description, "label": field_enum.label}
 
-    def generate_plot_labels(
-        self,
-        x_field: Field,
-        y_field: Field,
-    ):
+    def generate_plot_labels(self, x_field: Field, y_field: Field):
         """
-        Dynamically generate axis labels and title.
+        Dynamically generate labels and title for a plot using metadata.
         """
-        x_label = self.get_field_label(x_field)
-        y_label = self.get_field_label(y_field)
-        x_description = self.get_field_description(x_field)
-        y_description = self.get_field_description(y_field)
-
+        x_metadata = self.get_field_metadata(x_field)
+        y_metadata = self.get_field_metadata(y_field)
         filters_description = self.get_filters_description()
-        title = f"{y_description} by {x_description} {filters_description}"
+
+        title = f"{y_metadata['description']} by {x_metadata['description']} {filters_description}"
 
         return {
             "labels": {
-                x_field: x_label,
-                y_field: y_label,
+                x_field: x_metadata["label"],
+                y_field: y_metadata["label"],
             },
             "title": title,
         }

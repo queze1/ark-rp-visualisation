@@ -85,4 +85,4 @@ class PlotBuilderHelper:
 
 if __name__ == "__main__":
     builder = PlotBuilderHelper()
-    builder.scene_ends_by_date_line().show()
+    builder.total_word_count_by_authors_scatter().show()
