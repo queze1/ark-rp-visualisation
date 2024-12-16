@@ -45,11 +45,11 @@ class PlotBuilder:
             func(*args, **kwargs)
         return self
 
-    def _queue_add_field(self, field: Field):
+    def _queue_add_field(self, field: Field, **kwargs):
         """
         Queue an add field operation.
         """
-        return self._queue_operation(self._database.add_field, field)
+        return self._queue_operation(self._database.add_field, field, **kwargs)
 
     def _queue_group_by(self, *args, **kwargs):
         """
@@ -94,11 +94,8 @@ class PlotBuilder:
     def day(self):
         return self._queue_add_field(Field.DAY)
 
-    def reactions(self):
-        return self._queue_add_field(Field.REACTIONS)
-
-    def reaction_count(self):
-        return self._queue_add_field(Field.REACTION_COUNT)
+    def reaction_count(self, reaction: str = None):
+        return self._queue_add_field(Field.REACTION_COUNT, reaction=reaction)
 
     def word_count(self):
         return self._queue_add_field(Field.WORD_COUNT)

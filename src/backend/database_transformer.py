@@ -28,12 +28,18 @@ class DatabaseTransformer:
         self._fields = []
         self._metadata = Metadata()
 
-    def add_field(self, field: Field):
+    def add_field(self, field: Field, reaction: str = None):
         # Check if `field` is a field by calling it
         field = Field(field)
 
         # Create new derivative fields if needed
-        if field is Field.HOUR:
+        if reaction and field is Field.REACTION_COUNT:
+            self._df[field] = [d.get(reaction, 0) for d in self._df[Field.REACTIONS]]
+        elif reaction:
+            # If a specific reaction was specified but the field was not for reactions, raise an exception
+            # TODO: Integrate better with metadata and enums, enums are immutable
+            raise ValueError("Invalid field for reaction counts")
+        elif field is Field.HOUR:
             self._df[field] = self._df[Field.DATE].dt.hour
         elif field is Field.DAY:
             self._df[field] = self._df[Field.DATE].dt.day

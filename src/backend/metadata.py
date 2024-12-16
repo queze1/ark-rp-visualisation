@@ -55,8 +55,8 @@ class Metadata:
             return self._store[field]
 
         # Fall back to the default metadata in the Field enum
-        field_enum = Field(field)
-        return {"description": field_enum.description, "label": field_enum.label}
+        field = Field(field)
+        return {"description": field.description, "label": field.label}
 
     def generate_plot_labels(self, x_field: Field, y_field: Field):
         """

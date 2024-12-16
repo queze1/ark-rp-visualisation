@@ -14,6 +14,7 @@ class Field(StrEnum):
     DATE = "date"
     HOUR = "hour"
     DAY = "day"
+    # Only used internally for querying
     REACTIONS = "reactions"
     REACTION_COUNT = "reaction_count"
     WORD_COUNT = "word_count"
@@ -41,8 +42,6 @@ class Field(StrEnum):
                 FieldType.TEMPORAl: True,
                 FieldType.CATEGORICAL: True,
             },
-            # TODO: Allow for counting specific reactions
-            "REACTIONS": {"description": "Reactions"},
             "REACTION_COUNT": {
                 "description": "Number of Reactions",
                 "label": "Reactions",

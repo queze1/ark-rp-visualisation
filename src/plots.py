@@ -44,6 +44,12 @@ class PlotBuilderHelper:
         ).line().moving_average(window=30)
         return self
 
+    def total_love_reactions_by_date_line(self):
+        self._builder.date().reaction_count("love").sum().sort(
+            Field.DATE
+        ).line().moving_average(window=30)
+        return self
+
     def messages_by_hour_bar(self):
         self._builder.hour().value_counts().bar()
         return self
@@ -85,4 +91,4 @@ class PlotBuilderHelper:
 
 if __name__ == "__main__":
     builder = PlotBuilderHelper()
-    builder.total_word_count_by_authors_scatter().show()
+    builder.total_love_reactions_by_date_line().show()
