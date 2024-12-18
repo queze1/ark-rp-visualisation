@@ -1,9 +1,9 @@
 import dash_bootstrap_components as dbc
-from dash import Dash, Output, Input
+from dash import ALL, Dash, Input, Output, State
 
 from backend.data_loader import DataLoader
+from frontend.controls import make_controls, make_dropdown_options
 from frontend.layout import layout
-# from backend.enums import GroupBy, Plot
 
 df = DataLoader().load_data().df
 
@@ -13,17 +13,18 @@ app = Dash(external_stylesheets=[dbc.themes.BOOTSTRAP])
 app.layout = layout
 
 
+@app.callback(Output("control-div", "children"), Input("tabs", "active_tab"))
+def update_controls(tab):
+    return make_controls(tab)
+
+
 @app.callback(
-    Output("graph-config", "data"),
-    [
-        Input("x-variable", "value"),
-        Input("y-variable", "value"),
-        Input("groupby", "value"),
-        Input("tabs", "active_tab"),
-    ],
+    Output({"type": "field-dynamic-dropdown", "index": ALL}, "options"),
+    Input({"type": "field-dynamic-dropdown", "index": ALL}, "value"),
+    State({"type": "field-dynamic-dropdown", "index": ALL}, "options"),
 )
-def set_graph_config(x, y, groupby, tab):
-    return (x, y, groupby, tab)
+def update_dropdown_options(selected_values, current_options):
+    return make_dropdown_options(selected_values, current_options)
 
 
 if __name__ == "__main__":
