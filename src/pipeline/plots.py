@@ -91,4 +91,4 @@ class PlotBuilderHelper:
 
 if __name__ == "__main__":
     builder = PlotBuilderHelper()
-    builder.total_love_reactions_by_date_line().show()
+    builder.total_word_count_by_unique_days_by_user_scatter().show()
