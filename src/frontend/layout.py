@@ -1,6 +1,6 @@
 from dash import dcc, html
 import dash_bootstrap_components as dbc
-from backend.enums import Field, GroupBy, Plot
+from backend.enums import Field, GroupBy
 
 
 EXPLAINER = """Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."""
@@ -36,15 +36,6 @@ controls = dbc.Card(
                 ),
             ]
         ),
-        html.Div(
-            [
-                dbc.Label("Plot Type"),
-                dcc.Dropdown(
-                    id="plot-type",
-                    options=[{"label": plot, "value": plot} for plot in Plot],
-                ),
-            ]
-        ),
     ],
     body=True,
 )
@@ -55,7 +46,7 @@ layout = dbc.Container(
         dcc.Markdown(EXPLAINER),
         dbc.Tabs(
             [
-                dbc.Tab(label="Line", tab_id="line"),
+                dbc.Tab(label="Time Series", tab_id="line"),
                 dbc.Tab(label="Bar", tab_id="bar"),
                 dbc.Tab(label="Scatter", tab_id="scatter"),
             ],
@@ -65,9 +56,10 @@ layout = dbc.Container(
         dbc.Row(
             [
                 dbc.Col(controls),
-                dbc.Col(dcc.Graph(id="rp-graph")),
+                dbc.Col(dcc.Graph(id="graph")),
             ],
             align="center",
         ),
+        dcc.Store(id="graph-config"),
     ]
 )
