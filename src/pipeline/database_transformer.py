@@ -1,7 +1,7 @@
 import pandas as pd
 
-from .enums import Field, Filter, GroupBy
-from .metadata import Metadata
+from backend.enums import Field, Filter, GroupBy
+from pipeline.metadata import Metadata
 
 
 class DatabaseTransformer:

@@ -1,4 +1,4 @@
-from .enums import Field, GroupBy, Filter
+from backend.enums import Field, GroupBy, Filter
 
 
 class Metadata:

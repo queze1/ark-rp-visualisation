@@ -1,6 +1,6 @@
 from backend.data_loader import DataLoader
 from backend.enums import GroupBy
-from backend.plot_builder import Field, PlotBuilder
+from pipeline.plot_builder import Field, PlotBuilder
 
 
 class PlotBuilderHelper:
