@@ -1,6 +1,6 @@
 import pandas as pd
 
-from backend.enums import Field, Filter, GroupBy
+from pipeline.enums import Field, Filter, GroupBy
 from pipeline.metadata import Metadata
 
 

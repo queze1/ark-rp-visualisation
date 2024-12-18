@@ -1,8 +1,8 @@
 import pandas as pd
 import pytest
 
-from src.pipeline.database_transformer import DatabaseTransformer
-from src.backend.enums import Field, Filter, GroupBy
+from pipeline.database_transformer import DatabaseTransformer
+from pipeline.enums import Field, Filter, GroupBy
 
 
 @pytest.fixture

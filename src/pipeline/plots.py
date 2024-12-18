@@ -1,5 +1,5 @@
 from backend.data_loader import DataLoader
-from backend.enums import GroupBy
+from pipeline.enums import GroupBy
 from pipeline.plot_builder import Field, PlotBuilder
 
 

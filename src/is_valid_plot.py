@@ -1,6 +1,6 @@
 """Test file for finding valid plots."""
 
-from backend.enums import Field
+from pipeline.enums import Field
 
 # Set log-scale/log-log scale by default if fits a power law (using powerlaw library) and the dataset is big
 

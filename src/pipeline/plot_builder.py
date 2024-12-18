@@ -1,7 +1,7 @@
 import pandas as pd
 from plotly.graph_objects import Figure
 
-from backend.enums import Field, Filter, GroupBy, Plot
+from pipeline.enums import Field, Filter, GroupBy, Plot
 from pipeline.database_transformer import DatabaseTransformer
 from pipeline.plot_transformer import PlotTransformer
 
