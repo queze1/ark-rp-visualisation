@@ -5,7 +5,7 @@ from pipeline.plot_builder import Field, PlotBuilder
 
 class PlotBuilderHelper:
     """
-    Sample plot building pipelines.
+    Sample plot building pipelines for testing.
     """
 
     def __init__(self):

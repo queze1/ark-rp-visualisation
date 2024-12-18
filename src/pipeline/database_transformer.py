@@ -35,9 +35,10 @@ class DatabaseTransformer:
         # Create new derivative fields if needed
         if reaction and field is Field.REACTION_COUNT:
             self._df[field] = [d.get(reaction, 0) for d in self._df[Field.REACTIONS]]
+            # Reuse filter metadata
+            self._metadata.add_filter(Filter.EQUAL, field, reaction)
         elif reaction:
             # If a specific reaction was specified but the field was not for reactions, raise an exception
-            # TODO: Integrate better with metadata and enums, enums are immutable
             raise ValueError("Invalid field for reaction counts")
         elif field is Field.HOUR:
             self._df[field] = self._df[Field.DATE].dt.hour
