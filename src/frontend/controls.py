@@ -1,64 +1,59 @@
 from backend.enums import Field
 import dash_bootstrap_components as dbc
-from dash import dcc
-
-
-def is_valid_line(field: Field):
-    return not field.temporal
+from dash import dcc, html
 
 
 def is_valid_xbar(field: Field):
     return field is not Field.DATE
 
 
-def make_field_dropdown(index, condition=lambda _: True):
-    return dcc.Dropdown(
-        id={"type": "field-dynamic-dropdown", "index": index},
-        options=[
-            {"label": field.label, "value": field}
-            for field in Field
-            if field.label and condition(field)
-        ],
-        searchable=False,
-    )
-
-
 def make_controls(tab):
-    def make_fields(rows):
-        """
-        Parameters:
-            rows (list of dict): Each dict defines a row with the following keys:
-                - label (str): The label text for the row.
-                - dropdown_params (dict): Parameters for the `make_field_dropdown` function.
+    def make_field_text(text):
+        return dbc.Col(html.P(text, style={"font-size": "1.2rem"}), width="auto")
 
-        Returns:
-            dbc.Stack: The generated layout.
-        """
-        return dbc.Stack(
-            [
-                dbc.Row(
-                    [
-                        dbc.Col(dbc.Label(row["label"])),
-                        dbc.Col(make_field_dropdown(index=i, **row["dropdown_params"])),
-                    ]
-                )
-                for i, row in enumerate(rows)
-            ],
-            gap=2,
+    def make_field_dropdown(index, condition=lambda _: True, **kwargs):
+        return dbc.Col(
+            dcc.Dropdown(
+                id={"type": "field-dynamic-dropdown", "index": index},
+                options=[
+                    {"label": field.label, "value": field}
+                    for field in Field
+                    if field.label and condition(field)
+                ],
+                searchable=False,
+                clearable=False,
+                **kwargs,
+            ),
+            width=2,
         )
 
-    line_fields = [
-        {"label": "Plot By", "dropdown_params": {"condition": is_valid_line}}
+    def make_field_controls(field_options):
+        return dbc.Row(
+            [
+                make_field_text("Plot"),
+                make_field_dropdown(index=0, **field_options[0]),
+                make_field_text("By"),
+                make_field_dropdown(index=1, **field_options[1]),
+            ],
+            className="g-3",
+            justify="center",
+        )
+
+    tab_fields = [
+        {
+            "condition": lambda field: not field.temporal,
+        },
+        {
+            "value": Field.DATE,
+            "condition": lambda field: field is Field.DATE,
+        },
     ]
-    bar_fields = [
-        {"label": "X-Axis", "dropdown_params": {"condition": is_valid_xbar}},
-        {"label": "Y-Axis", "dropdown_params": {}},
-    ]
+    bar_fields = [{"condition": lambda field: field is not Field.DATE}, {}]
 
     if tab == "line":
-        return make_fields(line_fields)
+        return make_field_controls(tab_fields)
     elif tab == "bar":
-        return make_fields(bar_fields)
+        return make_field_controls(bar_fields)
     return None
 
 
