@@ -63,32 +63,28 @@ class Field(StrEnum):
                 "description": "Messages",
                 FieldType.NUMERICAL: True,
             },
-        }
-
-    @property
-    def has_metadata(self):
-        return self.name in self._metadata
+        }.get(self.name, {})
 
     @property
     def description(self):
-        return self._metadata[self.name]["description"]
+        return self._metadata.get("description")
 
     @property
     def label(self):
         # Label defaults to description
-        return self._metadata[self.name].get("label", self.description)
+        return self._metadata.get("label", self.description)
 
     @property
     def numerical(self):
-        return self._metadata[self.name].get(FieldType.NUMERICAL, False)
+        return self._metadata.get(FieldType.NUMERICAL, False)
 
     @property
     def categorical(self):
-        return self._metadata[self.name].get(FieldType.CATEGORICAL, False)
+        return self._metadata.get(FieldType.CATEGORICAL, False)
 
     @property
     def temporal(self):
-        return self._metadata[self.name].get(FieldType.TEMPORAl, False)
+        return self._metadata.get(FieldType.TEMPORAl, False)
 
 
 class GroupBy(StrEnum):
