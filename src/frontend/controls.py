@@ -3,13 +3,9 @@ import dash_bootstrap_components as dbc
 from dash import dcc, html
 
 
-def is_valid_xbar(field: Field):
-    return field is not Field.DATE
-
-
 def make_controls(tab):
     def make_field_text(text):
-        return dbc.Col(html.P(text, style={"font-size": "1.2rem"}), width="auto")
+        return html.P(text, style={"font-size": "1.2rem"})
 
     def make_field_dropdown(index, condition=lambda _: True, **kwargs):
         return dcc.Dropdown(
@@ -30,7 +26,7 @@ def make_controls(tab):
     def make_field_controls(field_options):
         return dbc.Row(
             [
-                make_field_text("Plot"),
+                dbc.Col(make_field_text("Plot"), width="auto"),
                 dbc.Col(
                     [
                         make_field_dropdown(index=0, **field_options[0]),
@@ -38,7 +34,7 @@ def make_controls(tab):
                     ],
                     width=2,
                 ),
-                make_field_text("By"),
+                dbc.Col(make_field_text("By"), width="auto"),
                 dbc.Col(
                     [
                         make_field_dropdown(index=1, **field_options[1]),
@@ -51,6 +47,78 @@ def make_controls(tab):
             justify="center",
         )
 
+    def make_filter_controls():
+        return dbc.Stack(
+            [
+                dbc.Row(
+                    [
+                        dbc.Col(
+                            html.P("Filters", style={"font-size": "1.25rem"}),
+                            width="auto",
+                        ),
+                        dbc.Col(
+                            html.P("Reset"),
+                            width="auto",
+                        ),
+                    ],
+                    justify="between",
+                ),
+                dbc.Row(
+                    [
+                        dbc.Col(html.Label("Date")),
+                        dbc.Col(dcc.DatePickerRange()),
+                    ],
+                ),
+                dbc.Row(
+                    [
+                        dbc.Col(html.Label("User")),
+                        dbc.Col(
+                            dcc.Dropdown(
+                                ["New York City", "Montreal", "San Francisco"],
+                                value=None,
+                                multi=True,
+                            )
+                        ),
+                    ],
+                ),
+                dbc.Row(
+                    [
+                        dbc.Col(html.Label("Channel Name")),
+                        dbc.Col(
+                            dcc.Dropdown(
+                                ["New York City", "Montreal", "San Francisco"],
+                                value=None,
+                                multi=True,
+                            )
+                        ),
+                    ],
+                ),
+                dbc.Row(
+                    [
+                        dbc.Col(html.Label("Hour")),
+                        dbc.Col(dcc.RangeSlider(0, 23, 1)),
+                    ],
+                ),
+                dbc.Row(
+                    [
+                        dbc.Col(html.Label("Reaction Count")),
+                        dbc.Col(
+                            dcc.Dropdown(["<", "=", ">", "<=", ">="]),
+                        ),
+                        dbc.Col(
+                            dbc.Input(
+                                type="number",
+                                min=0,
+                                step=1,
+                                placeholder="Enter number...",
+                            ),
+                        ),
+                    ],
+                ),
+            ],
+            gap=2,
+        )
+
     tab_fields = [
         {
             "condition": lambda field: not field.temporal,
@@ -61,11 +129,10 @@ def make_controls(tab):
         },
     ]
     bar_fields = [{"condition": lambda field: field is not Field.DATE}, {}]
-
     if tab == "line":
-        return make_field_controls(tab_fields)
+        return [make_field_controls(tab_fields), html.Hr(), make_filter_controls()]
     elif tab == "bar":
-        return make_field_controls(bar_fields)
+        return [make_field_controls(bar_fields), html.Hr(), make_filter_controls()]
     return None
 
 
