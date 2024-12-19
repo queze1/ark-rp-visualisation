@@ -27,17 +27,35 @@ def make_controls(tab):
     if tab == "line":
         return dbc.Col(
             [
-                dbc.Label("Plot By"),
-                make_field_dropdown(index=0, condition=is_valid_line),
+                dbc.Row(
+                    [
+                        dbc.Col(dbc.Label("Plot By", width="auto"), align="center"),
+                        dbc.Col(
+                            make_field_dropdown(index=0, condition=is_valid_line),
+                            align="center",
+                        ),
+                    ],
+                )
             ]
         )
     elif tab == "bar":
         return dbc.Col(
             [
-                dbc.Label("X-Axis"),
-                make_field_dropdown(index=0, condition=is_valid_xbar),
-                dbc.Label("Y-Axis"),
-                make_field_dropdown(index=1),
+                dbc.Row(
+                    [
+                        dbc.Col(dbc.Label("X-Axis", width="auto"), align="center"),
+                        dbc.Col(
+                            make_field_dropdown(index=0, condition=is_valid_xbar),
+                            align="center",
+                        ),
+                    ],
+                ),
+                dbc.Row(
+                    [
+                        dbc.Col(dbc.Label("Y-Axis", width="auto"), align="center"),
+                        dbc.Col(make_field_dropdown(index=1), align="center"),
+                    ],
+                ),
             ]
         )
     return None
