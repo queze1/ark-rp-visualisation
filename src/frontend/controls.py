@@ -12,28 +12,40 @@ def make_controls(tab):
         return dbc.Col(html.P(text, style={"font-size": "1.2rem"}), width="auto")
 
     def make_field_dropdown(index, condition=lambda _: True, **kwargs):
-        return dbc.Col(
-            dcc.Dropdown(
-                id={"type": "field-dynamic-dropdown", "index": index},
-                options=[
-                    {"label": field.label, "value": field}
-                    for field in Field
-                    if field.label and condition(field)
-                ],
-                searchable=False,
-                clearable=False,
-                **kwargs,
-            ),
-            width=2,
+        return dcc.Dropdown(
+            id={"type": "field-dynamic-dropdown", "index": index},
+            options=[
+                {"label": field.label, "value": field}
+                for field in Field
+                if field.label and condition(field)
+            ],
+            searchable=False,
+            clearable=False,
+            **kwargs,
         )
+
+    def make_axis_text(text):
+        return html.P(text, style={"text-align": "center", "margin-top": 2})
 
     def make_field_controls(field_options):
         return dbc.Row(
             [
                 make_field_text("Plot"),
-                make_field_dropdown(index=0, **field_options[0]),
+                dbc.Col(
+                    [
+                        make_field_dropdown(index=0, **field_options[0]),
+                        make_axis_text("Y-Axis"),
+                    ],
+                    width=2,
+                ),
                 make_field_text("By"),
-                make_field_dropdown(index=1, **field_options[1]),
+                dbc.Col(
+                    [
+                        make_field_dropdown(index=1, **field_options[1]),
+                        make_axis_text("X-Axis"),
+                    ],
+                    width=2,
+                ),
             ],
             className="g-3",
             justify="center",
