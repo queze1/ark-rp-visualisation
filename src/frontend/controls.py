@@ -24,40 +24,41 @@ def make_field_dropdown(index, condition=lambda _: True):
 
 
 def make_controls(tab):
-    if tab == "line":
-        return dbc.Col(
+    def make_fields(rows):
+        """
+        Parameters:
+            rows (list of dict): Each dict defines a row with the following keys:
+                - label (str): The label text for the row.
+                - dropdown_params (dict): Parameters for the `make_field_dropdown` function.
+
+        Returns:
+            dbc.Stack: The generated layout.
+        """
+        return dbc.Stack(
             [
                 dbc.Row(
                     [
-                        dbc.Col(dbc.Label("Plot By", width="auto"), align="center"),
-                        dbc.Col(
-                            make_field_dropdown(index=0, condition=is_valid_line),
-                            align="center",
-                        ),
-                    ],
+                        dbc.Col(dbc.Label(row["label"])),
+                        dbc.Col(make_field_dropdown(index=i, **row["dropdown_params"])),
+                    ]
                 )
-            ]
+                for i, row in enumerate(rows)
+            ],
+            gap=2,
         )
+
+    line_fields = [
+        {"label": "Plot By", "dropdown_params": {"condition": is_valid_line}}
+    ]
+    bar_fields = [
+        {"label": "X-Axis", "dropdown_params": {"condition": is_valid_xbar}},
+        {"label": "Y-Axis", "dropdown_params": {}},
+    ]
+
+    if tab == "line":
+        return make_fields(line_fields)
     elif tab == "bar":
-        return dbc.Col(
-            [
-                dbc.Row(
-                    [
-                        dbc.Col(dbc.Label("X-Axis", width="auto"), align="center"),
-                        dbc.Col(
-                            make_field_dropdown(index=0, condition=is_valid_xbar),
-                            align="center",
-                        ),
-                    ],
-                ),
-                dbc.Row(
-                    [
-                        dbc.Col(dbc.Label("Y-Axis", width="auto"), align="center"),
-                        dbc.Col(make_field_dropdown(index=1), align="center"),
-                    ],
-                ),
-            ]
-        )
+        return make_fields(bar_fields)
     return None
 
 
