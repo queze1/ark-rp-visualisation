@@ -15,7 +15,7 @@ def update_dropdown_options(selected_fields, current_options):
         [Field(field).temporal if field else None for field in selected_fields]
     )
 
-    def process_option(opt, dropdown_index):
+    def process_option(dropdown_index, opt):
         label, field = opt["label"], Field(opt["value"])
 
         # Check if field is already selected in another dropdown
@@ -40,7 +40,7 @@ def update_dropdown_options(selected_fields, current_options):
         }
 
     return [
-        [process_option(opt, i) for opt in options]
+        [process_option(i, opt) for opt in options]
         for i, options in enumerate(current_options)
     ]
 

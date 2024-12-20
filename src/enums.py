@@ -160,24 +160,37 @@ class Tab(StrEnum):
 
     @property
     def _metadata(self):
+        fields_with_label = [field for field in Field if field.label]
+        non_temporal_fields = [
+            field for field in fields_with_label if not field.temporal
+        ]
+
         return {
             "LINE": {
                 "label": "Time Series",
-                "fields": [
-                    {
-                        "condition": lambda field: not field.temporal,
-                    },
-                    {
-                        "value": Field.DATE,
-                        "condition": lambda field: field is Field.DATE,
-                    },
-                ],
+                "primary_field": {
+                    "allowed": non_temporal_fields,
+                },
+                "secondary_field": {"allowed": [Field.DATE], "default": Field.DATE},
             },
             "BAR": {
                 "label": "Bar",
-                "fields": [{"condition": lambda field: field is not Field.DATE}, {}],
+                "primary_field": {
+                    "allowed": fields_with_label,
+                },
+                "secondary_field": {
+                    "allowed": fields_with_label,
+                },
             },
-            "SCATTER": {"label": "Scatter", "fields": [{}, {}]},
+            "SCATTER": {
+                "label": "Scatter",
+                "primary_field": {
+                    "allowed": fields_with_label,
+                },
+                "secondary_field": {
+                    "allowed": fields_with_label,
+                },
+            },
         }.get(self.name, {})
 
     @property
@@ -185,8 +198,12 @@ class Tab(StrEnum):
         return self._metadata.get("label")
 
     @property
-    def fields(self):
-        return self._metadata.get("fields")
+    def primary_field(self):
+        return self._metadata.get("primary_field")
+
+    @property
+    def secondary_field(self):
+        return self._metadata.get("secondary_field")
 
 
 class PageText(StrEnum):
