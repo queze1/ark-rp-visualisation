@@ -1,7 +1,7 @@
 import dash_mantine_components as dmc
 from dash import Dash, _dash_renderer
 
-from backend.data_loader import DataLoader
+from data_loader import DataLoader
 from frontend.layout import layout
 from frontend.controls import register_controls_callbacks
 

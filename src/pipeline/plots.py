@@ -1,4 +1,4 @@
-from backend.data_loader import DataLoader
+from data_loader import DataLoader
 from pipeline.enums import GroupBy
 from pipeline.plot_builder import Field, PlotBuilder
 
@@ -15,7 +15,7 @@ class PlotBuilderHelper:
     def build(self):
         """Build the current plot, return its figure, then reset."""
         fig = self._builder.build().figure
-        self._builder.reset()
+        # self._builder.reset()
         return fig
 
     def show(self):

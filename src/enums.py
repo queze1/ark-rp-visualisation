@@ -11,15 +11,16 @@ class FieldType(Enum):
 
 class Field(StrEnum):
     AUTHOR = "author"
-    DATE = "date"
-    HOUR = "hour"
-    DAY = "day"
-    REACTION_COUNT = "reaction_count"
-    WORD_COUNT = "word_count"
     CHANNEL_NAME = "channel_name"
-    SCENE_END = "scene_end"
     COUNT = "count"
-    # Only used internally for querying
+    DATE = "date"
+    DAY = "day"
+    HOUR = "hour"
+    REACTION_COUNT = "reaction_count"
+    SCENE_END = "scene_end"
+    WORD_COUNT = "word_count"
+
+    # Internal use only
     REACTIONS = "reactions"
 
     @property

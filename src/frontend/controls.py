@@ -1,4 +1,4 @@
-from backend.enums import DateOperator, Field, MatchOperator, Operator
+from enums import DateOperator, Field, MatchOperator, Operator
 from dash import html
 import dash_mantine_components as dmc
 from dash import ALL, Input, Output, State

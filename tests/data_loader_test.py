@@ -7,7 +7,7 @@ from pandas.api.types import (
 )
 from pandas.testing import assert_frame_equal
 
-from src.backend.data_loader import DataLoader
+from data_loader import DataLoader
 
 DTYPES = {
     "author": is_object_dtype,
