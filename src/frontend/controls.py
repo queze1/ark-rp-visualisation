@@ -1,25 +1,9 @@
-from enums import DateOperator, Field, MatchOperator, Operator
+from enums import Field, Operator, Tab
 from dash import html
 import dash_mantine_components as dmc
-from dash import ALL, Input, Output, State
 
 
-tab_field_controls = {
-    "line": [
-        {
-            "condition": lambda field: not field.temporal,
-        },
-        {
-            "value": Field.DATE,
-            "condition": lambda field: field is Field.DATE,
-        },
-    ],
-    "bar": [{"condition": lambda field: field is not Field.DATE}, {}],
-    "scatter": [{}, {}],
-}
-
-
-def make_controls(tab):
+def make_controls(tab: Tab):
     def make_field_text(text):
         return dmc.GridCol(dmc.Text(text, size="lg"), span="content")
 
@@ -47,8 +31,8 @@ def make_controls(tab):
             span=3,
         )
 
-    def make_field_controls(fields):
-        field1, field2 = fields
+    def make_field_controls():
+        field1, field2 = tab.fields
         return dmc.Grid(
             [
                 make_field_text("Plot"),
@@ -73,8 +57,8 @@ def make_controls(tab):
                     [
                         html.Label("Date"),
                         dmc.Select(
-                            data=[operator for operator in DateOperator],
-                            value=DateOperator.BEFORE,
+                            data=[Operator.BEFORE, Operator.DURING, Operator.AFTER],
+                            value=Operator.DURING,
                         ),
                         dmc.DatePickerInput(),
                     ],
@@ -84,8 +68,8 @@ def make_controls(tab):
                     [
                         html.Label("User"),
                         dmc.Select(
-                            data=[operator for operator in MatchOperator],
-                            value=MatchOperator.IS,
+                            data=[Operator.IS, Operator.IS_NOT],
+                            value=Operator.IS,
                         ),
                         dmc.MultiSelect(
                             data=["New York City", "Montreal", "San Francisco"],
@@ -98,8 +82,8 @@ def make_controls(tab):
                     [
                         html.Label("Channel Name"),
                         dmc.Select(
-                            data=[operator for operator in MatchOperator],
-                            value=MatchOperator.IS,
+                            data=[Operator.IS, Operator.IS_NOT],
+                            value=Operator.IS,
                         ),
                         dmc.MultiSelect(
                             data=["New York City", "Montreal", "San Francisco"],
@@ -112,7 +96,14 @@ def make_controls(tab):
                     [
                         html.Label("Hour"),
                         dmc.Select(
-                            data=[operator for operator in Operator], value=Operator.GEQ
+                            data=[
+                                Operator.LT,
+                                Operator.LEQ,
+                                Operator.GT,
+                                Operator.GEQ,
+                                Operator.EQ,
+                            ],
+                            value=Operator.GEQ,
                         ),
                         dmc.Select(
                             data=[str(hour) for hour in range(24)],
@@ -142,58 +133,9 @@ def make_controls(tab):
 
     return dmc.Card(
         [
-            make_field_controls(tab_field_controls[tab]),
+            make_field_controls(),
             dmc.Divider(my=25),
             make_filter_controls(),
         ],
         withBorder=True,
     )
-
-
-def register_controls_callbacks(app, tab):
-    def update_dropdown_options(selected_fields, current_options):
-        """
-        Rules:
-        1. No duplicate options.
-        2. No more than one temporal field.
-        """
-
-        # Check if any temporal field is already selected
-        has_selected_temporal = any(
-            [Field(field).temporal if field else None for field in selected_fields]
-        )
-
-        def process_option(opt, dropdown_index):
-            label, field = opt["label"], Field(opt["value"])
-
-            # Check if field is already selected in another dropdown
-            is_duplicate = (
-                field in selected_fields and field != selected_fields[dropdown_index]
-            )
-
-            # Check if this dropdown has selected a temporal field
-            selected_temporal = (
-                Field(selected_fields[dropdown_index]).temporal
-                if selected_fields[dropdown_index]
-                else False
-            )
-            is_invalid_temporal = (
-                field.temporal and has_selected_temporal and not selected_temporal
-            )
-
-            return {
-                "label": label,
-                "value": field,
-                "disabled": is_duplicate or is_invalid_temporal,
-            }
-
-        return [
-            [process_option(opt, i) for opt in options]
-            for i, options in enumerate(current_options)
-        ]
-
-    app.callback(
-        Output({"type": f"{tab}-field-dropdown", "index": ALL}, "data"),
-        Input({"type": f"{tab}-field-dropdown", "index": ALL}, "value"),
-        State({"type": f"{tab}-field-dropdown", "index": ALL}, "data"),
-    )(update_dropdown_options)

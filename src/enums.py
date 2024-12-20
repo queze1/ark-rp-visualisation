@@ -119,48 +119,76 @@ class Plot(StrEnum):
 
 
 class Operator(StrEnum):
+    # Inequalities
     LT = "<"
     LEQ = "<="
     GT = ">"
     GEQ = ">="
     EQ = "="
 
-    def __call__(self, series, value):
-        if self is Operator.LT:
-            return value < series
-        elif self is Operator.LEQ:
-            return series <= value
-        elif self is Operator.GT:
-            return series > value
-        elif self is Operator.GEQ:
-            return series >= value
-        elif self is Operator.EQ:
-            return series == value
-        raise NotImplementedError(f"{self.name} operator is not implemented.")
-
-
-class MatchOperator(StrEnum):
-    IS = "is"
-    IS_NOT = "is not"
-
-    def __call__(self, series, values):
-        if self is MatchOperator.IS:
-            return series.isin(values)
-        elif self is MatchOperator.IS_NOT:
-            return ~series.isin(values)
-        raise NotImplementedError(f"{self.name} operator is not implemented.")
-
-
-class DateOperator(StrEnum):
+    # Inequality aliases
     BEFORE = "before"
     DURING = "during"
     AFTER = "after"
 
+    # Inclusion
+    IS = "is"
+    IS_NOT = "is not"
+
     def __call__(self, series, value):
-        if self is DateOperator.BEFORE:
+        if self in {Operator.LT, Operator.BEFORE}:
             return value < series
-        elif self is DateOperator.DURING:
-            return series == value
-        elif self is Operator.AFTER:
+        elif self is Operator.LEQ:
+            return series <= value
+        elif self in {Operator.GT, Operator.AFTER}:
             return series > value
+        elif self is Operator.GEQ:
+            return series >= value
+        elif self in {Operator.EQ, Operator.DURING}:
+            return series == value
+        elif self is Operator.IS:
+            return series.isin(value)
+        elif self is Operator.IS_NOT:
+            return ~series.isin(value)
         raise NotImplementedError(f"{self.name} operator is not implemented.")
+
+
+class Tab(StrEnum):
+    LINE = "line"
+    BAR = "bar"
+    SCATTER = "scatter"
+
+    @property
+    def _metadata(self):
+        return {
+            "LINE": {
+                "label": "Time Series",
+                "fields": [
+                    {
+                        "condition": lambda field: not field.temporal,
+                    },
+                    {
+                        "value": Field.DATE,
+                        "condition": lambda field: field is Field.DATE,
+                    },
+                ],
+            },
+            "BAR": {
+                "label": "Bar",
+                "fields": [{"condition": lambda field: field is not Field.DATE}, {}],
+            },
+            "SCATTER": {"label": "Scatter", "fields": [{}, {}]},
+        }.get(self.name, {})
+
+    @property
+    def label(self):
+        return self._metadata.get("label")
+
+    @property
+    def fields(self):
+        return self._metadata.get("fields")
+
+
+class PageText(StrEnum):
+    TITLE = "ARK Data Visualisation"
+    EXPLAINER = """Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."""
