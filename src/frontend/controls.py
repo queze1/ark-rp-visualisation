@@ -1,6 +1,22 @@
 from backend.enums import DateOperator, Field, MatchOperator, Operator
 from dash import html
 import dash_mantine_components as dmc
+from dash import ALL, Input, Output, State
+
+
+tab_field_controls = {
+    "line": [
+        {
+            "condition": lambda field: not field.temporal,
+        },
+        {
+            "value": Field.DATE,
+            "condition": lambda field: field is Field.DATE,
+        },
+    ],
+    "bar": [{"condition": lambda field: field is not Field.DATE}, {}],
+    "scatter": [{}, {}],
+}
 
 
 def make_controls(tab):
@@ -9,7 +25,7 @@ def make_controls(tab):
 
     def make_field_dropdown(index, condition=lambda _: True, **kwargs):
         return dmc.Select(
-            id={"type": "field-dynamic-dropdown", "index": index},
+            id={"type": f"{tab}-field-dropdown", "index": index},
             data=[
                 {"label": field.label, "value": field}
                 for field in Field
@@ -124,68 +140,59 @@ def make_controls(tab):
             gap=2,
         )
 
-    tab_fields = [
-        {
-            "condition": lambda field: not field.temporal,
-        },
-        {
-            "value": Field.DATE,
-            "condition": lambda field: field is Field.DATE,
-        },
-    ]
-    bar_fields = [{"condition": lambda field: field is not Field.DATE}, {}]
-    if tab == "line":
-        return [
-            make_field_controls(tab_fields),
+    return dmc.Card(
+        [
+            make_field_controls(tab_field_controls[tab]),
             dmc.Divider(my=25),
             make_filter_controls(),
-        ]
-    elif tab == "bar":
-        return [
-            make_field_controls(bar_fields),
-            dmc.Divider(my=25),
-            make_filter_controls(),
-        ]
-    return None
-
-
-def make_dropdown_options(selected_fields, current_options):
-    """
-    Rules:
-    1. No duplicate options.
-    2. No more than one temporal field.
-    """
-
-    # Check if any temporal field is already selected
-    has_selected_temporal = any(
-        [Field(field).temporal if field else None for field in selected_fields]
+        ],
+        withBorder=True,
     )
 
-    def process_option(opt, dropdown_index):
-        label, field = opt["label"], Field(opt["value"])
 
-        # Check if field is already selected in another dropdown
-        is_duplicate = (
-            field in selected_fields and field != selected_fields[dropdown_index]
+def register_controls_callbacks(app, tab):
+    @app.callback(
+        Output({"type": f"{tab}-field-dropdown", "index": ALL}, "data"),
+        Input({"type": f"{tab}-field-dropdown", "index": ALL}, "value"),
+        State({"type": f"{tab}-field-dropdown", "index": ALL}, "data"),
+    )
+    def update_dropdown_options(selected_fields, current_options):
+        """
+        Rules:
+        1. No duplicate options.
+        2. No more than one temporal field.
+        """
+
+        # Check if any temporal field is already selected
+        has_selected_temporal = any(
+            [Field(field).temporal if field else None for field in selected_fields]
         )
 
-        # Check if this dropdown has selected a temporal field
-        selected_temporal = (
-            Field(selected_fields[dropdown_index]).temporal
-            if selected_fields[dropdown_index]
-            else False
-        )
-        is_invalid_temporal = (
-            field.temporal and has_selected_temporal and not selected_temporal
-        )
+        def process_option(opt, dropdown_index):
+            label, field = opt["label"], Field(opt["value"])
 
-        return {
-            "label": label,
-            "value": field,
-            "disabled": is_duplicate or is_invalid_temporal,
-        }
+            # Check if field is already selected in another dropdown
+            is_duplicate = (
+                field in selected_fields and field != selected_fields[dropdown_index]
+            )
 
-    return [
-        [process_option(opt, i) for opt in options]
-        for i, options in enumerate(current_options)
-    ]
+            # Check if this dropdown has selected a temporal field
+            selected_temporal = (
+                Field(selected_fields[dropdown_index]).temporal
+                if selected_fields[dropdown_index]
+                else False
+            )
+            is_invalid_temporal = (
+                field.temporal and has_selected_temporal and not selected_temporal
+            )
+
+            return {
+                "label": label,
+                "value": field,
+                "disabled": is_duplicate or is_invalid_temporal,
+            }
+
+        return [
+            [process_option(opt, i) for opt in options]
+            for i, options in enumerate(current_options)
+        ]
