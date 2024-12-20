@@ -1,24 +1,36 @@
-from dash import dcc, html
-import dash_bootstrap_components as dbc
+from dash import dcc
+import dash_mantine_components as dmc
 
 
 EXPLAINER = """Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."""
 
 
-layout = dbc.Container(
+layout = dmc.Container(
     [
-        html.H1("ARK RP Channel Visualisation"),
-        dcc.Markdown(EXPLAINER),
-        dbc.Tabs(
+        dmc.Stack(
             [
-                dbc.Tab(label="Time Series", tab_id="line"),
-                dbc.Tab(label="Bar", tab_id="bar"),
-                dbc.Tab(label="Scatter", tab_id="scatter"),
+                dmc.Title("ARK RP Channel Visualisation"),
+                dmc.Text(EXPLAINER),
             ],
-            id="tabs",
-            active_tab="line",
+            mt=10,
+            mb=20,
+            gap=10,
         ),
-        dbc.Card(id="control-div", body=True),
+        dmc.Tabs(
+            dmc.TabsList(
+                [
+                    dmc.TabsTab("Time Series", value="line"),
+                    dmc.TabsTab("Bar", value="bar"),
+                    dmc.TabsTab("Scatter", value="scatter"),
+                ]
+            ),
+            id="tabs",
+            value="line",
+        ),
+        dmc.Card(
+            id="controls",
+            withBorder=True,
+        ),
         dcc.Graph(id="graph"),
         dcc.Store(id="graph-config"),
     ]

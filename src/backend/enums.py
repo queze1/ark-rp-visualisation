@@ -99,7 +99,7 @@ class GroupBy(StrEnum):
             return obj.mean()
         elif self is GroupBy.NUNIQUE:
             return obj.nunique()
-        raise NotImplementedError(f"{self.value} groupby is not implemented.")
+        raise NotImplementedError(f"{self.name} groupby is not implemented.")
 
 
 class Plot(StrEnum):
@@ -114,4 +114,52 @@ class Plot(StrEnum):
             return px.scatter(*args, **kwargs)
         elif self is Plot.LINE:
             return px.line(*args, **kwargs)
-        raise NotImplementedError(f"{self.value} plot is not implemented.")
+        raise NotImplementedError(f"{self.name} plot is not implemented.")
+
+
+class Operator(StrEnum):
+    LT = "<"
+    LEQ = "<="
+    GT = ">"
+    GEQ = ">="
+    EQ = "="
+
+    def __call__(self, series, value):
+        if self is Operator.LT:
+            return value < series
+        elif self is Operator.LEQ:
+            return series <= value
+        elif self is Operator.GT:
+            return series > value
+        elif self is Operator.GEQ:
+            return series >= value
+        elif self is Operator.EQ:
+            return series == value
+        raise NotImplementedError(f"{self.name} operator is not implemented.")
+
+
+class MatchOperator(StrEnum):
+    IS = "is"
+    IS_NOT = "is not"
+
+    def __call__(self, series, values):
+        if self is MatchOperator.IS:
+            return series.isin(values)
+        elif self is MatchOperator.IS_NOT:
+            return ~series.isin(values)
+        raise NotImplementedError(f"{self.name} operator is not implemented.")
+
+
+class DateOperator(StrEnum):
+    BEFORE = "before"
+    DURING = "during"
+    AFTER = "after"
+
+    def __call__(self, series, value):
+        if self is DateOperator.BEFORE:
+            return value < series
+        elif self is DateOperator.DURING:
+            return series == value
+        elif self is Operator.AFTER:
+            return series > value
+        raise NotImplementedError(f"{self.name} operator is not implemented.")

@@ -1,119 +1,124 @@
-from backend.enums import Field
-import dash_bootstrap_components as dbc
-from dash import dcc, html
+from backend.enums import DateOperator, Field, MatchOperator, Operator
+from dash import html
+import dash_mantine_components as dmc
 
 
 def make_controls(tab):
     def make_field_text(text):
-        return html.P(text, style={"font-size": "1.2rem"})
+        return dmc.GridCol(dmc.Text(text, size="lg"), span="content")
 
     def make_field_dropdown(index, condition=lambda _: True, **kwargs):
-        return dcc.Dropdown(
+        return dmc.Select(
             id={"type": "field-dynamic-dropdown", "index": index},
-            options=[
+            data=[
                 {"label": field.label, "value": field}
                 for field in Field
                 if field.label and condition(field)
             ],
-            searchable=False,
-            clearable=False,
             **kwargs,
         )
 
-    def make_axis_text(text):
-        return html.P(text, style={"text-align": "center", "margin-top": 2})
+    def make_field(label, field, index):
+        return dmc.GridCol(
+            dmc.Stack(
+                [
+                    make_field_dropdown(index=index, **field),
+                    dmc.Text(label, size="sm"),
+                ],
+                align="center",
+                gap=5,
+            ),
+            span=3,
+        )
 
-    def make_field_controls(field_options):
-        return dbc.Row(
+    def make_field_controls(fields):
+        field1, field2 = fields
+        return dmc.Grid(
             [
-                dbc.Col(make_field_text("Plot"), width="auto"),
-                dbc.Col(
-                    [
-                        make_field_dropdown(index=0, **field_options[0]),
-                        make_axis_text("Y-Axis"),
-                    ],
-                    width=2,
-                ),
-                dbc.Col(make_field_text("By"), width="auto"),
-                dbc.Col(
-                    [
-                        make_field_dropdown(index=1, **field_options[1]),
-                        make_axis_text("X-Axis"),
-                    ],
-                    width=2,
-                ),
+                make_field_text("Plot"),
+                make_field("Y-Axis", field1, index=0),
+                make_field_text("By"),
+                make_field("X-Axis", field2, index=1),
             ],
-            className="g-3",
             justify="center",
         )
 
     def make_filter_controls():
-        return dbc.Stack(
+        return dmc.Stack(
             [
-                dbc.Row(
+                dmc.Group(
                     [
-                        dbc.Col(
-                            html.P("Filters", style={"font-size": "1.25rem"}),
-                            width="auto",
-                        ),
-                        dbc.Col(
-                            html.P("Reset"),
-                            width="auto",
-                        ),
+                        dmc.Text("Filters", size="lg"),
+                        dmc.Text("Reset"),
                     ],
-                    justify="between",
+                    justify="space-between",
                 ),
-                dbc.Row(
+                dmc.Group(
                     [
-                        dbc.Col(html.Label("Date")),
-                        dbc.Col(dcc.DatePickerRange()),
+                        html.Label("Date"),
+                        dmc.Select(
+                            data=[operator for operator in DateOperator],
+                            value=DateOperator.BEFORE,
+                        ),
+                        dmc.DatePickerInput(),
                     ],
+                    grow=1,
                 ),
-                dbc.Row(
+                dmc.Group(
                     [
-                        dbc.Col(html.Label("User")),
-                        dbc.Col(
-                            dcc.Dropdown(
-                                ["New York City", "Montreal", "San Francisco"],
-                                value=None,
-                                multi=True,
-                            )
+                        html.Label("User"),
+                        dmc.Select(
+                            data=[operator for operator in MatchOperator],
+                            value=MatchOperator.IS,
+                        ),
+                        dmc.MultiSelect(
+                            data=["New York City", "Montreal", "San Francisco"],
+                            placeholder="Select...",
                         ),
                     ],
+                    grow=1,
                 ),
-                dbc.Row(
+                dmc.Group(
                     [
-                        dbc.Col(html.Label("Channel Name")),
-                        dbc.Col(
-                            dcc.Dropdown(
-                                ["New York City", "Montreal", "San Francisco"],
-                                value=None,
-                                multi=True,
-                            )
+                        html.Label("Channel Name"),
+                        dmc.Select(
+                            data=[operator for operator in MatchOperator],
+                            value=MatchOperator.IS,
+                        ),
+                        dmc.MultiSelect(
+                            data=["New York City", "Montreal", "San Francisco"],
+                            placeholder="Select...",
                         ),
                     ],
+                    grow=1,
                 ),
-                dbc.Row(
+                dmc.Group(
                     [
-                        dbc.Col(html.Label("Hour")),
-                        dbc.Col(dcc.RangeSlider(0, 23, 1)),
-                    ],
-                ),
-                dbc.Row(
-                    [
-                        dbc.Col(html.Label("Reaction Count")),
-                        dbc.Col(
-                            dcc.Dropdown(["<", "=", ">", "<=", ">="]),
+                        html.Label("Hour"),
+                        dmc.Select(
+                            data=[operator for operator in Operator], value=Operator.GEQ
                         ),
-                        dbc.Col(
-                            dbc.Input(
-                                type="number",
-                                min=0,
-                                step=1,
-                                placeholder="Enter number...",
-                            ),
+                        dmc.Select(
+                            data=[str(hour) for hour in range(24)],
+                            placeholder="Enter hour...",
                         ),
                     ],
+                    grow=1,
+                ),
+                dmc.Group(
+                    [
+                        html.Label("Reaction Count"),
+                        dmc.Select(
+                            data=[operator for operator in Operator], value=Operator.GEQ
+                        ),
+                        dmc.NumberInput(
+                            min=0,
+                            max=99,
+                            allowDecimal=False,
+                            placeholder="Enter number...",
+                        ),
+                    ],
+                    grow=1,
                 ),
             ],
             gap=2,
@@ -130,9 +135,17 @@ def make_controls(tab):
     ]
     bar_fields = [{"condition": lambda field: field is not Field.DATE}, {}]
     if tab == "line":
-        return [make_field_controls(tab_fields), html.Hr(), make_filter_controls()]
+        return [
+            make_field_controls(tab_fields),
+            dmc.Divider(my=25),
+            make_filter_controls(),
+        ]
     elif tab == "bar":
-        return [make_field_controls(bar_fields), html.Hr(), make_filter_controls()]
+        return [
+            make_field_controls(bar_fields),
+            dmc.Divider(my=25),
+            make_filter_controls(),
+        ]
     return None
 
 
