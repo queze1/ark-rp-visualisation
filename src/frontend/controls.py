@@ -151,11 +151,6 @@ def make_controls(tab):
 
 
 def register_controls_callbacks(app, tab):
-    @app.callback(
-        Output({"type": f"{tab}-field-dropdown", "index": ALL}, "data"),
-        Input({"type": f"{tab}-field-dropdown", "index": ALL}, "value"),
-        State({"type": f"{tab}-field-dropdown", "index": ALL}, "data"),
-    )
     def update_dropdown_options(selected_fields, current_options):
         """
         Rules:
@@ -196,3 +191,9 @@ def register_controls_callbacks(app, tab):
             [process_option(opt, i) for opt in options]
             for i, options in enumerate(current_options)
         ]
+
+    app.callback(
+        Output({"type": f"{tab}-field-dropdown", "index": ALL}, "data"),
+        Input({"type": f"{tab}-field-dropdown", "index": ALL}, "value"),
+        State({"type": f"{tab}-field-dropdown", "index": ALL}, "data"),
+    )(update_dropdown_options)
