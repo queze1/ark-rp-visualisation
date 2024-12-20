@@ -145,7 +145,10 @@ def make_tab(tab: Tab):
                 maw=200,
                 id=Page.SUBMIT_BUTTON(tab),
             ),
-            dcc.Graph(figure={}, id=Page.GRAPH(tab)),
+            dmc.Space(h=20),
+            dcc.Graph(
+                id=Page.GRAPH(tab),
+            ),
         ],
         withBorder=True,
     )

@@ -51,18 +51,16 @@ def update_dropdown_options(selected_fields, current_options):
 
 def render_graph(n_clicks, selected_fields, tab_id):
     y_field, x_field = selected_fields
-    if not (x_field and y_field):
-        return
+    if not (n_clicks and x_field and y_field):
+        return {}
 
-    fig = PlotBuilder(df).plot(
+    return PlotBuilder(df).plot(
         primary_field=x_field,
         secondary_field=y_field,
         x_axis=x_field,
         y_axis=y_field,
         plot_type=tab_id,
     )
-    print(fig)
-    return fig
 
 
 def register_callbacks(app):

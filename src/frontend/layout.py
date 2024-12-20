@@ -28,5 +28,5 @@ layout = dmc.Container(
     [
         header,
         tabs,
-    ]
+    ],
 )

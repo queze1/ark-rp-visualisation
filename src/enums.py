@@ -164,6 +164,9 @@ class Tab(StrEnum):
         non_temporal_fields = [
             field for field in fields_with_label if not field.temporal
         ]
+        not_message_fields = [
+            field for field in fields_with_label if field is not Field.COUNT
+        ]
 
         return {
             "LINE": {
@@ -188,7 +191,7 @@ class Tab(StrEnum):
                     "allowed": fields_with_label,
                 },
                 "secondary_field": {
-                    "allowed": fields_with_label,
+                    "allowed": not_message_fields,
                 },
             },
         }.get(self.name, {})
