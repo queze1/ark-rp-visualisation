@@ -1,30 +1,32 @@
 import dash_mantine_components as dmc
-from dash import dcc
 
-from enums import Tab, PageText
-from frontend.controls import make_controls
+from enums import Tab, Text, Page
+from frontend.tabs import make_tab
+
+
+header = dmc.Stack(
+    [
+        dmc.Title(Text.TITLE),
+        dmc.Text(Text.EXPLAINER),
+    ],
+    mt=10,
+    mb=20,
+    gap=10,
+)
+
 
 tabs = dmc.Tabs(
     [
         dmc.TabsList([dmc.TabsTab(tab.label, value=tab) for tab in Tab]),
     ]
-    + [dmc.TabsPanel(make_controls(tab), value=tab) for tab in Tab],
-    id="tabs",
+    + [dmc.TabsPanel(make_tab(tab), value=tab) for tab in Tab],
+    id=Page.TABS,
     value=Tab.LINE,
 )
 
 layout = dmc.Container(
     [
-        dmc.Stack(
-            [
-                dmc.Title(PageText.TITLE),
-                dmc.Text(PageText.EXPLAINER),
-            ],
-            mt=10,
-            mb=20,
-            gap=10,
-        ),
+        header,
         tabs,
-        dcc.Graph(id="graph"),
     ]
 )

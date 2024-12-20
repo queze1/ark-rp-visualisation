@@ -1,15 +1,16 @@
-from enums import Operator, Tab
-from dash import html
 import dash_mantine_components as dmc
+from dash import dcc, html
+
+from enums import Operator, Page, Tab
 
 
-def make_controls(tab: Tab):
+def make_tab(tab: Tab):
     def make_field_text(text):
         return dmc.GridCol(dmc.Text(text, size="lg"), span="content")
 
-    def make_field_dropdown(field_options, index):
-        return dmc.Select(
-            id={"type": f"{tab}-field-dropdown", "index": index},
+    def make_field(label, field_options, index):
+        dropdown = dmc.Select(
+            id={"type": Page.FIELD_DROPDOWN(tab), "index": index},
             data=[
                 {"label": field.label, "value": field}
                 for field in field_options["allowed"]
@@ -17,11 +18,10 @@ def make_controls(tab: Tab):
             value=field_options.get("default"),
         )
 
-    def make_field(label, field_options, index):
         return dmc.GridCol(
             dmc.Stack(
                 [
-                    make_field_dropdown(field_options, index),
+                    dropdown,
                     dmc.Text(label, size="sm"),
                 ],
                 align="center",
@@ -45,9 +45,15 @@ def make_controls(tab: Tab):
             dmc.Group(
                 [
                     dmc.Text("Filters", size="lg"),
-                    dmc.Text("Reset"),
+                    dmc.Button(
+                        children=dmc.Text("Reset", size="sm"),
+                        variant="subtle",
+                        color="black",
+                    ),
                 ],
                 justify="space-between",
+                align="center",
+                mb=10,
             ),
             dmc.Group(
                 [
@@ -124,7 +130,7 @@ def make_controls(tab: Tab):
                 grow=1,
             ),
         ],
-        gap=2,
+        gap=5,
     )
 
     return dmc.Card(
@@ -132,6 +138,14 @@ def make_controls(tab: Tab):
             field_controls,
             dmc.Divider(my=25),
             filter_controls,
+            dmc.Space(h=20),
+            dmc.Button(
+                "This is how I like it!",
+                ml="auto",
+                maw=200,
+                id=Page.SUBMIT_BUTTON(tab),
+            ),
+            dcc.Graph(figure={}, id=Page.GRAPH(tab)),
         ],
         withBorder=True,
     )

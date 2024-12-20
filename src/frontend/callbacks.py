@@ -1,6 +1,10 @@
-from enums import Tab, Field
+from enums import Tab, Field, Page
 
 from dash import ALL, Input, Output, State
+from data_loader import DataLoader
+from frontend.plot import PlotBuilder
+
+df = DataLoader().load_data().df
 
 
 def update_dropdown_options(selected_fields, current_options):
@@ -45,10 +49,32 @@ def update_dropdown_options(selected_fields, current_options):
     ]
 
 
+def render_graph(n_clicks, selected_fields, tab_id):
+    y_field, x_field = selected_fields
+    if not (x_field and y_field):
+        return
+
+    fig = PlotBuilder(df).plot(
+        primary_field=x_field,
+        secondary_field=y_field,
+        x_axis=x_field,
+        y_axis=y_field,
+        plot_type=tab_id,
+    )
+    print(fig)
+    return fig
+
+
 def register_callbacks(app):
     for tab in Tab:
         app.callback(
-            Output({"type": f"{tab}-field-dropdown", "index": ALL}, "data"),
-            Input({"type": f"{tab}-field-dropdown", "index": ALL}, "value"),
-            State({"type": f"{tab}-field-dropdown", "index": ALL}, "data"),
+            Output({"type": Page.FIELD_DROPDOWN(tab), "index": ALL}, "data"),
+            Input({"type": Page.FIELD_DROPDOWN(tab), "index": ALL}, "value"),
+            State({"type": Page.FIELD_DROPDOWN(tab), "index": ALL}, "data"),
         )(update_dropdown_options)
+        app.callback(
+            Output(Page.GRAPH(tab), "figure"),
+            Input(Page.SUBMIT_BUTTON(tab), "n_clicks"),
+            State({"type": Page.FIELD_DROPDOWN(tab), "index": ALL}, "value"),
+            State(Page.TABS, "value"),
+        )(render_graph)
