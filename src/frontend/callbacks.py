@@ -1,8 +1,8 @@
-from enums import Tab, Field, Page
+from enums import Field, Page
 
-from dash import ALL, Input, Output, State
+from dash import ALL, Input, Output, State, MATCH
 from data_loader import DataLoader
-from frontend.plot import PlotBuilder
+# from frontend.plot import PlotBuilder
 
 df = DataLoader().load_data().df
 
@@ -49,30 +49,37 @@ def update_dropdown_options(selected_fields, current_options):
     ]
 
 
-def render_graph(n_clicks, selected_fields, tab_id):
-    y_field, x_field = selected_fields
-    if not (n_clicks and x_field and y_field):
-        return {}
+# def render_graph(n_clicks, selected_fields, tab_id):
+#     y_field, x_field = selected_fields
+#     if not (n_clicks and x_field and y_field):
+#         return {}
 
-    return PlotBuilder(df).plot(
-        primary_field=x_field,
-        secondary_field=y_field,
-        x_axis=x_field,
-        y_axis=y_field,
-        plot_type=tab_id,
-    )
+#     return PlotBuilder(df).plot(
+#         primary_field=x_field,
+#         secondary_field=y_field,
+#         x_axis=x_field,
+#         y_axis=y_field,
+#         plot_type=tab_id,
+#     )
 
 
 def register_callbacks(app):
-    for tab in Tab:
-        app.callback(
-            Output({"type": Page.FIELD_DROPDOWN(tab), "index": ALL}, "data"),
-            Input({"type": Page.FIELD_DROPDOWN(tab), "index": ALL}, "value"),
-            State({"type": Page.FIELD_DROPDOWN(tab), "index": ALL}, "data"),
-        )(update_dropdown_options)
-        app.callback(
-            Output(Page.GRAPH(tab), "figure"),
-            Input(Page.SUBMIT_BUTTON(tab), "n_clicks"),
-            State({"type": Page.FIELD_DROPDOWN(tab), "index": ALL}, "value"),
-            State(Page.TABS, "value"),
-        )(render_graph)
+    app.callback(
+        Output({"type": Page.FIELD_DROPDOWN, "tab": MATCH, "index": ALL}, "data"),
+        Input({"type": Page.FIELD_DROPDOWN, "tab": MATCH, "index": ALL}, "value"),
+        State({"type": Page.FIELD_DROPDOWN, "tab": MATCH, "index": ALL}, "data"),
+    )(update_dropdown_options)
+
+
+# for tab in Tab:
+#     app.callback(
+#         Output({"type": Page.FIELD_DROPDOWN(tab), "index": ALL}, "data"),
+#         Input({"type": Page.FIELD_DROPDOWN(tab), "index": ALL}, "value"),
+#         State({"type": Page.FIELD_DROPDOWN(tab), "index": ALL}, "data"),
+#     )(update_dropdown_options)
+# app.callback(
+#     Output(Page.GRAPH(tab), "figure"),
+#     Input(Page.SUBMIT_BUTTON(tab), "n_clicks"),
+#     State({"type": Page.FIELD_DROPDOWN(tab), "index": ALL}, "value"),
+#     State(Page.TABS, "value"),
+# )(render_graph)

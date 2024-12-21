@@ -11,7 +11,7 @@ def make_tab(tab: Tab):
 
     def make_field(label, field_options, index):
         dropdown = dmc.Select(
-            id={"type": Page.FIELD_DROPDOWN(tab), "index": index},
+            id={"type": Page.FIELD_DROPDOWN, "tab": tab, "index": index},
             data=[
                 {"label": field.label, "value": field}
                 for field in field_options["allowed"]
