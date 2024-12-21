@@ -1,6 +1,6 @@
 import dash_mantine_components as dmc
 
-from enums import Tab, Text, Page
+from enums import Tab, Text
 from frontend.tabs import make_tab
 
 
@@ -20,7 +20,6 @@ tabs = dmc.Tabs(
         dmc.TabsList([dmc.TabsTab(tab.label, value=tab) for tab in Tab]),
     ]
     + [dmc.TabsPanel(make_tab(tab), value=tab) for tab in Tab],
-    id=Page.TABS,
     value=Tab.LINE,
 )
 

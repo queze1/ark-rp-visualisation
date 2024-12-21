@@ -51,11 +51,11 @@ def make_tab(tab: Tab):
                 "This is how I like it!",
                 ml="auto",
                 maw=200,
-                id=Page.SUBMIT_BUTTON(tab),
+                id={"type": Page.SUBMIT_BUTTON, "tab": tab},
             ),
             dmc.Space(h=20),
             dcc.Graph(
-                id=Page.GRAPH(tab),
+                id={"type": Page.GRAPH, "tab": tab},
             ),
         ],
         withBorder=True,

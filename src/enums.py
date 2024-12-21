@@ -215,11 +215,6 @@ class Text(StrEnum):
 
 
 class Page(StrEnum):
-    TABS = "tabs"
     GRAPH = "graph"
     FIELD_DROPDOWN = "field-dropdown"
     SUBMIT_BUTTON = "submit-button"
-
-    def __call__(self, tab):
-        if self in {Page.FIELD_DROPDOWN, Page.SUBMIT_BUTTON, Page.GRAPH}:
-            return f"{tab}-{self.value}"
