@@ -1,5 +1,6 @@
 import dash_mantine_components as dmc
 from dash import dcc
+from dash_iconify import DashIconify
 
 from enums import Page, Tab
 from frontend.filters import filter_controls
@@ -9,7 +10,7 @@ def make_tab(tab: Tab):
     def make_field_text(text):
         return dmc.GridCol(dmc.Text(text, size="lg"), span="content")
 
-    def make_field(label, field_options, index):
+    def make_field(field_options, index):
         dropdown = dmc.Select(
             id={"type": Page.FIELD_DROPDOWN, "tab": tab, "index": index},
             data=[
@@ -20,25 +21,43 @@ def make_tab(tab: Tab):
         )
 
         return dmc.GridCol(
-            dmc.Stack(
-                [
-                    dropdown,
-                    dmc.Text(label, size="sm"),
-                ],
-                align="center",
-                gap=5,
-            ),
+            dropdown,
             span=3,
         )
 
-    field_controls = dmc.Grid(
+    field_controls = dmc.Stack(
         [
-            make_field_text("Plot"),
-            make_field("Y-Axis", tab.primary_field, index=0),
-            make_field_text("By"),
-            make_field("X-Axis", tab.secondary_field, index=1),
+            dmc.Grid(
+                [
+                    make_field_text("Plot"),
+                    make_field("Y-Axis", tab.primary_field, index=0),
+                    make_field_text("By"),
+                    make_field("X-Axis", tab.secondary_field, index=1),
+                ],
+                justify="center",
+            ),
+            dmc.Grid(
+                [
+                    dmc.GridCol(
+                        dmc.Text("Plot", size="lg"),
+                        style={"visibility": "hidden"},
+                        span="content",
+                    ),
+                    dmc.GridCol(
+                        dmc.Text("Y-Axis", size="sm", ta="center"),
+                        span=3,
+                    ),
+                    dmc.GridCol(DashIconify(icon="bi:arrow-repeat"), span="content"),
+                    dmc.GridCol(
+                        dmc.Text("X-Axis", size="sm", ta="center"),
+                        span=3,
+                    ),
+                ],
+                justify="center",
+                align="center",
+            ),
         ],
-        justify="center",
+        gap=5,
     )
 
     return dmc.Card(

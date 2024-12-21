@@ -25,7 +25,6 @@ def update_dropdown_options(selected_fields, current_options):
 
             # Check if field is already selected in another dropdown
             is_duplicate = field in selected_fields and field != selected_field
-
             # Check if this dropdown has selected a temporal field
             selected_temporal = (
                 Field(selected_field).temporal if selected_field else False
@@ -43,6 +42,7 @@ def update_dropdown_options(selected_fields, current_options):
             patched_options[i].update(process_option(opt))
         return patched_options
 
+    # Generate a list of patches, one for each output from the pattern-match
     return [
         process_options(selected_field, options)
         for selected_field, options in zip(selected_fields, current_options)

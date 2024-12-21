@@ -3,3 +3,4 @@ plotly
 pandas
 pytest
 dash-mantine-components
+dash-iconify
