@@ -1,6 +1,6 @@
 from enums import Field, Page
 
-from dash import ALL, Input, Output, State, MATCH
+from dash import ALL, Input, Output, State, MATCH, Patch
 from data_loader import DataLoader
 from frontend.plot import PlotBuilder
 
@@ -19,33 +19,33 @@ def update_dropdown_options(selected_fields, current_options):
         [Field(field).temporal if field else None for field in selected_fields]
     )
 
-    def process_option(dropdown_index, opt):
-        label, field = opt["label"], Field(opt["value"])
+    def process_options(selected_field, options):
+        def process_option(opt):
+            field = Field(opt["value"])
 
-        # Check if field is already selected in another dropdown
-        is_duplicate = (
-            field in selected_fields and field != selected_fields[dropdown_index]
-        )
+            # Check if field is already selected in another dropdown
+            is_duplicate = field in selected_fields and field != selected_field
 
-        # Check if this dropdown has selected a temporal field
-        selected_temporal = (
-            Field(selected_fields[dropdown_index]).temporal
-            if selected_fields[dropdown_index]
-            else False
-        )
-        is_invalid_temporal = (
-            field.temporal and has_selected_temporal and not selected_temporal
-        )
+            # Check if this dropdown has selected a temporal field
+            selected_temporal = (
+                Field(selected_field).temporal if selected_field else False
+            )
+            is_invalid_temporal = (
+                field.temporal and has_selected_temporal and not selected_temporal
+            )
 
-        return {
-            "label": label,
-            "value": field,
-            "disabled": is_duplicate or is_invalid_temporal,
-        }
+            return {
+                "disabled": is_duplicate or is_invalid_temporal,
+            }
+
+        patched_options = Patch()
+        for i, opt in enumerate(options):
+            patched_options[i].update(process_option(opt))
+        return patched_options
 
     return [
-        [process_option(i, opt) for opt in options]
-        for i, options in enumerate(current_options)
+        process_options(selected_field, options)
+        for selected_field, options in zip(selected_fields, current_options)
     ]
 
 
