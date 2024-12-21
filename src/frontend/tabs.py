@@ -7,8 +7,9 @@ from frontend.filters import filter_controls
 
 
 def make_tab(tab: Tab):
-    def make_field_text(text):
-        return dmc.GridCol(dmc.Text(text, size="lg"), span="content")
+    def make_field_text(text, hidden=False):
+        style = {"visibility": "hidden"} if hidden else {}
+        return dmc.GridCol(dmc.Text(text, size="lg", style=style), span="content")
 
     def make_field(field_options, index):
         dropdown = dmc.Select(
@@ -25,33 +26,44 @@ def make_tab(tab: Tab):
             span=3,
         )
 
+    def make_axis_text(text, index):
+        # Same length as dropdown, to be centred under them
+        return dmc.GridCol(
+            dmc.Text(
+                text,
+                id={"type": Page.AXIS_TEXT, "tab": tab, "index": index},
+                size="sm",
+                ta="center",
+            ),
+            span=3,
+        )
+
+    # Approximately same width as "By"
+    swap_axis_button = dmc.Button(
+        id={"type": Page.SWAP_AXIS_BUTTON, "tab": tab},
+        children=DashIconify(icon="bi:arrow-left-right", width=18),
+        variant="subtle",
+        color="none",
+        style={"padding": 8},
+    )
+
     field_controls = dmc.Stack(
         [
             dmc.Grid(
                 [
                     make_field_text("Plot"),
-                    make_field("Y-Axis", tab.primary_field, index=0),
+                    make_field(tab.primary_field, index=0),
                     make_field_text("By"),
-                    make_field("X-Axis", tab.secondary_field, index=1),
+                    make_field(tab.secondary_field, index=1),
                 ],
                 justify="center",
             ),
             dmc.Grid(
                 [
-                    dmc.GridCol(
-                        dmc.Text("Plot", size="lg"),
-                        style={"visibility": "hidden"},
-                        span="content",
-                    ),
-                    dmc.GridCol(
-                        dmc.Text("Y-Axis", size="sm", ta="center"),
-                        span=3,
-                    ),
-                    dmc.GridCol(DashIconify(icon="bi:arrow-repeat"), span="content"),
-                    dmc.GridCol(
-                        dmc.Text("X-Axis", size="sm", ta="center"),
-                        span=3,
-                    ),
+                    make_field_text("Plot", hidden=True),
+                    make_axis_text("Y-Axis", index=0),
+                    swap_axis_button,
+                    make_axis_text("X-Axis", index=1),
                 ],
                 justify="center",
                 align="center",

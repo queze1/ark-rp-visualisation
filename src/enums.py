@@ -218,3 +218,5 @@ class Page(StrEnum):
     GRAPH = "graph"
     FIELD_DROPDOWN = "field-dropdown"
     SUBMIT_BUTTON = "submit-button"
+    AXIS_TEXT = "axis-text"
+    SWAP_AXIS_BUTTON = "swap-axis-button"
