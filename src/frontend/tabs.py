@@ -2,7 +2,7 @@ import dash_mantine_components as dmc
 from dash import dcc
 from dash_iconify import DashIconify
 
-from enums import Page, Tab
+from enums import Page, Tab, Text
 from frontend.filters import filter_controls
 
 
@@ -32,15 +32,15 @@ def make_tab(tab: Tab):
             dmc.Text(
                 text,
                 id={"type": Page.AXIS_TEXT, "tab": tab, "index": index},
-                size="sm",
+                size="md",
                 ta="center",
             ),
             span=3,
         )
 
     # Approximately same width as "By"
-    swap_axis_button = dmc.Button(
-        id={"type": Page.SWAP_AXIS_BUTTON, "tab": tab},
+    swap_axes_button = dmc.Button(
+        id={"type": Page.SWAP_AXES_BUTTON, "tab": tab},
         children=DashIconify(icon="bi:arrow-left-right", width=18),
         variant="subtle",
         color="none",
@@ -51,18 +51,18 @@ def make_tab(tab: Tab):
         [
             dmc.Grid(
                 [
-                    make_field_text("Plot"),
+                    make_field_text(Text.PLOT),
                     make_field(tab.primary_field, index=0),
-                    make_field_text("By"),
+                    make_field_text(Text.BY),
                     make_field(tab.secondary_field, index=1),
                 ],
                 justify="center",
             ),
             dmc.Grid(
                 [
-                    make_field_text("Plot", hidden=True),
+                    make_field_text(Text.PLOT, hidden=True),
                     make_axis_text("Y-Axis", index=0),
-                    swap_axis_button,
+                    swap_axes_button,
                     make_axis_text("X-Axis", index=1),
                 ],
                 justify="center",
@@ -79,10 +79,10 @@ def make_tab(tab: Tab):
             filter_controls,
             dmc.Space(h=20),
             dmc.Button(
-                "This is how I like it!",
+                Text.UPDATE_GRAPH_LABEL,
                 ml="auto",
                 maw=200,
-                id={"type": Page.SUBMIT_BUTTON, "tab": tab},
+                id={"type": Page.UPDATE_GRAPH_BUTTON, "tab": tab},
             ),
             dmc.Space(h=20),
             dcc.Graph(

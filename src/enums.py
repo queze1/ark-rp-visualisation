@@ -182,7 +182,7 @@ class Tab(StrEnum):
                     "allowed": fields_with_label,
                 },
                 "secondary_field": {
-                    "allowed": fields_with_label,
+                    "allowed": not_message_fields,
                 },
             },
             "SCATTER": {
@@ -212,11 +212,16 @@ class Tab(StrEnum):
 class Text(StrEnum):
     TITLE = "ARK Data Visualisation"
     EXPLAINER = """Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."""
+    PLOT = "Plot"
+    BY = "By"
+    Y_AXIS = "Y-Axis"
+    X_AXIS = "X-Axis"
+    UPDATE_GRAPH_LABEL = "This is how I like it!"
 
 
 class Page(StrEnum):
     GRAPH = "graph"
     FIELD_DROPDOWN = "field-dropdown"
-    SUBMIT_BUTTON = "submit-button"
+    UPDATE_GRAPH_BUTTON = "update-graph-button"
     AXIS_TEXT = "axis-text"
-    SWAP_AXIS_BUTTON = "swap-axis-button"
+    SWAP_AXES_BUTTON = "swap-axis-button"

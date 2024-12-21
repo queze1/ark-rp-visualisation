@@ -73,6 +73,10 @@ class PlotBuilder:
         aggregations = {grouped_field: aggregation for grouped_field in rest}
         return self.group_by_multiple(aggregations)
 
+    def sort(self, field: Field, ascending: bool = True):
+        self._df = self._df.sort_values(by=field, ascending=ascending)
+        return self
+
     def plot(
         self,
         primary_field: Field,
@@ -83,8 +87,9 @@ class PlotBuilder:
     ):
         self.add_field(primary_field)
         self.add_field(secondary_field)
-        aggregation = (
+        self.group_by(
             GroupBy.NUNIQUE if Field(secondary_field).categorical else GroupBy.SUM
         )
-        self.group_by(aggregation)
+        # By default, sort by summary value unless you were grouping by a date
+        self.sort(primary_field if Field(primary_field).temporal else secondary_field)
         return Plot(plot_type)(self._df, x=x_axis, y=y_axis)
