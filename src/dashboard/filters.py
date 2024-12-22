@@ -13,7 +13,7 @@ def get_unique(field):
 
 def make_filter_controls(tab: Tab):
     def make_filter_group(filter: Filter, index):
-        select_kwargs = filter.select_kwargs
+        select_kwargs = filter.select_kwargs.copy()
         # Check if options need to be loaded dynamically
         if select_kwargs.get("data") == FilterOption.FIELD_UNIQUE:
             select_kwargs["data"] = get_unique(filter)

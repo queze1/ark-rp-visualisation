@@ -1,8 +1,8 @@
-from enums import Field, Filter, Page, Text, Tab
+from enums import Field, Filter, Page, Text, Tab, Operator
 
 from dash import ALL, Input, Output, State, MATCH, Patch, ctx
 from data_loader import df
-from dashboard.plot import PlotBuilder
+from dashboard.plot_builder import PlotBuilder
 
 
 def update_dropdown_options(selected_fields, current_options):
@@ -65,10 +65,8 @@ def render_graph(
     if n_clicks is None or not all(selected_fields):
         return {}
 
-    print(filter_operators, filter_values)
-
     primary_field, secondary_field, *_ = selected_fields
-    # Check axes labels
+    # Find field axes
     if selected_axes == [Text.Y_AXIS, Text.X_AXIS]:
         axes = dict(y_axis=primary_field, x_axis=secondary_field)
     elif selected_axes == [Text.X_AXIS, Text.Y_AXIS]:
@@ -76,10 +74,23 @@ def render_graph(
     else:
         raise ValueError("Invalid axes")
 
+    # Filter enum value is the field to filter on
+    filter_fields = [
+        operator.id.filter for operator in ctx.args_grouping.filter_operators
+    ]
+    filters = [
+        (field, Operator(operator), value)
+        for field, operator, value in zip(
+            filter_fields, filter_operators, filter_values
+        )
+        if value
+    ]
+
     tab = Tab(ctx.triggered_id["tab"])
     return PlotBuilder(df).plot(
         fields=selected_fields,
         plot_type=tab.plot_type,
+        filters=filters,
         **axes,
     )
 
@@ -88,7 +99,7 @@ def reset_filters(n_clicks):
     if n_clicks is None:
         return
 
-    filter_operators, filter_values = ctx.outputs_grouping
+    filter_operators, filter_values = ctx.outputs_list
     # Set default operators and reset values to None
     return [
         Filter(operator["id"]["filter"]).default_operator

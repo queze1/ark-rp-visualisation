@@ -2,6 +2,7 @@ from enum import Enum, StrEnum, auto
 
 import plotly.express as px
 import dash_mantine_components as dmc
+import pandas as pd
 
 
 class FieldType(Enum):
@@ -127,7 +128,7 @@ class Operator(StrEnum):
     GEQ = ">="
     EQ = "="
 
-    # Inequality aliases
+    # Date inequalities
     BEFORE = "before"
     DURING = "during"
     AFTER = "after"
@@ -137,16 +138,22 @@ class Operator(StrEnum):
     NOT_IN = "not in"
 
     def __call__(self, series, value):
-        if self in {Operator.LT, Operator.BEFORE}:
-            return value < series
+        if self is Operator.LT:
+            return series < value
         elif self is Operator.LEQ:
             return series <= value
-        elif self in {Operator.GT, Operator.AFTER}:
+        elif self is Operator.GT:
             return series > value
         elif self is Operator.GEQ:
             return series >= value
-        elif self in {Operator.EQ, Operator.DURING}:
+        elif self is Operator.EQ:
             return series == value
+        elif self is Operator.BEFORE:
+            return series < pd.to_datetime(value).date()
+        elif self is Operator.AFTER:
+            return series > pd.to_datetime(value).date()
+        elif self is Operator.DURING:
+            return series == pd.to_datetime(value).date()
         elif self is Operator.IN:
             return series.isin(value)
         elif self is Operator.NOT_IN:
@@ -292,7 +299,7 @@ class Filter(StrEnum):
             "DATE": {
                 "label": "Date",
                 "operators": [Operator.BEFORE, Operator.DURING, Operator.AFTER],
-                "default_operator": Operator.DURING,
+                "default_operator": Operator.BEFORE,
                 "select_component": dmc.DatePickerInput,
                 "select_kwargs": dict(
                     clearable=True,

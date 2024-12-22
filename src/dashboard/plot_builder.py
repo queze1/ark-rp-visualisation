@@ -1,6 +1,6 @@
 import pandas as pd
 
-from enums import Plot
+from enums import Operator, Plot
 from pipeline.enums import Field, GroupBy
 
 
@@ -9,17 +9,12 @@ class PlotBuilder:
         self._df = df.copy()
         self._fields = []
 
-    def add_field(self, field: Field, reaction: str = None):
+    def add_field(self, field: Field):
         # Check if `field` is a field by calling it
         field = Field(field)
 
         # Create new derivative fields if needed
-        if reaction and field is Field.REACTION_COUNT:
-            self._df[field] = [d.get(reaction, 0) for d in self._df[Field.REACTIONS]]
-        elif reaction:
-            # If a specific reaction was specified but the field was not for reactions, raise an exception
-            raise ValueError("Invalid field for reaction counts")
-        elif field is Field.HOUR:
+        if field is Field.HOUR:
             self._df[field] = self._df[Field.DATE].dt.hour
         elif field is Field.DAY:
             self._df[field] = self._df[Field.DATE].dt.day
@@ -66,6 +61,10 @@ class PlotBuilder:
         self._df = grouped.agg(**kwargs).reset_index()
         return self
 
+    def filter(self, field: Field, operator: Operator, value):
+        self._df = self._df[operator(self._df[field], value)]
+        return self
+
     def sort(self, field: Field, ascending: bool = True):
         self._df = self._df.sort_values(by=field, ascending=ascending)
         return self
@@ -73,12 +72,16 @@ class PlotBuilder:
     def plot(
         self,
         fields: list[Field],
+        filters: list[tuple[Field, Operator, object]],
         x_axis: Field,
         y_axis: Field,
         plot_type: Plot,
     ):
         for field in fields:
             self.add_field(field)
+        for filter in filters:
+            self.filter(*filter)
+
         # Group and aggregate using default settings
         self.group_by_multiple()
 
