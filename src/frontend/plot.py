@@ -50,8 +50,8 @@ class PlotBuilder:
 
             # Create kwargs from supplied aggregations
             kwargs = {
-                grouped_field: (grouped_field, aggregation)
-                for grouped_field, aggregation in aggregations.items()
+                field: (field, aggregation)
+                for field, aggregation in aggregations.items()
             }
         else:
             # If aggregations are not supplied, group the rest by the last field
@@ -83,11 +83,11 @@ class PlotBuilder:
     ):
         for field in fields:
             self.add_field(field)
-        # Group using default settings
+        # Group and aggregate using default settings
         self.group_by_multiple()
 
-        # By default, sort by Y-axis unless you were grouping by a date
-        *_, grouping_field = fields
+        # By default, sort by grouped field unless you were grouping by a date
+        grouped_field, *_, grouping_field = fields
         if not Field(grouping_field).temporal:
-            self.sort(field=y_axis)
+            self.sort(field=grouped_field)
         return Plot(plot_type)(self._df, x=x_axis, y=y_axis)

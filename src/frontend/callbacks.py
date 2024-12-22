@@ -1,4 +1,4 @@
-from enums import Field, Page, Text
+from enums import Field, Page, Text, Tab
 
 from dash import ALL, Input, Output, State, MATCH, Patch
 from data_loader import DataLoader
@@ -70,9 +70,10 @@ def render_graph(n_clicks, selected_fields, axes_text, id):
     else:
         raise ValueError("Invalid axes")
 
+    tab = Tab(id["tab"])
     return PlotBuilder(df).plot(
         fields=selected_fields,
-        plot_type=id["tab"],
+        plot_type=tab.plot_type,
         **axes,
     )
 

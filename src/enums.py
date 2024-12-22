@@ -157,6 +157,7 @@ class Tab(StrEnum):
     LINE = "line"
     BAR = "bar"
     SCATTER = "scatter"
+    SCATTER_2 = "scatter2"
 
     @property
     def _metadata(self):
@@ -171,6 +172,7 @@ class Tab(StrEnum):
         return {
             "LINE": {
                 "label": "Time Series",
+                "plot_type": Plot.LINE,
                 "primary_field": {
                     "allowed": non_temporal_fields,
                 },
@@ -178,6 +180,7 @@ class Tab(StrEnum):
             },
             "BAR": {
                 "label": "Bar",
+                "plot_type": Plot.BAR,
                 "primary_field": {
                     "allowed": fields_with_label,
                 },
@@ -186,7 +189,18 @@ class Tab(StrEnum):
                 },
             },
             "SCATTER": {
-                "label": "Scatter",
+                "label": "Scatter (2 vars)",
+                "plot_type": Plot.SCATTER,
+                "primary_field": {
+                    "allowed": fields_with_label,
+                },
+                "secondary_field": {
+                    "allowed": not_message_fields,
+                },
+            },
+            "SCATTER_2": {
+                "label": "Scatter (3 vars)",
+                "plot_type": Plot.SCATTER,
                 "primary_field": {
                     "allowed": fields_with_label,
                 },
@@ -202,6 +216,10 @@ class Tab(StrEnum):
     @property
     def label(self):
         return self._metadata.get("label")
+
+    @property
+    def plot_type(self):
+        return self._metadata.get("plot_type")
 
     @property
     def primary_field(self):
