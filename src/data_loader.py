@@ -158,8 +158,12 @@ class DataLoader:
         return self._df
 
 
+df = None
+
 if __name__ == "__main__":
     pd.options.display.max_columns = None
-
     df = DataLoader().load_data(force=True).df
     print(df)
+elif df is None:
+    # Initalise singleton
+    df = DataLoader().load_data().df

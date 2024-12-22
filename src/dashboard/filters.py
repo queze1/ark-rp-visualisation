@@ -1,6 +1,14 @@
 import dash_mantine_components as dmc
 from enums import Filter
 from dash import html
+from data_loader import df
+
+from functools import lru_cache
+
+
+@lru_cache()
+def get_unique(field):
+    return df[field].unique()
 
 
 def make_filter_group(filter: Filter, value_select):
@@ -39,14 +47,14 @@ filter_controls = dmc.Stack(
         make_filter_group(
             Filter.AUTHOR,
             dmc.MultiSelect(
-                data=["New York City", "Montreal", "San Francisco"],
+                data=get_unique(Filter.AUTHOR),
                 placeholder="Select...",
             ),
         ),
         make_filter_group(
             Filter.CHANNEL_NAME,
             dmc.MultiSelect(
-                data=["New York City", "Montreal", "San Francisco"],
+                data=get_unique(Filter.CHANNEL_NAME),
                 placeholder="Select...",
             ),
         ),

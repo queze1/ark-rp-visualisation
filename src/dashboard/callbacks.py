@@ -1,10 +1,8 @@
 from enums import Field, Page, Text, Tab
 
 from dash import ALL, Input, Output, State, MATCH, Patch
-from data_loader import DataLoader
+from data_loader import df
 from dashboard.plot import PlotBuilder
-
-df = DataLoader().load_data().df
 
 
 def update_dropdown_options(selected_fields, current_options):
