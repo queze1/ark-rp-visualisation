@@ -38,13 +38,30 @@ def make_tab(tab: Tab):
             span=3,
         )
 
-    # Approximately same width as "By"
+    if not tab.tertiary_field:
+        # Two variables
+        dropdowns = [
+            make_field(tab.primary_field, index=0),
+            make_field_text(Text.BY),
+            make_field(tab.secondary_field, index=1),
+        ]
+    else:
+        # Three variables
+        dropdowns = [
+            make_field(tab.primary_field, index=0),
+            make_field_text(Text.AND),
+            make_field(tab.secondary_field, index=1),
+            make_field_text(Text.BY),
+            make_field(tab.tertiary_field, index=2),
+        ]
+
+    # Manually add paddingX to match the width of its above div
     swap_axes_button = dmc.Button(
         id={"type": Page.SWAP_AXES_BUTTON, "tab": tab},
         children=DashIconify(icon="bi:arrow-left-right", width=18),
         variant="subtle",
         color="none",
-        style={"padding": 8},
+        px=(15 if tab.tertiary_field else 8),
     )
 
     field_controls = dmc.Stack(
@@ -52,11 +69,10 @@ def make_tab(tab: Tab):
             dmc.Grid(
                 [
                     make_field_text(Text.PLOT),
-                    make_field(tab.primary_field, index=0),
-                    make_field_text(Text.BY),
-                    make_field(tab.secondary_field, index=1),
-                ],
+                ]
+                + dropdowns,
                 justify="center",
+                align="center",
             ),
             dmc.Grid(
                 [
@@ -64,12 +80,18 @@ def make_tab(tab: Tab):
                     make_axis_text("Y-Axis", index=0),
                     swap_axes_button,
                     make_axis_text("X-Axis", index=1),
-                ],
+                ]
+                # Insert extra space if three variables
+                + (
+                    [make_field_text(Text.BY, hidden=True), dmc.GridCol(span=3)]
+                    if tab.tertiary_field
+                    else []
+                ),
                 justify="center",
                 align="center",
             ),
         ],
-        gap=5,
+        gap=7,
     )
 
     return dmc.Card(

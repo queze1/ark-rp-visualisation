@@ -90,10 +90,10 @@ def register_callbacks(app):
         Input({"type": Page.SWAP_AXES_BUTTON, "tab": MATCH}, "n_clicks"),
         State({"type": Page.AXIS_TEXT, "tab": MATCH, "index": ALL}, "children"),
     )(swap_axes)
-    app.callback(
-        Output({"type": Page.GRAPH, "tab": MATCH}, "figure"),
-        Input({"type": Page.UPDATE_GRAPH_BUTTON, "tab": MATCH}, "n_clicks"),
-        State({"type": Page.FIELD_DROPDOWN, "tab": MATCH, "index": ALL}, "value"),
-        State({"type": Page.AXIS_TEXT, "tab": MATCH, "index": ALL}, "children"),
-        State({"type": Page.UPDATE_GRAPH_BUTTON, "tab": MATCH}, "id"),
-    )(render_graph)
+    # app.callback(
+    #     Output({"type": Page.GRAPH, "tab": MATCH}, "figure"),
+    #     Input({"type": Page.UPDATE_GRAPH_BUTTON, "tab": MATCH}, "n_clicks"),
+    #     State({"type": Page.FIELD_DROPDOWN, "tab": MATCH, "index": ALL}, "value"),
+    #     State({"type": Page.AXIS_TEXT, "tab": MATCH, "index": ALL}, "children"),
+    #     State({"type": Page.UPDATE_GRAPH_BUTTON, "tab": MATCH}, "id"),
+    # )(render_graph)

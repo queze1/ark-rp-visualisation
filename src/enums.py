@@ -191,6 +191,9 @@ class Tab(StrEnum):
                     "allowed": fields_with_label,
                 },
                 "secondary_field": {
+                    "allowed": fields_with_label,
+                },
+                "tertiary_field": {
                     "allowed": not_message_fields,
                 },
             },
@@ -208,12 +211,17 @@ class Tab(StrEnum):
     def secondary_field(self):
         return self._metadata.get("secondary_field")
 
+    @property
+    def tertiary_field(self):
+        return self._metadata.get("tertiary_field")
+
 
 class Text(StrEnum):
     TITLE = "ARK Data Visualisation"
     EXPLAINER = """Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."""
     PLOT = "Plot"
     BY = "By"
+    AND = "And"
     Y_AXIS = "Y-Axis"
     X_AXIS = "X-Axis"
     UPDATE_GRAPH_LABEL = "This is how I like it!"
