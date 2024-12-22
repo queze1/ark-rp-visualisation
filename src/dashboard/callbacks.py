@@ -100,12 +100,9 @@ def reset_filters(n_clicks):
     if n_clicks is None:
         return
 
-    filter_operators, filter_values = ctx.outputs_list
-    # Set default operators and reset values to None
-    return [
-        Filter(operator["id"]["filter"]).default_operator
-        for operator in filter_operators
-    ], [None for _ in filter_values]
+    tab = Tab(ctx.triggered_id["tab"])
+    # Recreate the starting filters
+    return [make_filter_group(tab, filter) for filter in Filter]
 
 
 def add_filter(n_clicks):
@@ -166,17 +163,10 @@ def register_callbacks(app):
         ),
     )(render_graph)
     app.callback(
-        Output(
-            match_filter_operators,
-            "value",
-        ),
-        Output(
-            match_filter_values,
-            "value",
-        ),
+        Output(match_filter_container, "children", allow_duplicate=True),
         Input(match_reset_filter, "n_clicks"),
     )(reset_filters)
     app.callback(
-        Output(match_filter_container, "children"),
+        Output(match_filter_container, "children", allow_duplicate=True),
         Input(match_add_filter, "n_clicks"),
     )(add_filter)

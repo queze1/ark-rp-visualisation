@@ -18,7 +18,7 @@ def make_filter_group(tab: Tab, filter: Filter):
     if select_kwargs.get("data") == FilterOption.FIELD_UNIQUE:
         select_kwargs["data"] = get_unique(filter)
 
-    # Use random index
+    # Use random index since filters can be created dynamically
     index = str(uuid4())
     return dmc.Group(
         [
