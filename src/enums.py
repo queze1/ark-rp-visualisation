@@ -132,8 +132,8 @@ class Operator(StrEnum):
     AFTER = "after"
 
     # Inclusion
-    IS = "is"
-    IS_NOT = "is not"
+    IN = "in"
+    NOT_IN = "not in"
 
     def __call__(self, series, value):
         if self in {Operator.LT, Operator.BEFORE}:
@@ -146,9 +146,9 @@ class Operator(StrEnum):
             return series >= value
         elif self in {Operator.EQ, Operator.DURING}:
             return series == value
-        elif self is Operator.IS:
+        elif self is Operator.IN:
             return series.isin(value)
-        elif self is Operator.IS_NOT:
+        elif self is Operator.NOT_IN:
             return ~series.isin(value)
         raise NotImplementedError(f"{self.name} operator is not implemented.")
 
@@ -165,8 +165,11 @@ class Tab(StrEnum):
         non_temporal_fields = [
             field for field in fields_with_label if not field.temporal
         ]
-        not_message_fields = [
-            field for field in fields_with_label if field is not Field.COUNT
+        # Cannot group by COUNT because it's trivial, cannot group by SCENE_END because it's a boolean
+        groupable_fields = [
+            field
+            for field in fields_with_label
+            if field not in {Field.COUNT, Field.SCENE_END}
         ]
 
         return {
@@ -185,7 +188,7 @@ class Tab(StrEnum):
                     "allowed": fields_with_label,
                 },
                 "secondary_field": {
-                    "allowed": not_message_fields,
+                    "allowed": groupable_fields,
                 },
             },
             "SCATTER": {
@@ -195,7 +198,7 @@ class Tab(StrEnum):
                     "allowed": fields_with_label,
                 },
                 "secondary_field": {
-                    "allowed": not_message_fields,
+                    "allowed": groupable_fields,
                 },
             },
             "SCATTER_2": {
@@ -208,7 +211,7 @@ class Tab(StrEnum):
                     "allowed": fields_with_label,
                 },
                 "tertiary_field": {
-                    "allowed": not_message_fields,
+                    "allowed": groupable_fields,
                 },
             },
         }.get(self.name, {})
@@ -251,3 +254,61 @@ class Page(StrEnum):
     UPDATE_GRAPH_BUTTON = "update-graph-button"
     AXIS_TEXT = "axis-text"
     SWAP_AXES_BUTTON = "swap-axis-button"
+
+
+class Filter(StrEnum):
+    DATE = Field.DATE.value
+    AUTHOR = Field.AUTHOR.value
+    CHANNEL_NAME = Field.CHANNEL_NAME.value
+    HOUR = Field.HOUR.value
+    REACTION_COUNT = Field.REACTION_COUNT.value
+
+    @property
+    def _metadata(self):
+        standard_operators = [
+            Operator.LT,
+            Operator.LEQ,
+            Operator.GT,
+            Operator.GEQ,
+            Operator.EQ,
+        ]
+
+        return {
+            "DATE": {
+                "label": "Date",
+                "operators": [Operator.BEFORE, Operator.DURING, Operator.AFTER],
+                "default_operator": Operator.DURING,
+            },
+            "AUTHOR": {
+                "label": "Author",
+                "operators": [Operator.IN, Operator.NOT_IN],
+                "default_operator": Operator.IN,
+            },
+            "CHANNEL_NAME": {
+                "label": "Channel Name",
+                "operators": [Operator.IN, Operator.NOT_IN],
+                "default_operator": Operator.IN,
+            },
+            "HOUR": {
+                "label": "Hour",
+                "operators": standard_operators,
+                "default_operator": Operator.GEQ,
+            },
+            "REACTION_COUNT": {
+                "label": "Reaction Count",
+                "operators": standard_operators,
+                "default_operator": Operator.GEQ,
+            },
+        }.get(self.name, {})
+
+    @property
+    def label(self):
+        return self._metadata.get("label")
+
+    @property
+    def operators(self):
+        return self._metadata.get("operators")
+
+    @property
+    def default_operator(self):
+        return self._metadata.get("default_operator")
