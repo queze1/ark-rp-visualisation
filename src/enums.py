@@ -364,5 +364,7 @@ class Page(StrEnum):
     AXIS_TEXT = "axis-text"
     SWAP_AXES_BUTTON = "swap-axis-btn"
     RESET_FILTER_BUTTON = "reset-filter-btn"
+    ADD_FILTER_BUTTON = "add-filter-btn"
+    FILTER_CONTAINER = "filter-container"
     FILTER_OPERATOR = "filter-operator"
     FILTER_VALUE = "filter-value"

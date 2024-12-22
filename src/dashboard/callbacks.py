@@ -1,3 +1,4 @@
+from dashboard.filters import make_filter_group
 from enums import Field, Filter, Page, Text, Tab, Operator
 
 from dash import ALL, Input, Output, State, MATCH, Patch, ctx
@@ -107,6 +108,16 @@ def reset_filters(n_clicks):
     ], [None for _ in filter_values]
 
 
+def add_filter(n_clicks):
+    if n_clicks is None:
+        return
+
+    tab = Tab(ctx.triggered_id["tab"])
+    patched_children = Patch()
+    patched_children.append(make_filter_group(tab, Filter.DATE))
+    return patched_children
+
+
 def register_callbacks(app):
     match_fields = {"type": Page.FIELD_DROPDOWN, "tab": MATCH, "index": ALL}
     match_axes = {"type": Page.AXIS_TEXT, "tab": MATCH, "index": ALL}
@@ -125,6 +136,8 @@ def register_callbacks(app):
     match_swap_axes = {"type": Page.SWAP_AXES_BUTTON, "tab": MATCH}
     match_update_graph = {"type": Page.UPDATE_GRAPH_BUTTON, "tab": MATCH}
     match_reset_filter = {"type": Page.RESET_FILTER_BUTTON, "tab": MATCH}
+    match_add_filter = {"type": Page.ADD_FILTER_BUTTON, "tab": MATCH}
+    match_filter_container = {"type": Page.FILTER_CONTAINER, "tab": MATCH}
 
     app.callback(
         Output(match_fields, "data"),
@@ -163,3 +176,7 @@ def register_callbacks(app):
         ),
         Input(match_reset_filter, "n_clicks"),
     )(reset_filters)
+    app.callback(
+        Output(match_filter_container, "children"),
+        Input(match_add_filter, "n_clicks"),
+    )(add_filter)
