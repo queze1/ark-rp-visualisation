@@ -3,7 +3,7 @@ from dash import dcc
 from dash_iconify import DashIconify
 
 from enums import Page, Tab, Text
-from dashboard.filters import filter_controls
+from dashboard.filters import make_filter_controls
 
 
 def make_tab(tab: Tab):
@@ -98,7 +98,7 @@ def make_tab(tab: Tab):
         [
             field_controls,
             dmc.Divider(my=25),
-            filter_controls,
+            make_filter_controls(tab),
             dmc.Space(h=20),
             dmc.Button(
                 Text.UPDATE_GRAPH_LABEL,

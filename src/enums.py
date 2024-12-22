@@ -1,6 +1,7 @@
 from enum import Enum, StrEnum, auto
 
 import plotly.express as px
+import dash_mantine_components as dmc
 
 
 class FieldType(Enum):
@@ -254,6 +255,14 @@ class Page(StrEnum):
     UPDATE_GRAPH_BUTTON = "update-graph-button"
     AXIS_TEXT = "axis-text"
     SWAP_AXES_BUTTON = "swap-axis-button"
+    FILTER_RESET = "filter-reset"
+    FILTER_OPERATOR = "filter-operator"
+    FILTER_SELECT = "filter-select"
+
+
+class FilterOption(Enum):
+    # Means replace this with the unique values of this field
+    FIELD_UNIQUE = auto()
 
 
 class Filter(StrEnum):
@@ -272,32 +281,55 @@ class Filter(StrEnum):
             Operator.GEQ,
             Operator.EQ,
         ]
+        multiselect_kwargs = dict(
+            placeholder="Select...",
+            data=FilterOption.FIELD_UNIQUE,
+            clearable=True,
+            searchable=True,
+        )
 
         return {
             "DATE": {
                 "label": "Date",
                 "operators": [Operator.BEFORE, Operator.DURING, Operator.AFTER],
                 "default_operator": Operator.DURING,
+                "select_component": dmc.DatePickerInput,
             },
             "AUTHOR": {
                 "label": "Author",
                 "operators": [Operator.IN, Operator.NOT_IN],
                 "default_operator": Operator.IN,
+                "select_component": dmc.MultiSelect,
+                "select_kwargs": multiselect_kwargs,
             },
             "CHANNEL_NAME": {
                 "label": "Channel Name",
                 "operators": [Operator.IN, Operator.NOT_IN],
                 "default_operator": Operator.IN,
+                "select_component": dmc.MultiSelect,
+                "select_kwargs": multiselect_kwargs,
             },
             "HOUR": {
                 "label": "Hour",
                 "operators": standard_operators,
                 "default_operator": Operator.GEQ,
+                "select_component": dmc.Select,
+                "select_kwargs": dict(
+                    data=[str(hour) for hour in range(24)],
+                    placeholder="Enter hour...",
+                ),
             },
             "REACTION_COUNT": {
                 "label": "Reaction Count",
                 "operators": standard_operators,
                 "default_operator": Operator.GEQ,
+                "select_component": dmc.NumberInput,
+                "select_kwargs": dict(
+                    min=0,
+                    max=99,
+                    allowDecimal=False,
+                    placeholder="Enter number...",
+                ),
             },
         }.get(self.name, {})
 
@@ -312,3 +344,11 @@ class Filter(StrEnum):
     @property
     def default_operator(self):
         return self._metadata.get("default_operator")
+
+    @property
+    def select_component(self):
+        return self._metadata.get("select_component")
+
+    @property
+    def select_kwargs(self):
+        return self._metadata.get("select_kwargs", {})
