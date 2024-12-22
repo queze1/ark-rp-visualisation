@@ -25,10 +25,6 @@ class PlotBuilder:
             self._df[field] = self._df[Field.DATE].dt.day
         elif field is Field.DATE:
             self._df[field] = self._df[Field.DATE].dt.date
-        elif field is Field.REACTION_COUNT:
-            self._df[field] = [
-                max(d.values(), default=0) for d in self._df[Field.REACTIONS]
-            ]
         elif field is Field.COUNT:
             # For counting messages, intended to be combined with `.sum`
             self._df[field] = 1

@@ -4,6 +4,7 @@ from pandas.api.types import (
     is_datetime64_any_dtype,
     is_object_dtype,
     is_bool_dtype,
+    is_integer_dtype,
 )
 from pandas.testing import assert_frame_equal
 
@@ -15,6 +16,7 @@ DTYPES = {
     "reactions": is_object_dtype,
     "word_count": is_any_real_numeric_dtype,
     "channel_name": is_object_dtype,
+    "reaction_count": is_integer_dtype,
     "scene_end": is_bool_dtype,
 }
 
