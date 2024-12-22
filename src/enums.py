@@ -23,6 +23,7 @@ class Field(StrEnum):
     WORD_COUNT = "word_count"
 
     # Internal use only
+    DATETIME = "datetime"
     REACTIONS = "reactions"
 
     @property
@@ -128,7 +129,7 @@ class Operator(StrEnum):
     GEQ = ">="
     EQ = "="
 
-    # Date inequalities
+    # Inequality aliases
     BEFORE = "before"
     DURING = "during"
     AFTER = "after"
@@ -138,22 +139,16 @@ class Operator(StrEnum):
     NOT_IN = "not in"
 
     def __call__(self, series, value):
-        if self is Operator.LT:
+        if self in {Operator.LT, Operator.BEFORE}:
             return series < value
         elif self is Operator.LEQ:
             return series <= value
-        elif self is Operator.GT:
+        elif self in {Operator.GT, Operator.AFTER}:
             return series > value
         elif self is Operator.GEQ:
             return series >= value
-        elif self is Operator.EQ:
+        elif self in {Operator.EQ, Operator.DURING}:
             return series == value
-        elif self is Operator.BEFORE:
-            return series < pd.to_datetime(value).date()
-        elif self is Operator.AFTER:
-            return series > pd.to_datetime(value).date()
-        elif self is Operator.DURING:
-            return series == pd.to_datetime(value).date()
         elif self is Operator.IN:
             return series.isin(value)
         elif self is Operator.NOT_IN:
@@ -245,28 +240,6 @@ class Tab(StrEnum):
         return self._metadata.get("tertiary_field")
 
 
-class Text(StrEnum):
-    TITLE = "ARK Data Visualisation"
-    EXPLAINER = """Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."""
-    PLOT = "Plot"
-    BY = "By"
-    AND = "And"
-    Y_AXIS = "Y-Axis"
-    X_AXIS = "X-Axis"
-    UPDATE_GRAPH_LABEL = "This is how I like it!"
-
-
-class Page(StrEnum):
-    GRAPH = "graph"
-    FIELD_DROPDOWN = "field-dropdown"
-    UPDATE_GRAPH_BUTTON = "update-graph-btn"
-    AXIS_TEXT = "axis-text"
-    SWAP_AXES_BUTTON = "swap-axis-btn"
-    RESET_FILTER_BUTTON = "reset-filter-btn"
-    FILTER_OPERATOR = "filter-operator"
-    FILTER_VALUE = "filter-value"
-
-
 class FilterOption(Enum):
     # Means replace this with the unique values of this field
     FIELD_UNIQUE = auto()
@@ -304,6 +277,7 @@ class Filter(StrEnum):
                 "select_kwargs": dict(
                     clearable=True,
                 ),
+                "post_processing": lambda value: pd.to_datetime(value).date(),
             },
             "AUTHOR": {
                 "label": "Author",
@@ -330,6 +304,7 @@ class Filter(StrEnum):
                     searchable=True,
                     clearable=True,
                 ),
+                "post_processing": int,
             },
             "REACTION_COUNT": {
                 "label": "Reaction Count",
@@ -364,3 +339,30 @@ class Filter(StrEnum):
     @property
     def select_kwargs(self):
         return self._metadata.get("select_kwargs", {})
+
+    @property
+    def post_processing(self):
+        # Default is to return value unchanged
+        return self._metadata.get("post_processing", lambda value: value)
+
+
+class Text(StrEnum):
+    TITLE = "ARK Data Visualisation"
+    EXPLAINER = """Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."""
+    PLOT = "Plot"
+    BY = "By"
+    AND = "And"
+    Y_AXIS = "Y-Axis"
+    X_AXIS = "X-Axis"
+    UPDATE_GRAPH_LABEL = "This is how I like it!"
+
+
+class Page(StrEnum):
+    GRAPH = "graph"
+    FIELD_DROPDOWN = "field-dropdown"
+    UPDATE_GRAPH_BUTTON = "update-graph-btn"
+    AXIS_TEXT = "axis-text"
+    SWAP_AXES_BUTTON = "swap-axis-btn"
+    RESET_FILTER_BUTTON = "reset-filter-btn"
+    FILTER_OPERATOR = "filter-operator"
+    FILTER_VALUE = "filter-value"

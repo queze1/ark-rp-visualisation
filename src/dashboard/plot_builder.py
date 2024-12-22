@@ -9,22 +9,23 @@ class PlotBuilder:
         self._df = df.copy()
         self._fields = []
 
-    def add_field(self, field: Field):
+    def add_field(self, field: Field, append=True):
         # Check if `field` is a field by calling it
         field = Field(field)
 
         # Create new derivative fields if needed
         if field is Field.HOUR:
-            self._df[field] = self._df[Field.DATE].dt.hour
+            self._df[field] = self._df[Field.DATETIME].dt.hour
         elif field is Field.DAY:
-            self._df[field] = self._df[Field.DATE].dt.day
+            self._df[field] = self._df[Field.DATETIME].dt.day
         elif field is Field.DATE:
-            self._df[field] = self._df[Field.DATE].dt.date
+            self._df[field] = self._df[Field.DATETIME].dt.date
         elif field is Field.COUNT:
             # For counting messages, intended to be combined with `.sum`
             self._df[field] = 1
 
-        self._fields.append(field)
+        if append:
+            self._fields.append(field)
         return self
 
     def group_by_multiple(self, aggregations: dict[Field, GroupBy] = {}):
@@ -62,6 +63,8 @@ class PlotBuilder:
         return self
 
     def filter(self, field: Field, operator: Operator, value):
+        # Create field if it doesn't already exist
+        self.add_field(field, append=False)
         self._df = self._df[operator(self._df[field], value)]
         return self
 

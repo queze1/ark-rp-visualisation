@@ -11,6 +11,7 @@ class FieldType(Enum):
 
 class Field(StrEnum):
     AUTHOR = "author"
+    DATETIME = "datetime"
     DATE = "date"
     HOUR = "hour"
     DAY = "day"

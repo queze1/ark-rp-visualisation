@@ -27,7 +27,7 @@ class DataLoader:
             columns={
                 "AuthorID": "author_id",
                 "Author": "author",
-                "Date": "date",
+                "Date": "datetime",
                 "Content": "content",
                 "Attachments": "attachments",
                 "Reactions": "reactions",
@@ -81,13 +81,13 @@ class DataLoader:
         return df
 
     @staticmethod
-    def _process_date(df: pd.DataFrame, format=DATE_FORMAT) -> pd.DataFrame:
+    def _process_datetime(df: pd.DataFrame, format=DATE_FORMAT) -> pd.DataFrame:
         """
-        Process the 'date' column.
+        Process the 'datetime' column.
         """
-        df["date"] = pd.to_datetime(df["date"], format=format, utc=True).dt.tz_convert(
-            TIME_ZONE
-        )
+        df["datetime"] = pd.to_datetime(
+            df["datetime"], format=format, utc=True
+        ).dt.tz_convert(TIME_ZONE)
         return df
 
     @staticmethod
@@ -100,14 +100,14 @@ class DataLoader:
         df = DataLoader._add_word_count(df)
         df = DataLoader._add_channel_name(df, path)
         df = DataLoader._process_reactions(df)
-        df = DataLoader._process_date(df)
+        df = DataLoader._process_datetime(df)
         df = DataLoader._add_scene_end(df)
         return df
 
     def _read_cache(self):
         self._df = pd.read_csv(CACHE_PATH)
-        # Unstringify date and reactions
-        self._df = self._process_date(self._df, format="ISO8601")
+        # Unstringify datetime and reactions
+        self._df = self._process_datetime(self._df, format="ISO8601")
         self._df["reactions"] = self._df["reactions"].apply(ast.literal_eval)
         return self
 

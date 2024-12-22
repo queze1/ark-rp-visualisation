@@ -74,14 +74,14 @@ def render_graph(
     else:
         raise ValueError("Invalid axes")
 
-    # Filter enum value is the field to filter on
-    filter_fields = [
-        operator.id.filter for operator in ctx.args_grouping.filter_operators
+    filter_types = [
+        Filter(operator.id.filter) for operator in ctx.args_grouping.filter_operators
     ]
+    # Filter value is same as its field
     filters = [
-        (field, Operator(operator), value)
-        for field, operator, value in zip(
-            filter_fields, filter_operators, filter_values
+        (filter, Operator(operator), filter.post_processing(value))
+        for filter, operator, value in zip(
+            filter_types, filter_operators, filter_values
         )
         if value
     ]
