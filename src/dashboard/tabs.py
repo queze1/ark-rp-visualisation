@@ -1,16 +1,19 @@
 import dash_mantine_components as dmc
-from dash import dcc, html
+from dash import dcc
+from dash_iconify import DashIconify
 
-from enums import Operator, Page, Tab
+from enums import Page, Tab, Text
+from dashboard.filters import filter_controls
 
 
 def make_tab(tab: Tab):
-    def make_field_text(text):
-        return dmc.GridCol(dmc.Text(text, size="lg"), span="content")
+    def make_field_text(text, hidden=False):
+        style = {"visibility": "hidden"} if hidden else {}
+        return dmc.GridCol(dmc.Text(text, size="lg", style=style), span="content")
 
-    def make_field(label, field_options, index):
+    def make_field(field_options, index):
         dropdown = dmc.Select(
-            id={"type": Page.FIELD_DROPDOWN(tab), "index": index},
+            id={"type": Page.FIELD_DROPDOWN, "tab": tab, "index": index},
             data=[
                 {"label": field.label, "value": field}
                 for field in field_options["allowed"]
@@ -19,118 +22,76 @@ def make_tab(tab: Tab):
         )
 
         return dmc.GridCol(
-            dmc.Stack(
-                [
-                    dropdown,
-                    dmc.Text(label, size="sm"),
-                ],
-                align="center",
-                gap=5,
+            dropdown,
+            span=3,
+        )
+
+    def make_axis_text(text, index):
+        # Same length as dropdown, to be centred under them
+        return dmc.GridCol(
+            dmc.Text(
+                text,
+                id={"type": Page.AXIS_TEXT, "tab": tab, "index": index},
+                size="md",
+                ta="center",
             ),
             span=3,
         )
 
-    field_controls = dmc.Grid(
-        [
-            make_field_text("Plot"),
-            make_field("Y-Axis", tab.primary_field, index=0),
-            make_field_text("By"),
-            make_field("X-Axis", tab.secondary_field, index=1),
-        ],
-        justify="center",
+    if not tab.tertiary_field:
+        # Two variables
+        dropdowns = [
+            make_field(tab.primary_field, index=0),
+            make_field_text(Text.BY),
+            make_field(tab.secondary_field, index=1),
+        ]
+    else:
+        # Three variables
+        dropdowns = [
+            make_field(tab.primary_field, index=0),
+            make_field_text(Text.AND),
+            make_field(tab.secondary_field, index=1),
+            make_field_text(Text.BY),
+            make_field(tab.tertiary_field, index=2),
+        ]
+
+    # Manually add paddingX to match the width of its above div
+    swap_axes_button = dmc.Button(
+        id={"type": Page.SWAP_AXES_BUTTON, "tab": tab},
+        children=DashIconify(icon="bi:arrow-left-right", width=18),
+        variant="subtle",
+        color="none",
+        px=(15 if tab.tertiary_field else 8),
     )
 
-    filter_controls = dmc.Stack(
+    field_controls = dmc.Stack(
         [
-            dmc.Group(
+            dmc.Grid(
                 [
-                    dmc.Text("Filters", size="lg"),
-                    dmc.Button(
-                        children=dmc.Text("Reset", size="sm"),
-                        variant="subtle",
-                        color="black",
-                    ),
-                ],
-                justify="space-between",
+                    make_field_text(Text.PLOT),
+                ]
+                + dropdowns,
+                justify="center",
                 align="center",
-                mb=10,
             ),
-            dmc.Group(
+            dmc.Grid(
                 [
-                    html.Label("Date"),
-                    dmc.Select(
-                        data=[Operator.BEFORE, Operator.DURING, Operator.AFTER],
-                        value=Operator.DURING,
-                    ),
-                    dmc.DatePickerInput(),
-                ],
-                grow=1,
-            ),
-            dmc.Group(
-                [
-                    html.Label("User"),
-                    dmc.Select(
-                        data=[Operator.IS, Operator.IS_NOT],
-                        value=Operator.IS,
-                    ),
-                    dmc.MultiSelect(
-                        data=["New York City", "Montreal", "San Francisco"],
-                        placeholder="Select...",
-                    ),
-                ],
-                grow=1,
-            ),
-            dmc.Group(
-                [
-                    html.Label("Channel Name"),
-                    dmc.Select(
-                        data=[Operator.IS, Operator.IS_NOT],
-                        value=Operator.IS,
-                    ),
-                    dmc.MultiSelect(
-                        data=["New York City", "Montreal", "San Francisco"],
-                        placeholder="Select...",
-                    ),
-                ],
-                grow=1,
-            ),
-            dmc.Group(
-                [
-                    html.Label("Hour"),
-                    dmc.Select(
-                        data=[
-                            Operator.LT,
-                            Operator.LEQ,
-                            Operator.GT,
-                            Operator.GEQ,
-                            Operator.EQ,
-                        ],
-                        value=Operator.GEQ,
-                    ),
-                    dmc.Select(
-                        data=[str(hour) for hour in range(24)],
-                        placeholder="Enter hour...",
-                    ),
-                ],
-                grow=1,
-            ),
-            dmc.Group(
-                [
-                    html.Label("Reaction Count"),
-                    dmc.Select(
-                        data=[operator for operator in Operator], value=Operator.GEQ
-                    ),
-                    dmc.NumberInput(
-                        min=0,
-                        max=99,
-                        allowDecimal=False,
-                        placeholder="Enter number...",
-                    ),
-                ],
-                grow=1,
+                    make_field_text(Text.PLOT, hidden=True),
+                    make_axis_text("Y-Axis", index=0),
+                    swap_axes_button,
+                    make_axis_text("X-Axis", index=1),
+                ]
+                # Insert extra space if three variables
+                + (
+                    [make_field_text(Text.BY, hidden=True), dmc.GridCol(span=3)]
+                    if tab.tertiary_field
+                    else []
+                ),
+                justify="center",
+                align="center",
             ),
         ],
-        gap=5,
+        gap=7,
     )
 
     return dmc.Card(
@@ -140,12 +101,15 @@ def make_tab(tab: Tab):
             filter_controls,
             dmc.Space(h=20),
             dmc.Button(
-                "This is how I like it!",
+                Text.UPDATE_GRAPH_LABEL,
                 ml="auto",
                 maw=200,
-                id=Page.UPDATE_GRAPH_BUTTON(tab),
+                id={"type": Page.UPDATE_GRAPH_BUTTON, "tab": tab},
             ),
-            dcc.Graph(id=Page.GRAPH(tab)),
+            dmc.Space(h=20),
+            dcc.Graph(
+                id={"type": Page.GRAPH, "tab": tab},
+            ),
         ],
         withBorder=True,
     )

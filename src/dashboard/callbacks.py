@@ -2,7 +2,7 @@ from enums import Field, Page, Text, Tab
 
 from dash import ALL, Input, Output, State, MATCH, Patch
 from data_loader import DataLoader
-from frontend.plot import PlotBuilder
+from dashboard.plot import PlotBuilder
 
 df = DataLoader().load_data().df
 
