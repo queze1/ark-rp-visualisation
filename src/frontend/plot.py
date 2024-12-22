@@ -79,17 +79,23 @@ class PlotBuilder:
 
     def plot(
         self,
-        primary_field: Field,
-        secondary_field: Field,
+        fields: list[Field],
         x_axis: Field,
         y_axis: Field,
         plot_type: Plot,
     ):
-        self.add_field(primary_field)
-        self.add_field(secondary_field)
-        self.group_by(
-            GroupBy.NUNIQUE if Field(secondary_field).categorical else GroupBy.SUM
+        for field in fields:
+            self.add_field(field)
+
+        # Group the rest by the last field
+        *rest, grouping_field = fields
+        self.group_by_multiple(
+            {
+                field: GroupBy.NUNIQUE if Field(field).categorical else GroupBy.SUM
+                for field in rest
+            }
         )
-        # By default, sort by summary value unless you were grouping by a date
-        self.sort(primary_field if Field(primary_field).temporal else secondary_field)
+
+        # By default, sort by first summary value unless you were grouping by a date
+        self.sort(grouping_field if Field(grouping_field).temporal else fields[0])
         return Plot(plot_type)(self._df, x=x_axis, y=y_axis)

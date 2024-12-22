@@ -58,25 +58,42 @@ def swap_axes(n_clicks, axes_text):
 
 
 def render_graph(n_clicks, selected_fields, axes_text, id):
-    # Plot SECONDARY by PRIMARY (secondary because it's being grouped by, therefore dependent)
-    secondary_field, primary_field = selected_fields
-    if not (n_clicks and primary_field and secondary_field):
+    if not (n_clicks and all(selected_fields)):
         return {}
 
+    primary_field, secondary_field, *_ = selected_fields
     # Check axes labels
     if axes_text == [Text.Y_AXIS, Text.X_AXIS]:
-        axes = dict(y_axis=secondary_field, x_axis=primary_field)
+        axes = dict(y_axis=primary_field, x_axis=secondary_field)
     elif axes_text == [Text.X_AXIS, Text.Y_AXIS]:
-        axes = dict(x_axis=secondary_field, y_axis=primary_field)
+        axes = dict(x_axis=primary_field, y_axis=secondary_field)
     else:
         raise ValueError("Invalid axes")
 
     return PlotBuilder(df).plot(
-        primary_field=primary_field,
-        secondary_field=secondary_field,
+        fields=selected_fields,
         plot_type=id["tab"],
         **axes,
     )
+
+    # secondary_field, primary_field = selected_fields
+    # if not (n_clicks and primary_field and secondary_field):
+    #     return {}
+
+    # # Check axes labels
+    # if axes_text == [Text.Y_AXIS, Text.X_AXIS]:
+    #     axes = dict(y_axis=secondary_field, x_axis=primary_field)
+    # elif axes_text == [Text.X_AXIS, Text.Y_AXIS]:
+    #     axes = dict(x_axis=secondary_field, y_axis=primary_field)
+    # else:
+    #     raise ValueError("Invalid axes")
+
+    # return PlotBuilder(df).plot(
+    #     primary_field=primary_field,
+    #     secondary_field=secondary_field,
+    #     plot_type=id["tab"],
+    #     **axes,
+    # )
 
 
 def register_callbacks(app):
@@ -90,10 +107,10 @@ def register_callbacks(app):
         Input({"type": Page.SWAP_AXES_BUTTON, "tab": MATCH}, "n_clicks"),
         State({"type": Page.AXIS_TEXT, "tab": MATCH, "index": ALL}, "children"),
     )(swap_axes)
-    # app.callback(
-    #     Output({"type": Page.GRAPH, "tab": MATCH}, "figure"),
-    #     Input({"type": Page.UPDATE_GRAPH_BUTTON, "tab": MATCH}, "n_clicks"),
-    #     State({"type": Page.FIELD_DROPDOWN, "tab": MATCH, "index": ALL}, "value"),
-    #     State({"type": Page.AXIS_TEXT, "tab": MATCH, "index": ALL}, "children"),
-    #     State({"type": Page.UPDATE_GRAPH_BUTTON, "tab": MATCH}, "id"),
-    # )(render_graph)
+    app.callback(
+        Output({"type": Page.GRAPH, "tab": MATCH}, "figure"),
+        Input({"type": Page.UPDATE_GRAPH_BUTTON, "tab": MATCH}, "n_clicks"),
+        State({"type": Page.FIELD_DROPDOWN, "tab": MATCH, "index": ALL}, "value"),
+        State({"type": Page.AXIS_TEXT, "tab": MATCH, "index": ALL}, "children"),
+        State({"type": Page.UPDATE_GRAPH_BUTTON, "tab": MATCH}, "id"),
+    )(render_graph)
