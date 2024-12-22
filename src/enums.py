@@ -252,10 +252,10 @@ class Text(StrEnum):
 class Page(StrEnum):
     GRAPH = "graph"
     FIELD_DROPDOWN = "field-dropdown"
-    UPDATE_GRAPH_BUTTON = "update-graph-button"
+    UPDATE_GRAPH_BUTTON = "update-graph-btn"
     AXIS_TEXT = "axis-text"
-    SWAP_AXES_BUTTON = "swap-axis-button"
-    FILTER_RESET = "filter-reset"
+    SWAP_AXES_BUTTON = "swap-axis-btn"
+    RESET_FILTER_BUTTON = "reset-filter-btn"
     FILTER_OPERATOR = "filter-operator"
     FILTER_VALUE = "filter-value"
 
@@ -282,10 +282,10 @@ class Filter(StrEnum):
             Operator.EQ,
         ]
         multiselect_kwargs = dict(
-            placeholder="Select...",
             data=FilterOption.FIELD_UNIQUE,
-            clearable=True,
+            placeholder="Select...",
             searchable=True,
+            clearable=True,
         )
 
         return {
@@ -294,6 +294,9 @@ class Filter(StrEnum):
                 "operators": [Operator.BEFORE, Operator.DURING, Operator.AFTER],
                 "default_operator": Operator.DURING,
                 "select_component": dmc.DatePickerInput,
+                "select_kwargs": dict(
+                    clearable=True,
+                ),
             },
             "AUTHOR": {
                 "label": "Author",
@@ -317,6 +320,8 @@ class Filter(StrEnum):
                 "select_kwargs": dict(
                     data=[str(hour) for hour in range(24)],
                     placeholder="Enter hour...",
+                    searchable=True,
+                    clearable=True,
                 ),
             },
             "REACTION_COUNT": {

@@ -47,28 +47,36 @@ def update_dropdown_options(selected_fields, current_options):
     ]
 
 
-def swap_axes(n_clicks, axes_text):
-    if not n_clicks:
-        return axes_text
+def swap_axes(n_clicks, axes):
+    if n_clicks is None:
+        return axes
 
-    left, right = axes_text
+    left, right = axes
     return [right, left]
 
 
-def render_graph(n_clicks, selected_fields, axes_text, id):
-    if not (n_clicks and all(selected_fields)):
+def render_graph(
+    n_clicks,
+    selected_fields,
+    selected_axes,
+    filter_operators,
+    filter_values,
+):
+    if n_clicks is None or not all(selected_fields):
         return {}
+
+    print(filter_operators, filter_values)
 
     primary_field, secondary_field, *_ = selected_fields
     # Check axes labels
-    if axes_text == [Text.Y_AXIS, Text.X_AXIS]:
+    if selected_axes == [Text.Y_AXIS, Text.X_AXIS]:
         axes = dict(y_axis=primary_field, x_axis=secondary_field)
-    elif axes_text == [Text.X_AXIS, Text.Y_AXIS]:
+    elif selected_axes == [Text.X_AXIS, Text.Y_AXIS]:
         axes = dict(x_axis=primary_field, y_axis=secondary_field)
     else:
         raise ValueError("Invalid axes")
 
-    tab = Tab(id["tab"])
+    tab = Tab(ctx.triggered_id["tab"])
     return PlotBuilder(df).plot(
         fields=selected_fields,
         plot_type=tab.plot_type,
@@ -77,42 +85,70 @@ def render_graph(n_clicks, selected_fields, axes_text, id):
 
 
 def reset_filters(n_clicks):
-    if not n_clicks:
+    if n_clicks is None:
         return
 
-    operator_dropdowns, value_dropdowns = ctx.outputs_grouping
+    filter_operators, filter_values = ctx.outputs_grouping
+    # Set default operators and reset values to None
     return [
         Filter(operator["id"]["filter"]).default_operator
-        for operator in operator_dropdowns
-    ], [None for _ in value_dropdowns]
+        for operator in filter_operators
+    ], [None for _ in filter_values]
 
 
 def register_callbacks(app):
+    match_fields = {"type": Page.FIELD_DROPDOWN, "tab": MATCH, "index": ALL}
+    match_axes = {"type": Page.AXIS_TEXT, "tab": MATCH, "index": ALL}
+    match_filter_operators = {
+        "type": Page.FILTER_OPERATOR,
+        "tab": MATCH,
+        "filter": ALL,
+        "index": ALL,
+    }
+    match_filter_values = {
+        "type": Page.FILTER_VALUE,
+        "tab": MATCH,
+        "filter": ALL,
+        "index": ALL,
+    }
+    match_swap_axes = {"type": Page.SWAP_AXES_BUTTON, "tab": MATCH}
+    match_update_graph = {"type": Page.UPDATE_GRAPH_BUTTON, "tab": MATCH}
+    match_reset_filter = {"type": Page.RESET_FILTER_BUTTON, "tab": MATCH}
+
     app.callback(
-        Output({"type": Page.FIELD_DROPDOWN, "tab": MATCH, "index": ALL}, "data"),
-        Input({"type": Page.FIELD_DROPDOWN, "tab": MATCH, "index": ALL}, "value"),
-        State({"type": Page.FIELD_DROPDOWN, "tab": MATCH, "index": ALL}, "data"),
+        Output(match_fields, "data"),
+        Input(match_fields, "value"),
+        State(match_fields, "data"),
     )(update_dropdown_options)
     app.callback(
-        Output({"type": Page.AXIS_TEXT, "tab": MATCH, "index": ALL}, "children"),
-        Input({"type": Page.SWAP_AXES_BUTTON, "tab": MATCH}, "n_clicks"),
-        State({"type": Page.AXIS_TEXT, "tab": MATCH, "index": ALL}, "children"),
+        Output(match_axes, "children"),
+        Input(match_swap_axes, "n_clicks"),
+        State(match_axes, "children"),
     )(swap_axes)
     app.callback(
         Output({"type": Page.GRAPH, "tab": MATCH}, "figure"),
-        Input({"type": Page.UPDATE_GRAPH_BUTTON, "tab": MATCH}, "n_clicks"),
-        State({"type": Page.FIELD_DROPDOWN, "tab": MATCH}, "value"),
-        State({"type": Page.AXIS_TEXT, "tab": MATCH}, "children"),
-        State({"type": Page.UPDATE_GRAPH_BUTTON, "tab": MATCH}, "id"),
+        inputs=dict(
+            n_clicks=Input(match_update_graph, "n_clicks"),
+            selected_fields=State(match_fields, "value"),
+            selected_axes=State(match_axes, "children"),
+            filter_operators=State(
+                match_filter_operators,
+                "value",
+            ),
+            filter_values=State(
+                match_filter_values,
+                "value",
+            ),
+        ),
     )(render_graph)
     app.callback(
         Output(
-            {"type": Page.FILTER_OPERATOR, "tab": MATCH, "filter": ALL, "index": ALL},
+            match_filter_operators,
             "value",
         ),
         Output(
-            {"type": Page.FILTER_VALUE, "tab": MATCH, "filter": ALL, "index": ALL},
+            match_filter_values,
             "value",
         ),
-        Input({"type": Page.FILTER_RESET, "tab": MATCH}, "n_clicks"),
+        Input(match_reset_filter, "n_clicks"),
     )(reset_filters)

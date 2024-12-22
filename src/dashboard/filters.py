@@ -30,6 +30,7 @@ def make_filter_controls(tab: Tab):
                     },
                     data=filter.operators,
                     value=filter.default_operator,
+                    allowDeselect=False,
                 ),
                 filter.select_component(
                     id={
@@ -48,7 +49,7 @@ def make_filter_controls(tab: Tab):
         [
             dmc.Text("Filters", size="lg"),
             dmc.Button(
-                id={"type": Page.FILTER_RESET, "tab": tab},
+                id={"type": Page.RESET_FILTER_BUTTON, "tab": tab},
                 children=dmc.Text("Reset", size="sm"),
                 variant="subtle",
                 color="black",
