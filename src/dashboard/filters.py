@@ -33,7 +33,7 @@ def make_filter_controls(tab: Tab):
                 ),
                 filter.select_component(
                     id={
-                        "type": Page.FILTER_SELECT,
+                        "type": Page.FILTER_VALUE,
                         "tab": tab,
                         "filter": filter,
                         "index": index,

@@ -1,6 +1,6 @@
-from enums import Field, Page, Text, Tab
+from enums import Field, Filter, Page, Text, Tab
 
-from dash import ALL, Input, Output, State, MATCH, Patch
+from dash import ALL, Input, Output, State, MATCH, Patch, ctx
 from data_loader import df
 from dashboard.plot import PlotBuilder
 
@@ -76,6 +76,17 @@ def render_graph(n_clicks, selected_fields, axes_text, id):
     )
 
 
+def reset_filters(n_clicks):
+    if not n_clicks:
+        return
+
+    operator_dropdowns, value_dropdowns = ctx.outputs_grouping
+    return [
+        Filter(operator["id"]["filter"]).default_operator
+        for operator in operator_dropdowns
+    ], [None for _ in value_dropdowns]
+
+
 def register_callbacks(app):
     app.callback(
         Output({"type": Page.FIELD_DROPDOWN, "tab": MATCH, "index": ALL}, "data"),
@@ -90,7 +101,18 @@ def register_callbacks(app):
     app.callback(
         Output({"type": Page.GRAPH, "tab": MATCH}, "figure"),
         Input({"type": Page.UPDATE_GRAPH_BUTTON, "tab": MATCH}, "n_clicks"),
-        State({"type": Page.FIELD_DROPDOWN, "tab": MATCH, "index": ALL}, "value"),
-        State({"type": Page.AXIS_TEXT, "tab": MATCH, "index": ALL}, "children"),
+        State({"type": Page.FIELD_DROPDOWN, "tab": MATCH}, "value"),
+        State({"type": Page.AXIS_TEXT, "tab": MATCH}, "children"),
         State({"type": Page.UPDATE_GRAPH_BUTTON, "tab": MATCH}, "id"),
     )(render_graph)
+    app.callback(
+        Output(
+            {"type": Page.FILTER_OPERATOR, "tab": MATCH, "filter": ALL, "index": ALL},
+            "value",
+        ),
+        Output(
+            {"type": Page.FILTER_VALUE, "tab": MATCH, "filter": ALL, "index": ALL},
+            "value",
+        ),
+        Input({"type": Page.FILTER_RESET, "tab": MATCH}, "n_clicks"),
+    )(reset_filters)

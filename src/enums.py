@@ -257,7 +257,7 @@ class Page(StrEnum):
     SWAP_AXES_BUTTON = "swap-axis-button"
     FILTER_RESET = "filter-reset"
     FILTER_OPERATOR = "filter-operator"
-    FILTER_SELECT = "filter-select"
+    FILTER_VALUE = "filter-value"
 
 
 class FilterOption(Enum):
