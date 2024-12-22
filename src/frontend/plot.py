@@ -36,42 +36,39 @@ class PlotBuilder:
         self._fields.append(field)
         return self
 
-    def group_by_multiple(self, aggregations: dict[Field, GroupBy]):
+    def group_by_multiple(self, aggregations: dict[Field, GroupBy] = {}):
         """
         Aggregate multiple fields by the specified operations.
         """
         # Drop extraneous columns
         self._df = self._df[self._fields]
 
-        # Find the (one) field which is not aggregated
-        (field,) = self._df.columns.difference(aggregations.keys())
-        rest = self._df.columns[self._df.columns != field]
+        if aggregations:
+            # Find the (one) field which is not aggregated
+            (grouping_field,) = self._df.columns.difference(aggregations.keys())
+            rest = self._df.columns[self._df.columns != grouping_field]
 
-        grouped = self._df.groupby(field)[rest]
-        kwargs = {
-            grouped_field: (grouped_field, aggregation)
-            for grouped_field, aggregation in aggregations.items()
-        }
+            # Create kwargs from supplied aggregations
+            kwargs = {
+                grouped_field: (grouped_field, aggregation)
+                for grouped_field, aggregation in aggregations.items()
+            }
+        else:
+            # If aggregations are not supplied, group the rest by the last field
+            *rest, grouping_field = self._fields
+
+            # Use default aggregations
+            kwargs = {
+                field: (
+                    field,
+                    GroupBy.NUNIQUE if Field(field).categorical else GroupBy.SUM,
+                )
+                for field in rest
+            }
+
+        grouped = self._df.groupby(grouping_field)[rest]
         self._df = grouped.agg(**kwargs).reset_index()
         return self
-
-    def group_by(self, aggregation: GroupBy, field=None):
-        """
-        Group by a field and aggregate with the specified operation.
-        By default, groups by the oldest field and sorts in ascending order of group.
-        """
-        if field:
-            rest = [
-                grouped_field
-                for grouped_field in self._fields
-                if grouped_field != field
-            ]
-        else:
-            field, *rest = self._fields
-
-        # Reuse logic in `group_by_multiple`
-        aggregations = {grouped_field: aggregation for grouped_field in rest}
-        return self.group_by_multiple(aggregations)
 
     def sort(self, field: Field, ascending: bool = True):
         self._df = self._df.sort_values(by=field, ascending=ascending)
@@ -86,16 +83,11 @@ class PlotBuilder:
     ):
         for field in fields:
             self.add_field(field)
+        # Group using default settings
+        self.group_by_multiple()
 
-        # Group the rest by the last field
-        *rest, grouping_field = fields
-        self.group_by_multiple(
-            {
-                field: GroupBy.NUNIQUE if Field(field).categorical else GroupBy.SUM
-                for field in rest
-            }
-        )
-
-        # By default, sort by first summary value unless you were grouping by a date
-        self.sort(grouping_field if Field(grouping_field).temporal else fields[0])
+        # By default, sort by Y-axis unless you were grouping by a date
+        *_, grouping_field = fields
+        if not Field(grouping_field).temporal:
+            self.sort(field=y_axis)
         return Plot(plot_type)(self._df, x=x_axis, y=y_axis)

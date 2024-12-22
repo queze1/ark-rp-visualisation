@@ -76,25 +76,6 @@ def render_graph(n_clicks, selected_fields, axes_text, id):
         **axes,
     )
 
-    # secondary_field, primary_field = selected_fields
-    # if not (n_clicks and primary_field and secondary_field):
-    #     return {}
-
-    # # Check axes labels
-    # if axes_text == [Text.Y_AXIS, Text.X_AXIS]:
-    #     axes = dict(y_axis=secondary_field, x_axis=primary_field)
-    # elif axes_text == [Text.X_AXIS, Text.Y_AXIS]:
-    #     axes = dict(x_axis=secondary_field, y_axis=primary_field)
-    # else:
-    #     raise ValueError("Invalid axes")
-
-    # return PlotBuilder(df).plot(
-    #     primary_field=primary_field,
-    #     secondary_field=secondary_field,
-    #     plot_type=id["tab"],
-    #     **axes,
-    # )
-
 
 def register_callbacks(app):
     app.callback(
