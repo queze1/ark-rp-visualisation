@@ -1,8 +1,8 @@
 from enum import Enum, StrEnum, auto
 
-import plotly.express as px
 import dash_mantine_components as dmc
 import pandas as pd
+import plotly.express as px
 
 
 class FieldType(Enum):

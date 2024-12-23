@@ -1,8 +1,8 @@
-from dashboard.filters import make_default_filters, make_filter_group, make_filter_value
-from enums import Field, Filter, Page, Text, Tab, Operator, Plot
+from dash import ALL, MATCH, Input, Output, Patch, State, ctx
 
-from dash import ALL, Input, Output, State, MATCH, Patch, ctx
+from dashboard.filters import make_default_filters, make_filter_group, make_filter_value
 from dashboard.plot_builder import PlotBuilder
+from enums import Field, Filter, Operator, Page, Plot, Tab, Text
 
 
 def update_dropdown_options(selected_fields, current_options):
