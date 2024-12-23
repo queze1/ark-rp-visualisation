@@ -32,35 +32,37 @@ def make_filter_group(tab: Tab, filter: Filter):
     # Use random index since filters can be created dynamically
     index = str(uuid4())
 
+    filter_type_select = dmc.Select(
+        id={
+            "type": Page.FILTER_TYPE,
+            "tab": tab,
+            "index": index,
+        },
+        data=[{"label": filter.label, "value": filter} for filter in Filter],
+        value=filter,
+        maw=200,
+    )
+
+    filter_operator_select = dmc.Select(
+        id={
+            "type": Page.FILTER_OPERATOR,
+            "tab": tab,
+            "index": index,
+        },
+        data=filter.operators,
+        value=filter.default_operator,
+        allowDeselect=False,
+        maw=100,
+    )
+
     return dmc.Grid(
         [
             dmc.GridCol(
-                dmc.Select(
-                    id={
-                        "type": Page.FILTER_TYPE,
-                        "tab": tab,
-                        "index": index,
-                    },
-                    data=[
-                        {"label": filter.label, "value": filter} for filter in Filter
-                    ],
-                    value=filter,
-                    maw=200,
-                ),
+                filter_type_select,
                 span="content",
             ),
             dmc.GridCol(
-                dmc.Select(
-                    id={
-                        "type": Page.FILTER_OPERATOR,
-                        "tab": tab,
-                        "index": index,
-                    },
-                    data=filter.operators,
-                    value=filter.default_operator,
-                    allowDeselect=False,
-                    maw=100,
-                ),
+                filter_operator_select,
                 span="content",
             ),
             dmc.GridCol(
@@ -69,6 +71,7 @@ def make_filter_group(tab: Tab, filter: Filter):
                 span="auto",
             ),
         ],
+        id={"type": Page.FILTER_GROUP_CONTAINER, "tab": tab},
     )
 
 

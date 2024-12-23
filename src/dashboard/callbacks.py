@@ -127,7 +127,21 @@ def update_filter_options(filter_type):
 
 def register_callbacks(app):
     match_fields = {"type": Page.FIELD_DROPDOWN, "tab": MATCH, "index": ALL}
+    app.callback(
+        Output(match_fields, "data"),
+        Input(match_fields, "value"),
+        State(match_fields, "data"),
+    )(update_dropdown_options)
+
     match_axes = {"type": Page.AXIS_TEXT, "tab": MATCH, "index": ALL}
+    match_swap_axes = {"type": Page.SWAP_AXES_BUTTON, "tab": MATCH}
+    app.callback(
+        Output(match_axes, "children"),
+        Input(match_swap_axes, "n_clicks"),
+        State(match_axes, "children"),
+    )(swap_axes)
+
+    match_update_graph = {"type": Page.UPDATE_GRAPH_BUTTON, "tab": MATCH}
     match_filter_types = {
         "type": Page.FILTER_TYPE,
         "tab": MATCH,
@@ -143,22 +157,6 @@ def register_callbacks(app):
         "tab": MATCH,
         "index": ALL,
     }
-    match_swap_axes = {"type": Page.SWAP_AXES_BUTTON, "tab": MATCH}
-    match_update_graph = {"type": Page.UPDATE_GRAPH_BUTTON, "tab": MATCH}
-    match_reset_filter = {"type": Page.RESET_FILTER_BUTTON, "tab": MATCH}
-    match_add_filter = {"type": Page.ADD_FILTER_BUTTON, "tab": MATCH}
-    match_filter_container = {"type": Page.FILTER_CONTAINER, "tab": MATCH}
-
-    app.callback(
-        Output(match_fields, "data"),
-        Input(match_fields, "value"),
-        State(match_fields, "data"),
-    )(update_dropdown_options)
-    app.callback(
-        Output(match_axes, "children"),
-        Input(match_swap_axes, "n_clicks"),
-        State(match_axes, "children"),
-    )(swap_axes)
     app.callback(
         Output({"type": Page.GRAPH, "tab": MATCH}, "figure"),
         inputs=dict(
@@ -179,6 +177,10 @@ def register_callbacks(app):
             ),
         ),
     )(render_graph)
+
+    match_filter_container = {"type": Page.FILTER_CONTAINER, "tab": MATCH}
+    match_reset_filter = {"type": Page.RESET_FILTER_BUTTON, "tab": MATCH}
+    match_add_filter = {"type": Page.ADD_FILTER_BUTTON, "tab": MATCH}
     app.callback(
         Output(match_filter_container, "children", allow_duplicate=True),
         Input(match_reset_filter, "n_clicks"),
@@ -187,37 +189,38 @@ def register_callbacks(app):
         Output(match_filter_container, "children", allow_duplicate=True),
         Input(match_add_filter, "n_clicks"),
     )(add_filter)
+
+    # Matches single elements within a filter group
+    match_filter_operator = {
+        "type": Page.FILTER_OPERATOR,
+        "tab": MATCH,
+        "index": MATCH,
+    }
+    match_filter_value_container = {
+        "type": Page.FILTER_VALUE_CONTAINER,
+        "tab": MATCH,
+        "index": MATCH,
+    }
+    match_filter_type = {
+        "type": Page.FILTER_TYPE,
+        "tab": MATCH,
+        "index": MATCH,
+    }
     app.callback(
         Output(
-            {
-                "type": Page.FILTER_OPERATOR,
-                "tab": MATCH,
-                "index": MATCH,
-            },
+            match_filter_operator,
             "data",
         ),
         Output(
-            {
-                "type": Page.FILTER_OPERATOR,
-                "tab": MATCH,
-                "index": MATCH,
-            },
+            match_filter_operator,
             "value",
         ),
         Output(
-            {
-                "type": Page.FILTER_VALUE_CONTAINER,
-                "tab": MATCH,
-                "index": MATCH,
-            },
+            match_filter_value_container,
             "children",
         ),
         Input(
-            {
-                "type": Page.FILTER_TYPE,
-                "tab": MATCH,
-                "index": MATCH,
-            },
+            match_filter_type,
             "value",
         ),
     )(update_filter_options)
