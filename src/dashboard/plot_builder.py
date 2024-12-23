@@ -2,6 +2,8 @@ from enums import Operator, Plot
 from enums import Field, GroupBy
 from data_loader import df
 
+DTICK_CUTOFF = 50
+
 
 class PlotBuilder:
     def __init__(
@@ -99,10 +101,7 @@ class PlotBuilder:
         primary_field, secondary_field, *tertiary_field = self.fields
 
         title = f"{self.get_title_label(primary_field)} by {self.get_title_label(secondary_field)}"
-        labels = {
-            self.x_axis: self.get_axis_label(self.x_axis),
-            self.y_axis: self.get_axis_label(self.y_axis),
-        }
+        labels = {field: self.get_axis_label(field) for field in self.fields}
 
         self._fig = self.plot_type(
             self._df,
@@ -114,6 +113,18 @@ class PlotBuilder:
             text=tertiary_field[0] if tertiary_field else None,
         )
 
+    def create_layout(self):
+        """
+        Create a starting layout for the current figure.
+        """
+        # Set 1 tick per unit if X-axis is hour or day
+        if self.x_axis in {Field.HOUR, Field.DAY}:
+            self._fig.update_layout(xaxis={"dtick": 1})
+
+        # Format annotations if scatter
+        if self.plot_type == Plot.SCATTER:
+            self._fig.update_traces(textposition="top center", textfont_size=10)
+
     def build(self):
         for field in self.fields:
             self.add_field(field)
@@ -124,4 +135,5 @@ class PlotBuilder:
         self.groupby()
         self.sort_default()
         self.make_figure()
+        self.create_layout()
         return self._fig

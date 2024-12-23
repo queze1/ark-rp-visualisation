@@ -20,8 +20,12 @@ def make_tab(tab: Tab):
                 id={"type": Page.UPDATE_GRAPH_BUTTON, "tab": tab},
             ),
             dmc.Space(h=20),
-            dcc.Graph(
-                id={"type": Page.GRAPH, "tab": tab},
+            dcc.Loading(
+                dcc.Graph(
+                    id={"type": Page.GRAPH, "tab": tab},
+                ),
+                type="default",
+                delay_show=500,
             ),
         ],
         withBorder=True,
