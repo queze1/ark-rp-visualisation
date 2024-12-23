@@ -25,7 +25,7 @@ def make_tab(tab: Tab):
                     id={"type": Page.GRAPH, "tab": tab},
                 ),
                 type="default",
-                delay_show=500,
+                delay_hide=500,
             ),
         ],
         withBorder=True,
