@@ -82,7 +82,8 @@ def make_filter_group(tab: Tab, filter: Filter):
             ),
             dmc.GridCol(delete_filter_button, span="content"),
         ],
-        id={"type": Page.FILTER_GROUP_CONTAINER, "tab": tab},
+        id={"type": Page.FILTER_GROUP_CONTAINER, "tab": tab, "index": index},
+        align="center",
     )
 
 
@@ -112,7 +113,7 @@ def make_filter_controls(tab: Tab):
     )
     footer = dmc.Group(
         dmc.Button(
-            "+Add Filter",
+            "+ Add Filter",
             id={"type": Page.ADD_FILTER_BUTTON, "tab": tab},
             variant="outline",
             size="sm",

@@ -125,6 +125,23 @@ def update_filter_options(filter_type):
     )
 
 
+def delete_filter(n_clicks, children):
+    patched_children = Patch()
+    # Adding a new filter triggers this for some reason, ignore if no clicks
+    if not any(n_clicks):
+        return patched_children
+
+    # Find the filter group with same index and get its position in children
+    index = ctx.triggered_id["index"]
+    (filter_index,) = [
+        i for i, child in enumerate(children) if child["props"]["id"]["index"] == index
+    ]
+
+    # Delete that filter group
+    del patched_children[filter_index]
+    return patched_children
+
+
 def register_callbacks(app):
     match_fields = {"type": Page.FIELD_DROPDOWN, "tab": MATCH, "index": ALL}
     app.callback(
@@ -224,3 +241,14 @@ def register_callbacks(app):
             "value",
         ),
     )(update_filter_options)
+
+    match_delete_filter = {
+        "type": Page.DELETE_FILTER_BUTTON,
+        "tab": MATCH,
+        "index": ALL,
+    }
+    app.callback(
+        Output(match_filter_container, "children", allow_duplicate=True),
+        Input(match_delete_filter, "n_clicks"),
+        State(match_filter_container, "children"),
+    )(delete_filter)
