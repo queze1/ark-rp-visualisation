@@ -1,7 +1,6 @@
 from uuid import uuid4
 import dash_mantine_components as dmc
 from enums import Filter, FilterOption, Tab, Page
-from dash import html
 from data_loader import df
 
 from functools import lru_cache
@@ -22,7 +21,11 @@ def make_filter_group(tab: Tab, filter: Filter):
     index = str(uuid4())
     return dmc.Group(
         [
-            html.Label(filter.label),
+            dmc.Select(
+                data=[filter.label],
+                value=filter.label,
+                maw=200,
+            ),
             dmc.Select(
                 id={
                     "type": Page.FILTER_OPERATOR,
@@ -33,15 +36,19 @@ def make_filter_group(tab: Tab, filter: Filter):
                 data=filter.operators,
                 value=filter.default_operator,
                 allowDeselect=False,
+                maw=100,
             ),
-            filter.select_component(
-                id={
-                    "type": Page.FILTER_VALUE,
-                    "tab": tab,
-                    "filter": filter,
-                    "index": index,
-                },
-                **select_kwargs,
+            dmc.Group(
+                filter.select_component(
+                    id={
+                        "type": Page.FILTER_VALUE,
+                        "tab": tab,
+                        "filter": filter,
+                        "index": index,
+                    },
+                    **select_kwargs,
+                ),
+                grow=1,
             ),
         ],
         grow=1,
