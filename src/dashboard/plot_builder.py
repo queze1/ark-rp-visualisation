@@ -12,8 +12,12 @@ class PlotBuilder:
         y_axis: Field,
         plot_type: Plot,
     ):
-        self.df = df.copy()
-        self.fig = None
+        self._df = df.copy()
+        self._fig = None
+        self._grouping_field = None
+        self._grouped_fields = None
+        self._agg_kwargs = None
+
         self.fields = fields
         self.filters = filters
         self.x_axis = x_axis
@@ -22,65 +26,65 @@ class PlotBuilder:
 
     def add_field(self, field: Field):
         # Create the field if it doesn't already exist
-        if field in self.df:
+        if field in self._df:
             return
 
         if field == Field.HOUR:
-            self.df[field] = self.df[Field.DATETIME].dt.hour
+            self._df[field] = self._df[Field.DATETIME].dt.hour
         elif field == Field.DAY:
-            self.df[field] = self.df[Field.DATETIME].dt.day
+            self._df[field] = self._df[Field.DATETIME].dt.day
         elif field == Field.DATE:
-            self.df[field] = self.df[Field.DATETIME].dt.date
+            self._df[field] = self._df[Field.DATETIME].dt.date
         elif field == Field.COUNT:
-            self.df[field] = 1
+            self._df[field] = 1
 
     def filter(self, field: Field, operator: Operator, value):
         self.add_field(field)
-        self.df = self.df[operator(self.df[field], value)]
+        self._df = self._df[operator(self._df[field], value)]
 
-    def group_by_multiple(self, aggregations: dict[Field, GroupBy] = {}):
-        """
-        Aggregate multiple fields by the specified operations.
-        """
+    def set_aggregations(self, aggregations: dict[Field, GroupBy] = {}):
+        """Sets aggregation kwargs, if not provided, uses default aggregations."""
         if aggregations:
-            rest = aggregations.keys()
+            self._grouped_fields = aggregations.keys()
             # Find the one field which is not aggregated
-            (grouping_field,) = [field for field in self.fields if field not in rest]
-
+            (self._grouping_field,) = [
+                field for field in self.fields if field not in self._grouped_fields
+            ]
             # Create kwargs from supplied aggregations
-            kwargs = {
+            self._agg_kwargs = {
                 field: (field, aggregation)
                 for field, aggregation in aggregations.items()
             }
+
         else:
             # If aggregations are not supplied, group the rest by the last field
-            *rest, grouping_field = self.fields
-
+            *self._grouped_fields, self._grouping_field = self.fields
             # Use default aggregations
-            kwargs = {
+            self._agg_kwargs = {
                 field: (
                     field,
                     GroupBy.NUNIQUE if Field(field).categorical else GroupBy.SUM,
                 )
-                for field in rest
+                for field in self._grouped_fields
             }
 
-        grouped = self.df.groupby(grouping_field)[rest]
-        self.df = grouped.agg(**kwargs).reset_index()
+    def groupby(self):
+        """Aggregate and group the current DataFrame."""
+        grouped = self._df.groupby(self._grouping_field)[self._grouped_fields]
+        self._df = grouped.agg(**self._agg_kwargs).reset_index()
 
     def sort_default(self):
         # By default, sort by grouped field unless you were grouping by a date
-        grouped_field, *_, grouping_field = self.fields
-        if not grouping_field.temporal:
-            self.df = self.df.sort_values(by=grouped_field, ascending=True)
+        if not self._grouping_field.temporal:
+            self._df = self._df.sort_values(by=self._grouped_fields[0], ascending=True)
 
     def make_figure(self):
         primary_field, secondary_field, *tertiary_field = self.fields
         title = f"{primary_field.label} by {secondary_field.label}"
         labels = {self.x_axis: self.x_axis.label, self.y_axis: self.y_axis.label}
 
-        self.fig = self.plot_type(
-            self.df,
+        self._fig = self.plot_type(
+            self._df,
             x=self.x_axis,
             y=self.y_axis,
             title=title,
@@ -95,8 +99,8 @@ class PlotBuilder:
         for filter in self.filters:
             self.filter(*filter)
 
-        # Group and aggregate using default settings
-        self.group_by_multiple()
+        self.set_aggregations()
+        self.groupby()
         self.sort_default()
         self.make_figure()
-        return self.fig
+        return self._fig
