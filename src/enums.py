@@ -29,54 +29,59 @@ class Field(StrEnum):
     @property
     def _metadata(self):
         return {
-            "AUTHOR": {"description": "Users", FieldType.CATEGORICAL: True},
+            "AUTHOR": {"axis_label": "Users", FieldType.CATEGORICAL: True},
             "DATE": {
-                "description": "Date",
+                "axis_label": "Date",
                 FieldType.TEMPORAl: True,
                 FieldType.CATEGORICAL: True,
             },
             "HOUR": {
-                "description": "Hour of Day",
+                "axis_label": "Hour of Day",
                 FieldType.TEMPORAl: True,
                 FieldType.CATEGORICAL: True,
             },
             "DAY": {
-                "description": "Day of Month",
+                "axis_label": "Day of Month",
                 FieldType.TEMPORAl: True,
                 FieldType.CATEGORICAL: True,
             },
             "REACTION_COUNT": {
-                "description": "Reactions",
+                "axis_label": "Reactions",
                 "label": "Reaction Count",
                 FieldType.NUMERICAL: True,
             },
             "WORD_COUNT": {
-                "description": "Words",
+                "axis_label": "Words",
                 "label": "Word Count",
                 FieldType.NUMERICAL: True,
             },
             "CHANNEL_NAME": {
-                "description": "Channels",
+                "axis_label": "Channels",
                 FieldType.CATEGORICAL: True,
             },
             "SCENE_END": {
-                "description": "Scene Ends",
+                "axis_label": "Scene Ends",
                 FieldType.NUMERICAL: True,
             },
             "COUNT": {
-                "description": "Messages",
+                "axis_label": "Messages",
                 FieldType.NUMERICAL: True,
             },
         }.get(self.name, {})
 
     @property
-    def description(self):
-        return self._metadata.get("description")
+    def axis_label(self):
+        return self._metadata.get("axis_label")
+
+    @property
+    def title_label(self):
+        # Title label defaults to axis label
+        return self._metadata.get("title_label", self.axis_label)
 
     @property
     def label(self):
-        # Label defaults to description
-        return self._metadata.get("label", self.description)
+        # Label defaults to axis label
+        return self._metadata.get("label", self.axis_label)
 
     @property
     def numerical(self):
@@ -104,6 +109,28 @@ class GroupBy(StrEnum):
         elif self is GroupBy.NUNIQUE:
             return obj.nunique()
         raise NotImplementedError(f"{self.name} groupby is not implemented.")
+
+    @property
+    def _metadata(self):
+        return {
+            "SUM": {"axis_prefix": "Number of "},
+            "MEAN": {
+                "title_prefix": "Average ",
+                "axis_prefix": "Avg. ",
+            },
+            "NUNIQUE": {
+                "title_prefix": "Unique ",
+                "axis_prefix": "Unique ",
+            },
+        }
+
+    @property
+    def title_prefix(self):
+        return self._metadata[self.name].get("title_prefix", "")
+
+    @property
+    def axis_prefix(self):
+        return self._metadata[self.name].get("axis_prefix", "")
 
 
 class Plot(StrEnum):

@@ -1,5 +1,5 @@
 from enums import Operator, Plot
-from pipeline.enums import Field, GroupBy
+from enums import Field, GroupBy
 from data_loader import df
 
 
@@ -78,10 +78,26 @@ class PlotBuilder:
         if not self._grouping_field.temporal:
             self._df = self._df.sort_values(by=self._grouped_fields[0], ascending=True)
 
+    def get_axis_label(self, field: Field):
+        if field in self._agg_kwargs:
+            _, agg = self._agg_kwargs[field]
+            return f"{agg.axis_prefix}{field.axis_label}"
+        return field.axis_label
+
+    def get_title_label(self, field: Field):
+        if field in self._agg_kwargs:
+            _, agg = self._agg_kwargs[field]
+            return f"{agg.title_prefix}{field.title_label}"
+        return field.title_label
+
     def make_figure(self):
         primary_field, secondary_field, *tertiary_field = self.fields
-        title = f"{primary_field.label} by {secondary_field.label}"
-        labels = {self.x_axis: self.x_axis.label, self.y_axis: self.y_axis.label}
+
+        title = f"{self.get_title_label(primary_field)} by {self.get_title_label(secondary_field)}"
+        labels = {
+            self.x_axis: self.get_axis_label(self.x_axis),
+            self.y_axis: self.get_axis_label(self.y_axis),
+        }
 
         self._fig = self.plot_type(
             self._df,
