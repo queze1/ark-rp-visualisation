@@ -58,9 +58,7 @@ def render_graph(
     n_clicks,
     selected_fields,
     selected_axes,
-    filter_types,
-    filter_operators,
-    filter_values,
+    filters,
 ):
     if n_clicks is None or not all(selected_fields):
         return {}
@@ -75,12 +73,10 @@ def render_graph(
     else:
         raise ValueError("Invalid axes")
 
-    # Zip filters together
+    # Process filters
     filters = [
         (Filter(filter), Operator(operator), Filter(filter).post_processing(value))
-        for filter, operator, value in zip(
-            filter_types, filter_operators, filter_values
-        )
+        for filter, operator, value in zip(*filters)
         if value
     ]
 
@@ -180,17 +176,19 @@ def register_callbacks(app):
             n_clicks=Input(match_update_graph, "n_clicks"),
             selected_fields=State(match_fields, "value"),
             selected_axes=State(match_axes, "children"),
-            filter_types=State(
-                match_filter_types,
-                "value",
-            ),
-            filter_operators=State(
-                match_filter_operators,
-                "value",
-            ),
-            filter_values=State(
-                match_filter_values,
-                "value",
+            filters=(
+                State(
+                    match_filter_types,
+                    "value",
+                ),
+                State(
+                    match_filter_operators,
+                    "value",
+                ),
+                State(
+                    match_filter_values,
+                    "value",
+                ),
             ),
         ),
     )(render_graph)
