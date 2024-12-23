@@ -1,4 +1,5 @@
 from uuid import uuid4
+from dash_iconify import DashIconify
 import dash_mantine_components as dmc
 from enums import Filter, FilterOption, Tab, Page
 from data_loader import df
@@ -55,6 +56,15 @@ def make_filter_group(tab: Tab, filter: Filter):
         maw=100,
     )
 
+    delete_filter_button = dmc.Button(
+        id={"type": Page.DELETE_FILTER_BUTTON, "tab": tab, "index": index},
+        children=DashIconify(icon="streamline:delete-1-solid"),
+        variant="outline",
+        color="red",
+        size="xs",
+        px=8,
+    )
+
     return dmc.Grid(
         [
             dmc.GridCol(
@@ -70,6 +80,7 @@ def make_filter_group(tab: Tab, filter: Filter):
                 id={"type": Page.FILTER_VALUE_CONTAINER, "tab": tab, "index": index},
                 span="auto",
             ),
+            dmc.GridCol(delete_filter_button, span="content"),
         ],
         id={"type": Page.FILTER_GROUP_CONTAINER, "tab": tab},
     )
