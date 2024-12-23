@@ -1,4 +1,4 @@
-from dashboard.filters import make_filter_group
+from dashboard.filters import make_default_filters, make_filter_group, make_filter_value
 from enums import Field, Filter, Page, Text, Tab, Operator, Plot
 
 from dash import ALL, Input, Output, State, MATCH, Patch, ctx
@@ -32,13 +32,11 @@ def update_dropdown_options(selected_fields, current_options):
                 field.temporal and has_selected_temporal and not selected_temporal
             )
 
-            return {
-                "disabled": is_duplicate or is_invalid_temporal,
-            }
+            return is_duplicate or is_invalid_temporal
 
         patched_options = Patch()
         for i, opt in enumerate(options):
-            patched_options[i].update(process_option(opt))
+            patched_options[i]["disabled"] = process_option(opt)
         return patched_options
 
     # Generate a list of patches, one for each output from the pattern-match
@@ -67,6 +65,7 @@ def render_graph(
     if n_clicks is None or not all(selected_fields):
         return {}
 
+    selected_fields = [Field(field) for field in selected_fields]
     primary_field, secondary_field, *_ = selected_fields
     # Find field axes
     if selected_axes == [Text.Y_AXIS, Text.X_AXIS]:
@@ -87,7 +86,7 @@ def render_graph(
 
     tab = Tab(ctx.triggered_id["tab"])
     return PlotBuilder(df).plot(
-        fields=[Field(field) for field in selected_fields],
+        fields=selected_fields,
         plot_type=Plot(tab.plot_type),
         filters=filters,
         **axes,
@@ -99,8 +98,8 @@ def reset_filters(n_clicks):
         return
 
     tab = Tab(ctx.triggered_id["tab"])
-    # Recreate the starting filters
-    return [make_filter_group(tab, filter) for filter in Filter]
+    # Recreate default filters
+    return make_default_filters(tab)
 
 
 def add_filter(n_clicks):
@@ -111,6 +110,19 @@ def add_filter(n_clicks):
     patched_children = Patch()
     patched_children.append(make_filter_group(tab, Filter.DATE))
     return patched_children
+
+
+# Updates the filter operators and value input when the filter type changes
+def update_filter_options(filter_type):
+    filter_type = Filter(filter_type)
+
+    c = ctx.triggered_id
+    tab, index = c["tab"], c["index"]
+    return (
+        filter_type.operators,
+        filter_type.default_operator,
+        make_filter_value(filter_type, tab, index),
+    )
 
 
 def register_callbacks(app):
@@ -175,3 +187,37 @@ def register_callbacks(app):
         Output(match_filter_container, "children", allow_duplicate=True),
         Input(match_add_filter, "n_clicks"),
     )(add_filter)
+    app.callback(
+        Output(
+            {
+                "type": Page.FILTER_OPERATOR,
+                "tab": MATCH,
+                "index": MATCH,
+            },
+            "data",
+        ),
+        Output(
+            {
+                "type": Page.FILTER_OPERATOR,
+                "tab": MATCH,
+                "index": MATCH,
+            },
+            "value",
+        ),
+        Output(
+            {
+                "type": Page.FILTER_VALUE_CONTAINER,
+                "tab": MATCH,
+                "index": MATCH,
+            },
+            "children",
+        ),
+        Input(
+            {
+                "type": Page.FILTER_TYPE,
+                "tab": MATCH,
+                "index": MATCH,
+            },
+            "value",
+        ),
+    )(update_filter_options)

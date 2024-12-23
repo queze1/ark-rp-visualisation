@@ -11,14 +11,27 @@ def get_unique(field):
     return sorted(df[field].unique())
 
 
-def make_filter_group(tab: Tab, filter: Filter):
+# Creates a filter value input
+def make_filter_value(filter: Filter, tab: Tab, index):
     select_kwargs = filter.select_kwargs.copy()
     # Check if options need to be loaded dynamically
     if select_kwargs.get("data") == FilterOption.FIELD_UNIQUE:
         select_kwargs["data"] = get_unique(filter)
 
+    return filter.select_input(
+        id={
+            "type": Page.FILTER_VALUE,
+            "tab": tab,
+            "index": index,
+        },
+        **select_kwargs,
+    )
+
+
+def make_filter_group(tab: Tab, filter: Filter):
     # Use random index since filters can be created dynamically
     index = str(uuid4())
+
     return dmc.Group(
         [
             dmc.Select(
@@ -43,19 +56,18 @@ def make_filter_group(tab: Tab, filter: Filter):
                 maw=100,
             ),
             dmc.Group(
-                filter.select_component(
-                    id={
-                        "type": Page.FILTER_VALUE,
-                        "tab": tab,
-                        "index": index,
-                    },
-                    **select_kwargs,
-                ),
+                make_filter_value(filter, tab, index),
+                id={"type": Page.FILTER_VALUE_CONTAINER, "tab": tab, "index": index},
                 grow=1,
             ),
         ],
         grow=1,
     )
+
+
+def make_default_filters(tab):
+    # Creates one of every possible filter
+    return [make_filter_group(tab, filter) for filter in Filter]
 
 
 def make_filter_controls(tab: Tab):
@@ -73,7 +85,7 @@ def make_filter_controls(tab: Tab):
         align="center",
     )
     filter_groups = dmc.Stack(
-        [make_filter_group(tab, filter) for filter in Filter],
+        make_default_filters(tab),
         id={"type": Page.FILTER_CONTAINER, "tab": tab},
         gap=5,
     )

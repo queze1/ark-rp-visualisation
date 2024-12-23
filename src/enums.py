@@ -273,7 +273,7 @@ class Filter(StrEnum):
                 "label": "Date",
                 "operators": [Operator.BEFORE, Operator.DURING, Operator.AFTER],
                 "default_operator": Operator.BEFORE,
-                "select_component": dmc.DatePickerInput,
+                "select_input": dmc.DatePickerInput,
                 "select_kwargs": dict(
                     clearable=True,
                 ),
@@ -283,21 +283,21 @@ class Filter(StrEnum):
                 "label": "Author",
                 "operators": [Operator.IN, Operator.NOT_IN],
                 "default_operator": Operator.IN,
-                "select_component": dmc.MultiSelect,
+                "select_input": dmc.MultiSelect,
                 "select_kwargs": multiselect_kwargs,
             },
             "CHANNEL_NAME": {
                 "label": "Channel Name",
                 "operators": [Operator.IN, Operator.NOT_IN],
                 "default_operator": Operator.IN,
-                "select_component": dmc.MultiSelect,
+                "select_input": dmc.MultiSelect,
                 "select_kwargs": multiselect_kwargs,
             },
             "HOUR": {
                 "label": "Hour",
                 "operators": standard_operators,
                 "default_operator": Operator.GEQ,
-                "select_component": dmc.Select,
+                "select_input": dmc.Select,
                 "select_kwargs": dict(
                     data=[str(hour) for hour in range(24)],
                     placeholder="Enter hour...",
@@ -310,7 +310,7 @@ class Filter(StrEnum):
                 "label": "Reaction Count",
                 "operators": standard_operators,
                 "default_operator": Operator.GEQ,
-                "select_component": dmc.NumberInput,
+                "select_input": dmc.NumberInput,
                 "select_kwargs": dict(
                     min=0,
                     max=99,
@@ -333,8 +333,8 @@ class Filter(StrEnum):
         return self._metadata.get("default_operator")
 
     @property
-    def select_component(self):
-        return self._metadata.get("select_component")
+    def select_input(self):
+        return self._metadata.get("select_input")
 
     @property
     def select_kwargs(self):
@@ -368,4 +368,5 @@ class Page(StrEnum):
     FILTER_CONTAINER = "filter-container"
     FILTER_TYPE = "filter-type"
     FILTER_OPERATOR = "filter-operator"
+    FILTER_VALUE_CONTAINER = "filter-value-container"
     FILTER_VALUE = "filter-value"
