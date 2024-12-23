@@ -72,6 +72,10 @@ class PlotBuilder:
         self._df = self._df.sort_values(by=field, ascending=ascending)
         return self
 
+    def generate_title(self):
+        primary_field, secondary_field, *_ = self._fields
+        return f"{primary_field.label} by {secondary_field.label}"
+
     def plot(
         self,
         fields: list[Field],
@@ -92,4 +96,15 @@ class PlotBuilder:
         grouped_field, *_, grouping_field = fields
         if not grouping_field.temporal:
             self.sort(field=grouped_field)
-        return plot_type(self._df, x=x_axis, y=y_axis)
+
+        labels = {x_axis: x_axis.label, y_axis: y_axis.label}
+        fig = plot_type(
+            self._df,
+            x=x_axis,
+            y=y_axis,
+            labels=labels,
+            title=self.generate_title(),
+            # Add annotations if 3 vars
+            text=self._df[grouping_field] if len(fields) == 3 else None,
+        )
+        return fig
