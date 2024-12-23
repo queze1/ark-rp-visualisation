@@ -90,6 +90,6 @@ class PlotBuilder:
 
         # By default, sort by grouped field unless you were grouping by a date
         grouped_field, *_, grouping_field = fields
-        if not Field(grouping_field).temporal:
+        if not grouping_field.temporal:
             self.sort(field=grouped_field)
-        return Plot(plot_type)(self._df, x=x_axis, y=y_axis)
+        return plot_type(self._df, x=x_axis, y=y_axis)

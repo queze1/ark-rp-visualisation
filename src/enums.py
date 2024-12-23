@@ -366,5 +366,6 @@ class Page(StrEnum):
     RESET_FILTER_BUTTON = "reset-filter-btn"
     ADD_FILTER_BUTTON = "add-filter-btn"
     FILTER_CONTAINER = "filter-container"
+    FILTER_TYPE = "filter-type"
     FILTER_OPERATOR = "filter-operator"
     FILTER_VALUE = "filter-value"

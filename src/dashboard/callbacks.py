@@ -1,5 +1,5 @@
 from dashboard.filters import make_filter_group
-from enums import Field, Filter, Page, Text, Tab, Operator
+from enums import Field, Filter, Page, Text, Tab, Operator, Plot
 
 from dash import ALL, Input, Output, State, MATCH, Patch, ctx
 from data_loader import df
@@ -60,6 +60,7 @@ def render_graph(
     n_clicks,
     selected_fields,
     selected_axes,
+    filter_types,
     filter_operators,
     filter_values,
 ):
@@ -75,12 +76,9 @@ def render_graph(
     else:
         raise ValueError("Invalid axes")
 
-    filter_types = [
-        Filter(operator.id.filter) for operator in ctx.args_grouping.filter_operators
-    ]
-    # Filter value is same as its field
+    # Zip filters together
     filters = [
-        (filter, Operator(operator), filter.post_processing(value))
+        (Filter(filter), Operator(operator), Filter(filter).post_processing(value))
         for filter, operator, value in zip(
             filter_types, filter_operators, filter_values
         )
@@ -89,8 +87,8 @@ def render_graph(
 
     tab = Tab(ctx.triggered_id["tab"])
     return PlotBuilder(df).plot(
-        fields=selected_fields,
-        plot_type=tab.plot_type,
+        fields=[Field(field) for field in selected_fields],
+        plot_type=Plot(tab.plot_type),
         filters=filters,
         **axes,
     )
@@ -118,16 +116,19 @@ def add_filter(n_clicks):
 def register_callbacks(app):
     match_fields = {"type": Page.FIELD_DROPDOWN, "tab": MATCH, "index": ALL}
     match_axes = {"type": Page.AXIS_TEXT, "tab": MATCH, "index": ALL}
+    match_filter_types = {
+        "type": Page.FILTER_TYPE,
+        "tab": MATCH,
+        "index": ALL,
+    }
     match_filter_operators = {
         "type": Page.FILTER_OPERATOR,
         "tab": MATCH,
-        "filter": ALL,
         "index": ALL,
     }
     match_filter_values = {
         "type": Page.FILTER_VALUE,
         "tab": MATCH,
-        "filter": ALL,
         "index": ALL,
     }
     match_swap_axes = {"type": Page.SWAP_AXES_BUTTON, "tab": MATCH}
@@ -152,6 +153,10 @@ def register_callbacks(app):
             n_clicks=Input(match_update_graph, "n_clicks"),
             selected_fields=State(match_fields, "value"),
             selected_axes=State(match_axes, "children"),
+            filter_types=State(
+                match_filter_types,
+                "value",
+            ),
             filter_operators=State(
                 match_filter_operators,
                 "value",

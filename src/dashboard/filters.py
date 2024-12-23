@@ -22,15 +22,19 @@ def make_filter_group(tab: Tab, filter: Filter):
     return dmc.Group(
         [
             dmc.Select(
-                data=[filter.label],
-                value=filter.label,
+                id={
+                    "type": Page.FILTER_TYPE,
+                    "tab": tab,
+                    "index": index,
+                },
+                data=[{"label": filter.label, "value": filter} for filter in Filter],
+                value=filter,
                 maw=200,
             ),
             dmc.Select(
                 id={
                     "type": Page.FILTER_OPERATOR,
                     "tab": tab,
-                    "filter": filter,
                     "index": index,
                 },
                 data=filter.operators,
@@ -43,7 +47,6 @@ def make_filter_group(tab: Tab, filter: Filter):
                     id={
                         "type": Page.FILTER_VALUE,
                         "tab": tab,
-                        "filter": filter,
                         "index": index,
                     },
                     **select_kwargs,
