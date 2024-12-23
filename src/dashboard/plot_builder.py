@@ -16,7 +16,7 @@ class PlotBuilder:
         self._fig = None
         self._grouping_field = None
         self._grouped_fields = None
-        self._agg_kwargs = None
+        self._aggregations = None
 
         self.fields = fields
         self.filters = filters
@@ -43,35 +43,33 @@ class PlotBuilder:
         self._df = self._df[operator(self._df[field], value)]
 
     def set_aggregations(self, aggregations: dict[Field, GroupBy] = {}):
-        """Sets aggregation kwargs, if not provided, uses default aggregations."""
+        """Sets aggregations, if not provided, uses default aggregations."""
         if aggregations:
             self._grouped_fields = aggregations.keys()
             # Find the one field which is not aggregated
             (self._grouping_field,) = [
                 field for field in self.fields if field not in self._grouped_fields
             ]
-            # Create kwargs from supplied aggregations
-            self._agg_kwargs = {
-                field: (field, aggregation)
-                for field, aggregation in aggregations.items()
-            }
+            self._aggregations = aggregations
 
         else:
             # If aggregations are not supplied, group the rest by the last field
             *self._grouped_fields, self._grouping_field = self.fields
             # Use default aggregations
-            self._agg_kwargs = {
-                field: (
-                    field,
-                    GroupBy.NUNIQUE if Field(field).categorical else GroupBy.SUM,
-                )
+            self._aggregations = {
+                field: GroupBy.NUNIQUE if Field(field).categorical else GroupBy.SUM
                 for field in self._grouped_fields
             }
 
     def groupby(self):
         """Aggregate and group the current DataFrame."""
         grouped = self._df.groupby(self._grouping_field)[self._grouped_fields]
-        self._df = grouped.agg(**self._agg_kwargs).reset_index()
+        self._df = grouped.agg(
+            **{
+                field: (field, aggregation)
+                for field, aggregation in self._aggregations.items()
+            }
+        ).reset_index()
 
     def sort_default(self):
         # By default, sort by grouped field unless you were grouping by a date
@@ -85,8 +83,8 @@ class PlotBuilder:
         label = field.axis_label if label_type == "axis" else field.title_label
 
         # If aggregation exists, add its prefix
-        if field in self._agg_kwargs:
-            _, agg = self._agg_kwargs[field]
+        if field in self._aggregations:
+            agg = self._aggregations[field]
             prefix = agg.axis_prefix if label_type == "axis" else agg.title_prefix
             return prefix + label
         return label
