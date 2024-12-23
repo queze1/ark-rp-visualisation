@@ -2,7 +2,6 @@ from dashboard.filters import make_default_filters, make_filter_group, make_filt
 from enums import Field, Filter, Page, Text, Tab, Operator, Plot
 
 from dash import ALL, Input, Output, State, MATCH, Patch, ctx
-from data_loader import df
 from dashboard.plot_builder import PlotBuilder
 
 
@@ -81,12 +80,12 @@ def render_graph(
     ]
 
     tab = Tab(ctx.triggered_id["tab"])
-    return PlotBuilder(df).plot(
+    return PlotBuilder(
         fields=selected_fields,
         plot_type=Plot(tab.plot_type),
         filters=filters,
         **axes,
-    )
+    ).build()
 
 
 def reset_filters(n_clicks):
