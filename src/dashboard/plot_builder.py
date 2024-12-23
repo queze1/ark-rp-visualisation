@@ -78,17 +78,24 @@ class PlotBuilder:
         if not self._grouping_field.temporal:
             self._df = self._df.sort_values(by=self._grouped_fields[0], ascending=True)
 
-    def get_axis_label(self, field: Field):
+    def get_label(self, field: Field, label_type="axis"):
+        """
+        Returns the label for a Field with aggregation prefixes.
+        """
+        label = field.axis_label if label_type == "axis" else field.title_label
+
+        # If aggregation exists, add its prefix
         if field in self._agg_kwargs:
             _, agg = self._agg_kwargs[field]
-            return f"{agg.axis_prefix}{field.axis_label}"
-        return field.axis_label
+            prefix = agg.axis_prefix if label_type == "axis" else agg.title_prefix
+            return prefix + label
+        return label
+
+    def get_axis_label(self, field: Field):
+        return self.get_label(field, label_type="axis")
 
     def get_title_label(self, field: Field):
-        if field in self._agg_kwargs:
-            _, agg = self._agg_kwargs[field]
-            return f"{agg.title_prefix}{field.title_label}"
-        return field.title_label
+        return self.get_label(field, label_type="title")
 
     def make_figure(self):
         primary_field, secondary_field, *tertiary_field = self.fields
