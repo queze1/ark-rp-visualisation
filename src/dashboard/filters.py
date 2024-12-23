@@ -32,36 +32,43 @@ def make_filter_group(tab: Tab, filter: Filter):
     # Use random index since filters can be created dynamically
     index = str(uuid4())
 
-    return dmc.Group(
+    return dmc.Grid(
         [
-            dmc.Select(
-                id={
-                    "type": Page.FILTER_TYPE,
-                    "tab": tab,
-                    "index": index,
-                },
-                data=[{"label": filter.label, "value": filter} for filter in Filter],
-                value=filter,
-                maw=200,
+            dmc.GridCol(
+                dmc.Select(
+                    id={
+                        "type": Page.FILTER_TYPE,
+                        "tab": tab,
+                        "index": index,
+                    },
+                    data=[
+                        {"label": filter.label, "value": filter} for filter in Filter
+                    ],
+                    value=filter,
+                    maw=200,
+                ),
+                span="content",
             ),
-            dmc.Select(
-                id={
-                    "type": Page.FILTER_OPERATOR,
-                    "tab": tab,
-                    "index": index,
-                },
-                data=filter.operators,
-                value=filter.default_operator,
-                allowDeselect=False,
-                maw=100,
+            dmc.GridCol(
+                dmc.Select(
+                    id={
+                        "type": Page.FILTER_OPERATOR,
+                        "tab": tab,
+                        "index": index,
+                    },
+                    data=filter.operators,
+                    value=filter.default_operator,
+                    allowDeselect=False,
+                    maw=100,
+                ),
+                span="content",
             ),
-            dmc.Group(
+            dmc.GridCol(
                 make_filter_value(filter, tab, index),
                 id={"type": Page.FILTER_VALUE_CONTAINER, "tab": tab, "index": index},
-                grow=1,
+                span="auto",
             ),
         ],
-        grow=1,
     )
 
 
