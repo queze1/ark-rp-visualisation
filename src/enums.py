@@ -397,6 +397,8 @@ class Text(StrEnum):
     AND = "And"
     Y_AXIS = "Y-Axis"
     X_AXIS = "X-Axis"
+    ASCENDING = "ascending"
+    DESCENDING = "descending"
     UPDATE_GRAPH_LABEL = "This is how I like it!"
 
 

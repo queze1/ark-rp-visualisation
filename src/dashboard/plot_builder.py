@@ -69,7 +69,7 @@ class SortConfig:
     @classmethod
     def from_raw(cls, order: str, axis: str):
         return cls(
-            ascending=order == "ascending",
+            ascending=order == Text.ASCENDING,
             axis=axis,
         )
 
