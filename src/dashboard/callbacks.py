@@ -1,7 +1,7 @@
 from dash import ALL, MATCH, Input, Output, Patch, State, ctx
 
 from dashboard.filters import make_default_filters, make_filter_group, make_filter_value
-from dashboard.plot_builder import AxisConfig, FilterConfig, PlotBuilder
+from dashboard.plot_builder import AxisConfig, FigureConfig, FilterConfig, PlotBuilder
 from enums import Field, Filter, Page, Plot, Tab
 
 
@@ -69,8 +69,8 @@ def render_graph(
         axis_config=AxisConfig.from_raw(
             selected_fields=selected_fields, selected_axes=selected_axes
         ),
-        filter_config=FilterConfig.from_raw(filters),
-        **customisation,
+        filter_config=FilterConfig.from_raw(filters=filters),
+        figure_config=FigureConfig.from_raw(**customisation),
     ).build()
 
 
@@ -214,10 +214,8 @@ def register_callbacks(app):
                     7: State(match_mavg_7, "checked"),
                     30: State(match_mavg_30, "checked"),
                 },
-                sort=dict(
-                    order=State(match_sort_order, "value"),
-                    axis=State(match_sort_axis, "value"),
-                ),
+                sort_order=State(match_sort_order, "value"),
+                sort_axis=State(match_sort_axis, "value"),
                 x_log=State(match_x_log, "checked"),
                 y_log=State(match_y_log, "checked"),
             ),

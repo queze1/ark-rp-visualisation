@@ -75,9 +75,9 @@ def make_field_controls(tab: Tab):
             dmc.Grid(
                 [
                     make_field_text(Text.PLOT, hidden=True),
-                    make_axis_text("Y-Axis", index=0),
+                    make_axis_text(Text.Y_AXIS, index=0),
                     swap_axes_button,
-                    make_axis_text("X-Axis", index=1),
+                    make_axis_text(Text.X_AXIS, index=1),
                 ]
                 # Insert extra space if three variables
                 + (

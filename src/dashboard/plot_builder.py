@@ -1,5 +1,5 @@
-from dataclasses import dataclass
-from operator import itemgetter, attrgetter
+from dataclasses import dataclass, field as data_field
+from operator import attrgetter
 
 import pandas as pd
 
@@ -61,19 +61,63 @@ class FilterConfig:
         )
 
 
+@dataclass
+class SortConfig:
+    ascending: bool
+    axis: str
+
+    @classmethod
+    def from_raw(cls, order: str, axis: str):
+        return cls(
+            ascending=order == "ascending",
+            axis=axis,
+        )
+
+
+@dataclass
+class FigureConfig:
+    title: str = None
+    x_label: str = None
+    y_label: str = None
+    x_log: bool = False
+    y_log: bool = False
+    moving_averages: list = data_field(default_factory=[])
+    sort: SortConfig = None
+
+    @classmethod
+    def from_raw(
+        cls,
+        title: str,
+        x_label: str,
+        y_label: str,
+        x_log: bool,
+        y_log: bool,
+        moving_averages: dict[int, bool],
+        sort_order: str,
+        sort_axis: str,
+    ):
+        return cls(
+            title=title,
+            x_label=x_label,
+            y_label=y_label,
+            x_log=x_log,
+            y_log=y_log,
+            moving_averages=[
+                window for window, enabled in moving_averages.items() if enabled
+            ],
+            sort=SortConfig.from_raw(sort_order, sort_axis)
+            if sort_order and sort_axis
+            else None,
+        )
+
+
 class PlotBuilder:
     def __init__(
         self,
         plot_type: Plot,
         axis_config: AxisConfig,
         filter_config: FilterConfig,
-        title: str,
-        x_label: str,
-        y_label: str,
-        moving_averages: list,
-        sort: list,
-        x_log: bool,
-        y_log: bool,
+        figure_config: FigureConfig,
     ):
         self._df = df.copy()
         self._fig = None
@@ -87,16 +131,17 @@ class PlotBuilder:
         self.filters = filter_config.filters
         self.plot_type = plot_type
 
-        # Way too many args
         (
             self.title,
             self.x_label,
             self.y_label,
-            self.moving_averages,
-            self.sort,
             self.x_log,
             self.y_log,
-        ) = title, x_label, y_label, moving_averages, sort, x_log, y_log
+            self.moving_averages,
+            self.sort,
+        ) = attrgetter(
+            "title", "x_label", "y_label", "x_log", "y_log", "moving_averages", "sort"
+        )(figure_config)
 
     def add_field(self, field: Field):
         # Create the field if it doesn't already exist
@@ -147,11 +192,10 @@ class PlotBuilder:
 
     def apply_sort(self):
         # Use custom sort if provided
-        order, axis = itemgetter("order", "axis")(self.sort)
-        if order and axis:
+        if self.sort:
             self._df = self._df.sort_values(
-                by=self.x_axis if axis == "X-Axis" else self.y_axis,
-                ascending=order == "ascending",
+                by=self.x_axis if self.sort.axis == Text.X_AXIS else self.y_axis,
+                ascending=self.sort.ascending,
             )
 
         # By default, sort by grouped field unless you were grouping by a date
@@ -261,9 +305,8 @@ class PlotBuilder:
             self._fig.update_traces(textposition="top center", textfont_size=10)
 
         # Add rolling averages
-        for window, enabled in self.moving_averages.items():
-            if enabled:
-                self.add_moving_average_line(window)
+        for window in self.moving_averages:
+            self.add_moving_average_line(window)
 
     def build(self):
         for field in self.fields:
