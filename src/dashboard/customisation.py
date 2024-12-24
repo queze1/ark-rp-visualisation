@@ -3,6 +3,12 @@ import dash_mantine_components as dmc
 
 
 def make_customisation_controls(tab: Tab):
+    def make_label_col(text):
+        return dmc.GridCol(
+            dmc.Text(text),
+            span=2,
+        )
+
     header = dmc.Group(
         [
             dmc.Text("Customisation", size="lg"),
@@ -19,10 +25,7 @@ def make_customisation_controls(tab: Tab):
 
     axes_control = dmc.Grid(
         [
-            dmc.GridCol(
-                dmc.Text("Axes Options"),
-                span=2,
-            ),
+            make_label_col("Axes Options"),
             dmc.GridCol(
                 dmc.Checkbox(
                     id={"type": Page.X_LOG_CHECKBOX, "tab": tab},
@@ -57,13 +60,10 @@ def make_customisation_controls(tab: Tab):
 
     title_control = dmc.Grid(
         [
-            dmc.GridCol(
-                dmc.Text("Title"),
-                span=2,
-            ),
+            make_label_col("Title"),
             dmc.GridCol(
                 dmc.TextInput(placeholder="Using default..."),
-                span=3,
+                span="auto",
             ),
         ],
         align="center",
@@ -71,21 +71,32 @@ def make_customisation_controls(tab: Tab):
 
     axes_label_control = dmc.Grid(
         [
-            dmc.GridCol(
-                dmc.Text("X-Axis Label"),
-                span=2,
-            ),
+            make_label_col("X-Axis Label"),
             dmc.GridCol(
                 dmc.TextInput(placeholder="Using default..."),
-                span=3,
+                span="auto",
             ),
-            dmc.GridCol(
-                dmc.Text("Y-Axis Label"),
-                span=2,
-            ),
+            make_label_col("Y-Axis Label"),
             dmc.GridCol(
                 dmc.TextInput(placeholder="Using default..."),
-                span=3,
+                span="auto",
+            ),
+        ],
+        align="center",
+    )
+
+    sort_control = dmc.Grid(
+        [
+            make_label_col("Sort By"),
+            dmc.GridCol(
+                dmc.Select(
+                    data=["ascending", "descending"], placeholder="Using default..."
+                ),
+                span="auto",
+            ),
+            dmc.GridCol(
+                dmc.Select(data=["X-Axis", "Y-Axis"], placeholder="Using default..."),
+                span="auto",
             ),
         ],
         align="center",
@@ -94,9 +105,10 @@ def make_customisation_controls(tab: Tab):
     return dmc.Stack(
         [
             header,
-            axes_control,
             title_control,
             axes_label_control,
+            axes_control,
+            sort_control,
         ],
         gap=10,
     )
