@@ -12,6 +12,8 @@ class PlotBuilder:
         filters: list[tuple[Field, Operator, object]],
         x_axis: Field,
         y_axis: Field,
+        x_log: bool,
+        y_log: bool,
         plot_type: Plot,
     ):
         self._df = df.copy()
@@ -24,6 +26,8 @@ class PlotBuilder:
         self.filters = filters
         self.x_axis = x_axis
         self.y_axis = y_axis
+        self.x_log = x_log
+        self.y_log = y_log
         self.plot_type = plot_type
 
     def add_field(self, field: Field):
@@ -99,7 +103,6 @@ class PlotBuilder:
 
     def make_figure(self):
         primary_field, secondary_field, *tertiary_field = self.fields
-
         title = f"{self.get_title_label(primary_field)} by {self.get_title_label(secondary_field)}"
         labels = {field: self.get_axis_label(field) for field in self.fields}
 
@@ -109,19 +112,34 @@ class PlotBuilder:
             y=self.y_axis,
             title=title,
             labels=labels,
+            log_x=self.x_log,
+            log_y=self.y_log,
             # Add annotations if 3 vars
             text=tertiary_field[0] if tertiary_field else None,
         )
 
-    def create_layout(self):
+    def format_figure(self):
         """
-        Create a starting layout for the current figure.
+        Apply formatting to the current figure.
         """
-        # Set 1 tick per unit if X-axis is hour or day
-        if self.x_axis in {Field.HOUR, Field.DAY}:
-            self._fig.update_layout(xaxis={"dtick": 1})
+        layout_kwargs = {}
 
-        # Format annotations if scatter
+        # Set 1 tick per unit if bar plot and X-axis is hour or day
+        if self.x_axis in {Field.HOUR, Field.DAY} and self.plot_type == Plot.SCATTER:
+            layout_kwargs["xaxis"] = dict(dtick=1)
+
+        # Update titles if log scale
+        if self.x_log:
+            new_title = f"{self._fig.layout.xaxis.title.text} (log scale)"
+            layout_kwargs.setdefault("xaxis", {})["title"] = new_title
+        if self.y_log:
+            new_title = f"{self._fig.layout.yaxis.title.text} (log scale)"
+            layout_kwargs.setdefault("yaxis", {})["title"] = new_title
+
+        # Apply combined layout
+        self._fig.update_layout(**layout_kwargs)
+
+        # Format annotations if scatter plot
         if self.plot_type == Plot.SCATTER:
             self._fig.update_traces(textposition="top center", textfont_size=10)
 
@@ -135,5 +153,5 @@ class PlotBuilder:
         self.groupby()
         self.sort_default()
         self.make_figure()
-        self.create_layout()
+        self.format_figure()
         return self._fig

@@ -400,3 +400,5 @@ class Page(StrEnum):
     FILTER_VALUE_CONTAINER = "filter-value-container"
     FILTER_VALUE = "filter-value"
     RESET_CUSTOMISATION_BUTTON = "reset-customisation-btn"
+    X_LOG_CHECKBOX = "x-log-checkbox"
+    Y_LOG_CHECKBOX = "y-log-checkbox"

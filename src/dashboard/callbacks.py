@@ -58,6 +58,7 @@ def render_graph(
     selected_fields,
     selected_axes,
     filters,
+    customisation,
 ):
     if n_clicks is None or not all(selected_fields):
         return {}
@@ -84,6 +85,7 @@ def render_graph(
         fields=selected_fields,
         plot_type=Plot(tab.plot_type),
         filters=filters,
+        **customisation,
         **axes,
     ).build()
 
@@ -169,6 +171,8 @@ def register_callbacks(app):
         "tab": MATCH,
         "index": ALL,
     }
+    match_x_log = {"type": Page.X_LOG_CHECKBOX, "tab": MATCH}
+    match_y_log = {"type": Page.Y_LOG_CHECKBOX, "tab": MATCH}
     app.callback(
         Output({"type": Page.GRAPH, "tab": MATCH}, "figure"),
         inputs=dict(
@@ -188,6 +192,10 @@ def register_callbacks(app):
                     match_filter_values,
                     "value",
                 ),
+            ),
+            customisation=dict(
+                x_log=State(match_x_log, "checked"),
+                y_log=State(match_y_log, "checked"),
             ),
         ),
     )(render_graph)

@@ -25,13 +25,17 @@ def make_customisation_controls(tab: Tab):
             ),
             dmc.GridCol(
                 dmc.Checkbox(
+                    id={"type": Page.X_LOG_CHECKBOX, "tab": tab},
                     label="X-Log",
+                    checked=False,
                 ),
                 span=2,
             ),
             dmc.GridCol(
                 dmc.Checkbox(
+                    id={"type": Page.Y_LOG_CHECKBOX, "tab": tab},
                     label="Y-Log",
+                    checked=False,
                 ),
                 span=2,
             ),
