@@ -94,7 +94,9 @@ def make_customisation_controls(tab: Tab):
     sort_control = dmc.Grid(
         [
             make_label_col("Sort By"),
-            make_select_col(Page.SORT_ORDER_DROPDOWN, data=["ascending", "descending"]),
+            make_select_col(
+                Page.SORT_ORDER_DROPDOWN, data=[Text.ASCENDING, Text.DESCENDING]
+            ),
             make_select_col(Page.SORT_AXIS_DROPDOWN, data=[Text.X_AXIS, Text.Y_AXIS]),
         ],
         align="center",
