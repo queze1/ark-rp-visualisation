@@ -1,8 +1,7 @@
 from enums import Operator, Plot
 from enums import Field, GroupBy
 from data_loader import df
-
-DTICK_CUTOFF = 50
+from operator import itemgetter
 
 
 class PlotBuilder:
@@ -33,6 +32,7 @@ class PlotBuilder:
         self.y_axis = y_axis
         self.plot_type = plot_type
 
+        # Way too many args
         (
             self.title,
             self.x_label,
@@ -90,15 +90,29 @@ class PlotBuilder:
             }
         ).reset_index()
 
-    def sort_default(self):
+    def apply_sort(self):
+        # Use custom sort if provided
+        order, axis = itemgetter("order", "axis")(self.sort)
+        if order and axis:
+            self._df = self._df.sort_values(
+                by=self.x_axis if axis == "X-Axis" else self.y_axis,
+                ascending=order == "ascending",
+            )
+
         # By default, sort by grouped field unless you were grouping by a date
-        if not self._grouping_field.temporal:
+        elif not self._grouping_field.temporal:
             self._df = self._df.sort_values(by=self._grouped_fields[0], ascending=True)
 
     def get_label(self, field: Field, label_type="axis"):
         """
-        Returns the label for a Field with aggregation prefixes.
+        Returns the label for a Field.
         """
+        # Customisation
+        if field == self.x_axis and self.x_label:
+            return self.x_label
+        if field == self.y_axis and self.y_label:
+            return self.y_label
+
         label = field.axis_label if label_type == "axis" else field.title_label
 
         # If aggregation exists, add its prefix
@@ -116,7 +130,10 @@ class PlotBuilder:
 
     def make_figure(self):
         primary_field, secondary_field, *tertiary_field = self.fields
-        title = f"{self.get_title_label(primary_field)} by {self.get_title_label(secondary_field)}"
+        title = (
+            self.title
+            or f"{self.get_title_label(primary_field)} by {self.get_title_label(secondary_field)}"
+        )
         labels = {field: self.get_axis_label(field) for field in self.fields}
 
         self._fig = self.plot_type(
@@ -141,11 +158,11 @@ class PlotBuilder:
         if self.x_axis in {Field.HOUR, Field.DAY} and self.plot_type == Plot.SCATTER:
             layout_kwargs["xaxis"] = dict(dtick=1)
 
-        # Update titles if log scale
-        if self.x_log:
+        # Update titles if log scale and default labels
+        if self.x_log and not self.x_label:
             new_title = f"{self._fig.layout.xaxis.title.text} (log scale)"
             layout_kwargs.setdefault("xaxis", {})["title"] = new_title
-        if self.y_log:
+        if self.y_log and not self.y_label:
             new_title = f"{self._fig.layout.yaxis.title.text} (log scale)"
             layout_kwargs.setdefault("yaxis", {})["title"] = new_title
 
@@ -164,7 +181,7 @@ class PlotBuilder:
 
         self.set_aggregations()
         self.groupby()
-        self.sort_default()
+        self.apply_sort()
         self.make_figure()
         self.format_figure()
         return self._fig
