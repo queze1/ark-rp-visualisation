@@ -107,39 +107,41 @@ def make_field_controls(tab: Tab):
         px=(15 if tab.tertiary_field else 8),
     )
 
+    top_row = dmc.Grid(
+        [
+            make_field_text(Text.PLOT),
+        ]
+        + dropdowns,
+        justify="center",
+        align="center",
+    )
+
+    bottom_row = dmc.Grid(
+        [
+            make_field_text(Text.PLOT, hidden=True),
+            make_axis_text(Text.Y_AXIS, span=primary_components["total_span"], index=0),
+            swap_axes_button,
+            make_axis_text(
+                Text.X_AXIS, span=secondary_components["total_span"], index=1
+            ),
+        ]
+        # Insert extra space if three variables
+        + (
+            [
+                make_field_text(Text.BY, hidden=True),
+                dmc.GridCol(span=tertiary_components["total_span"]),
+            ]
+            if tertiary_components
+            else []
+        ),
+        justify="center",
+        align="center",
+    )
+
     return dmc.Stack(
         [
-            dmc.Grid(
-                [
-                    make_field_text(Text.PLOT),
-                ]
-                + dropdowns,
-                justify="center",
-                align="center",
-            ),
-            dmc.Grid(
-                [
-                    make_field_text(Text.PLOT, hidden=True),
-                    make_axis_text(
-                        Text.Y_AXIS, span=primary_components["total_span"], index=0
-                    ),
-                    swap_axes_button,
-                    make_axis_text(
-                        Text.X_AXIS, span=secondary_components["total_span"], index=1
-                    ),
-                ]
-                # Insert extra space if three variables
-                + (
-                    [
-                        make_field_text(Text.BY, hidden=True),
-                        dmc.GridCol(span=tertiary_components["total_span"]),
-                    ]
-                    if tertiary_components
-                    else []
-                ),
-                justify="center",
-                align="center",
-            ),
+            top_row,
+            bottom_row,
         ],
         gap=7,
     )
