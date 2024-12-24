@@ -399,3 +399,4 @@ class Page(StrEnum):
     FILTER_OPERATOR = "filter-operator"
     FILTER_VALUE_CONTAINER = "filter-value-container"
     FILTER_VALUE = "filter-value"
+    RESET_CUSTOMISATION_BUTTON = "reset-customisation-btn"
