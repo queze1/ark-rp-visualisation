@@ -11,15 +11,19 @@ def make_field_controls(tab: Tab):
 
     def make_field_dropdowns(field_options, index, grouped_by=False):
         default_field = field_options.get("default")
-        # Don't put any aggregations into data if not being grouped by
         default_aggregations = (
-            Field(default_field).aggregations if default_field and grouped_by else []
+            Field(default_field).aggregations if default_field else []
         )
 
-        aggregation_dropdown = dmc.Select(
-            id={"type": Page.FIELD_AGG_DROPDOWN, "tab": tab, "index": index},
-            data=[groupby for groupby in default_aggregations],
-            value=default_aggregations[0] if default_aggregations else None,
+        # Don't render dropdown if not being grouped by
+        aggregation_dropdown = (
+            dmc.Select(
+                id={"type": Page.FIELD_AGG_DROPDOWN, "tab": tab, "index": index},
+                data=[groupby for groupby in default_aggregations],
+                value=default_aggregations[0] if default_aggregations else None,
+            )
+            if grouped_by
+            else None
         )
         field_dropdown = dmc.Select(
             id={"type": Page.FIELD_DROPDOWN, "tab": tab, "index": index},
@@ -30,20 +34,26 @@ def make_field_controls(tab: Tab):
             value=default_field,
         )
 
+        aggregation_col = (
+            dmc.GridCol(
+                aggregation_dropdown,
+                # A field only has an aggregation dropdown shown if it has more than one possible option
+                display="block" if len(default_aggregations) > 1 else "none",
+                span=1.5,
+            )
+            if grouped_by
+            else None
+        )
+
+        field_col = dmc.GridCol(
+            field_dropdown,
+            span=3,
+        )
+
         return dict(
-            dropdowns=[
-                dmc.GridCol(
-                    aggregation_dropdown,
-                    # A field only has an aggregation dropdown shown if it has more than one possible option
-                    display="block" if len(default_aggregations) > 1 else "none",
-                    span=1.5,
-                ),
-                dmc.GridCol(
-                    field_dropdown,
-                    span=3,
-                ),
-            ],
-            total_span=4.5 if len(default_aggregations) > 1 else 3,
+            dropdowns=([aggregation_col] if aggregation_col else []) + [field_col],
+            # Add extra space if aggregation dropdown is shown
+            total_span=4.5 if grouped_by and len(default_aggregations) > 1 else 3,
         )
 
     def make_axis_text(text, span, index):
