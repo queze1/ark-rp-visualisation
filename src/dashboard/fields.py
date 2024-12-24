@@ -37,6 +37,7 @@ def make_field_controls(tab: Tab):
         aggregation_col = (
             dmc.GridCol(
                 aggregation_dropdown,
+                id={"type": Page.FIELD_AGG_CONTAINER, "tab": tab, "index": index},
                 # A field only has an aggregation dropdown shown if it has more than one possible option
                 display="block" if len(default_aggregations) > 1 else "none",
                 span=1.5,

@@ -407,6 +407,7 @@ class Page(StrEnum):
     UPDATE_GRAPH_BUTTON = "update-graph-btn"
 
     FIELD_DROPDOWN = "field-dropdown"
+    FIELD_AGG_CONTAINER = "field-agg-container"
     FIELD_AGG_DROPDOWN = "field-agg-dropdown"
     AXIS_TEXT = "axis-text"
     SWAP_AXES_BUTTON = "swap-axis-btn"

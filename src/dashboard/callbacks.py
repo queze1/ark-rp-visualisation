@@ -2,22 +2,23 @@ from dash import ALL, MATCH, Input, Output, Patch, State, ctx
 
 from dashboard.filters import make_default_filters, make_filter_group, make_filter_value
 from dashboard.plot_builder import AxisConfig, FigureConfig, FilterConfig, PlotBuilder
-from enums import Field, Filter, Page, Plot, Tab
+from enums import Field, Filter, GroupBy, Page, Plot, Tab
 
 
-def update_dropdown_options(selected_fields, current_options):
-    """
-    Rules:
-    1. No duplicate options.
-    2. No more than one temporal field.
-    """
-
+def update_dropdown(selected_fields, current_options):
     # Check if any temporal field is already selected
     has_selected_temporal = any(
         [Field(field).temporal if field else None for field in selected_fields]
     )
 
     def process_options(selected_field, options):
+        """
+        Rules for dropdown options:
+        1. No duplicate options.
+        2. No more than one temporal field.
+
+        """
+
         def process_option(opt):
             field = Field(opt["value"])
 
@@ -38,11 +39,34 @@ def update_dropdown_options(selected_fields, current_options):
             patched_options[i]["disabled"] = process_option(opt)
         return patched_options
 
-    # Generate a list of patches, one for each output from the pattern-match
-    return [
+    def process_aggregates():
+        triggered_index = ctx.triggered_id["index"]
+        # Get the list of aggregate outputs
+        aggs = ctx.outputs_grouping["aggregates"]["value"]
+        # Generate an empty patch for every agg output
+        patched_aggregates = dict(
+            display=[Patch() for _ in aggs],
+            option=[Patch() for _ in aggs],
+            value=[Patch() for _ in aggs],
+        )
+        # Update the agg of the changed dropdown if it has one
+        if triggered_index < len(aggs):
+            patched_aggregates["display"][triggered_index] = "block"
+            patched_aggregates["option"][triggered_index] = [
+                groupby for groupby in GroupBy
+            ]
+            patched_aggregates["value"][triggered_index] = GroupBy.SUM
+        return patched_aggregates
+
+    # Generate a patch for every field
+    patched_field_options = [
         process_options(selected_field, options)
         for selected_field, options in zip(selected_fields, current_options)
     ]
+    return dict(
+        field_options=patched_field_options,
+        aggregates=process_aggregates(),
+    )
 
 
 def swap_axes(n_clicks, axes):
@@ -146,10 +170,25 @@ def reset_customisation(n_clicks):
 def register_callbacks(app):
     match_fields = {"type": Page.FIELD_DROPDOWN, "tab": MATCH, "index": ALL}
     app.callback(
-        Output(match_fields, "data"),
-        Input(match_fields, "value"),
-        State(match_fields, "data"),
-    )(update_dropdown_options)
+        output=dict(
+            field_options=Output(match_fields, "data"),
+            aggregates=dict(
+                display=Output(
+                    {"type": Page.FIELD_AGG_CONTAINER, "tab": MATCH, "index": ALL},
+                    "display",
+                ),
+                option=Output(
+                    {"type": Page.FIELD_AGG_DROPDOWN, "tab": MATCH, "index": ALL},
+                    "data",
+                ),
+                value=Output(
+                    {"type": Page.FIELD_AGG_DROPDOWN, "tab": MATCH, "index": ALL},
+                    "value",
+                ),
+            ),
+        ),
+        inputs=[Input(match_fields, "value"), State(match_fields, "data")],
+    )(update_dropdown)
 
     match_axes = {"type": Page.AXIS_TEXT, "tab": MATCH, "index": ALL}
     match_swap_axes = {"type": Page.SWAP_AXES_BUTTON, "tab": MATCH}
