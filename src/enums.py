@@ -386,10 +386,12 @@ class Text(StrEnum):
 
 class Page(StrEnum):
     GRAPH = "graph"
-    FIELD_DROPDOWN = "field-dropdown"
     UPDATE_GRAPH_BUTTON = "update-graph-btn"
+
+    FIELD_DROPDOWN = "field-dropdown"
     AXIS_TEXT = "axis-text"
     SWAP_AXES_BUTTON = "swap-axis-btn"
+
     FILTER_CONTAINER = "filter-container"
     FILTER_GROUP_CONTAINER = "filter-group-container"
     RESET_FILTER_BUTTON = "reset-filter-btn"
@@ -399,6 +401,14 @@ class Page(StrEnum):
     FILTER_OPERATOR = "filter-operator"
     FILTER_VALUE_CONTAINER = "filter-value-container"
     FILTER_VALUE = "filter-value"
+
     RESET_CUSTOMISATION_BUTTON = "reset-customisation-btn"
+    TITLE_INPUT = "title-input"
+    X_LABEL_INPUT = "x-label-input"
+    Y_LABEL_INPUT = "y-label-input"
     X_LOG_CHECKBOX = "x-log-checkbox"
     Y_LOG_CHECKBOX = "y-log-checkbox"
+    MOVING_AVERAGE_7 = "moving-average-7"
+    MOVING_AVERAGE_30 = "moving-average-30"
+    SORT_ORDER_DROPDOWN = "sort-order-dropdown"
+    SORT_AXIS_DROPDOWN = "sort-axis-dropdown"
