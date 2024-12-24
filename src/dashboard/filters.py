@@ -56,13 +56,14 @@ def make_filter_group(tab: Tab, filter: Filter):
         maw=100,
     )
 
-    delete_filter_button = dmc.Button(
+    delete_filter_button = dmc.ActionIcon(
+        DashIconify(icon="streamline:delete-1-solid", width=12),
         id={"type": Page.DELETE_FILTER_BUTTON, "tab": tab, "index": index},
-        children=DashIconify(icon="streamline:delete-1-solid"),
         variant="outline",
         color="red",
-        size="xs",
-        px=8,
+        size="sm",
+        # To match select height
+        my=7,
     )
 
     return dmc.Grid(
@@ -83,7 +84,6 @@ def make_filter_group(tab: Tab, filter: Filter):
             dmc.GridCol(delete_filter_button, span="content"),
         ],
         id={"type": Page.FILTER_GROUP_CONTAINER, "tab": tab, "index": index},
-        align="center",
     )
 
 
