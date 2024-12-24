@@ -118,7 +118,9 @@ def make_filter_controls(tab: Tab):
             variant="outline",
             size="sm",
             color="grey",
-        )
+        ),
     )
 
-    return dmc.Stack([header, filter_groups, footer], gap=10)
+    return dmc.Stack(
+        [header, dmc.Space(h=10), filter_groups, dmc.Space(h=15), footer], gap=0
+    )
