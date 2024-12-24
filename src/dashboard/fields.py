@@ -1,7 +1,7 @@
 import dash_mantine_components as dmc
 from dash_iconify import DashIconify
 
-from enums import Page, Tab, Text
+from enums import GroupBy, Page, Tab, Text
 
 
 def make_field_controls(tab: Tab):
@@ -24,6 +24,17 @@ def make_field_controls(tab: Tab):
             span=3,
         )
 
+    def make_field_agg(index):
+        dropdown = dmc.Select(
+            id={"type": Page.FIELD_AGG_DROPDOWN, "tab": tab, "index": index},
+            data=[groupby for groupby in GroupBy],
+        )
+
+        return dmc.GridCol(
+            dropdown,
+            span=1.5,
+        )
+
     def make_axis_text(text, index):
         # Same length as dropdown, to be centred under them
         return dmc.GridCol(
@@ -39,11 +50,14 @@ def make_field_controls(tab: Tab):
     if not tab.tertiary_field:
         # Two variables
         dropdowns = [
+            make_field_agg(index=0),
             make_field(tab.primary_field, index=0),
             make_field_text(Text.BY),
+            make_field_agg(index=1),
             make_field(tab.secondary_field, index=1),
         ]
     else:
+        # TODO: If has extra aggregations in 3 variables, drop span to 2
         # Three variables
         dropdowns = [
             make_field(tab.primary_field, index=0),

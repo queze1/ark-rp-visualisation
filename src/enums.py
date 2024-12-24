@@ -97,9 +97,9 @@ class Field(StrEnum):
 
 
 class GroupBy(StrEnum):
-    SUM = "sum"
-    MEAN = "mean"
-    NUNIQUE = "nunique"
+    SUM = "Total"
+    MEAN = "Average"
+    NUNIQUE = "Unique"
 
     def __call__(self, obj):
         if self is GroupBy.SUM:
@@ -389,6 +389,7 @@ class Page(StrEnum):
     UPDATE_GRAPH_BUTTON = "update-graph-btn"
 
     FIELD_DROPDOWN = "field-dropdown"
+    FIELD_AGG_DROPDOWN = "field-agg-dropdown"
     AXIS_TEXT = "axis-text"
     SWAP_AXES_BUTTON = "swap-axis-btn"
 
