@@ -14,7 +14,6 @@ def make_customisation_controls(tab: Tab):
             dmc.Checkbox(
                 id={"type": type, "tab": tab},
                 label=label,
-                checked=False,
                 disabled=disabled,
             ),
             span=span,

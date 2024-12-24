@@ -136,10 +136,8 @@ def reset_customisation(n_clicks):
             7: False,
             30: False,
         },
-        sort=dict(
-            order=None,
-            axis=None,
-        ),
+        sort_order=None,
+        sort_axis=None,
         x_log="",
         y_log="",
     )
@@ -290,10 +288,8 @@ def register_callbacks(app):
                 7: Output(match_mavg_7, "checked"),
                 30: Output(match_mavg_30, "checked"),
             },
-            sort=dict(
-                order=Output(match_sort_order, "value"),
-                axis=Output(match_sort_axis, "value"),
-            ),
+            sort_order=Output(match_sort_order, "value"),
+            sort_axis=Output(match_sort_axis, "value"),
             x_log=Output(match_x_log, "checked"),
             y_log=Output(match_y_log, "checked"),
         ),

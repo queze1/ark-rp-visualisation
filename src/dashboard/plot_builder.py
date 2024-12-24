@@ -157,9 +157,14 @@ class PlotBuilder:
         elif field == Field.COUNT:
             self._df[field] = 1
 
-    def apply_filter(self, filter: FilterGroup):
-        self.add_field(filter.field)
-        self._df = filter.apply(self._df)
+    def add_fields(self):
+        for field in self.fields:
+            self.add_field(field)
+
+    def apply_filters(self):
+        for filter in self.filters:
+            self.add_field(filter.field)
+            self._df = filter.apply(self._df)
 
     def set_aggregations(self, aggregations: dict[Field, GroupBy] = {}):
         """Sets aggregations, if not provided, uses default aggregations."""
@@ -309,11 +314,8 @@ class PlotBuilder:
             self.add_moving_average_line(window)
 
     def build(self):
-        for field in self.fields:
-            self.add_field(field)
-        for filter in self.filters:
-            self.apply_filter(filter)
-
+        self.add_fields()
+        self.apply_filters()
         self.set_aggregations()
         self.groupby()
         self.apply_sort()
