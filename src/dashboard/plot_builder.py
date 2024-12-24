@@ -12,9 +12,14 @@ class PlotBuilder:
         filters: list[tuple[Field, Operator, object]],
         x_axis: Field,
         y_axis: Field,
+        plot_type: Plot,
+        title: str,
+        x_label: str,
+        y_label: str,
+        moving_averages: list,
+        sort: list,
         x_log: bool,
         y_log: bool,
-        plot_type: Plot,
     ):
         self._df = df.copy()
         self._fig = None
@@ -26,9 +31,17 @@ class PlotBuilder:
         self.filters = filters
         self.x_axis = x_axis
         self.y_axis = y_axis
-        self.x_log = x_log
-        self.y_log = y_log
         self.plot_type = plot_type
+
+        (
+            self.title,
+            self.x_label,
+            self.y_label,
+            self.moving_averages,
+            self.sort,
+            self.x_log,
+            self.y_log,
+        ) = title, x_label, y_label, moving_averages, sort, x_log, y_log
 
     def add_field(self, field: Field):
         # Create the field if it doesn't already exist

@@ -171,6 +171,13 @@ def register_callbacks(app):
         "tab": MATCH,
         "index": ALL,
     }
+    match_title_input = {"type": Page.TITLE_INPUT, "tab": MATCH}
+    match_x_label = {"type": Page.X_LABEL_INPUT, "tab": MATCH}
+    match_y_label = {"type": Page.Y_LABEL_INPUT, "tab": MATCH}
+    match_mavg_7 = {"type": Page.MOVING_AVERAGE_7, "tab": MATCH}
+    match_mavg_30 = {"type": Page.MOVING_AVERAGE_30, "tab": MATCH}
+    match_sort_order = {"type": Page.SORT_ORDER_DROPDOWN, "tab": MATCH}
+    match_sort_axis = {"type": Page.SORT_AXIS_DROPDOWN, "tab": MATCH}
     match_x_log = {"type": Page.X_LOG_CHECKBOX, "tab": MATCH}
     match_y_log = {"type": Page.Y_LOG_CHECKBOX, "tab": MATCH}
     app.callback(
@@ -194,6 +201,17 @@ def register_callbacks(app):
                 ),
             ),
             customisation=dict(
+                title=State(match_title_input, "value"),
+                x_label=State(match_x_label, "value"),
+                y_label=State(match_y_label, "value"),
+                moving_averages={
+                    7: State(match_mavg_7, "value"),
+                    30: State(match_mavg_30, "value"),
+                },
+                sort=dict(
+                    order=State(match_sort_order, "value"),
+                    axis=State(match_sort_axis, "value"),
+                ),
                 x_log=State(match_x_log, "checked"),
                 y_log=State(match_y_log, "checked"),
             ),
