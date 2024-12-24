@@ -90,18 +90,18 @@ class DataLoader:
         ).dt.tz_convert(TIME_ZONE)
         return df
 
-    @staticmethod
-    def _read_csv(path: str) -> pd.DataFrame:
+    @classmethod
+    def _read_csv(cls, path: str) -> pd.DataFrame:
         """
         Read a CSV file, return a processed DataFrame.
         """
         df = pd.read_csv(path)
-        df = DataLoader._rename_columns(df)
-        df = DataLoader._add_word_count(df)
-        df = DataLoader._add_channel_name(df, path)
-        df = DataLoader._process_reactions(df)
-        df = DataLoader._process_datetime(df)
-        df = DataLoader._add_scene_end(df)
+        df = cls._rename_columns(df)
+        df = cls._add_word_count(df)
+        df = cls._add_channel_name(df, path)
+        df = cls._process_reactions(df)
+        df = cls._process_datetime(df)
+        df = cls._add_scene_end(df)
         return df
 
     def _read_cache(self):

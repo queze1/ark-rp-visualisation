@@ -1,8 +1,8 @@
 from dash import ALL, MATCH, Input, Output, Patch, State, ctx
 
 from dashboard.filters import make_default_filters, make_filter_group, make_filter_value
-from dashboard.plot_builder import PlotBuilder
-from enums import Field, Filter, Operator, Page, Plot, Tab, Text
+from dashboard.plot_builder import AxisConfig, FilterConfig, PlotBuilder
+from enums import Field, Filter, Page, Plot, Tab
 
 
 def update_dropdown_options(selected_fields, current_options):
@@ -63,30 +63,14 @@ def render_graph(
     if n_clicks is None or not all(selected_fields):
         return {}
 
-    selected_fields = [Field(field) for field in selected_fields]
-    primary_field, secondary_field, *_ = selected_fields
-    # Find field axes
-    if selected_axes == [Text.Y_AXIS, Text.X_AXIS]:
-        axes = dict(y_axis=primary_field, x_axis=secondary_field)
-    elif selected_axes == [Text.X_AXIS, Text.Y_AXIS]:
-        axes = dict(x_axis=primary_field, y_axis=secondary_field)
-    else:
-        raise ValueError("Invalid axes")
-
-    # Process filters
-    filters = [
-        (Filter(filter), Operator(operator), Filter(filter).post_processing(value))
-        for filter, operator, value in zip(*filters)
-        if value
-    ]
-
     tab = Tab(ctx.triggered_id["tab"])
     return PlotBuilder(
-        fields=selected_fields,
         plot_type=Plot(tab.plot_type),
-        filters=filters,
+        axis_config=AxisConfig.from_raw(
+            selected_fields=selected_fields, selected_axes=selected_axes
+        ),
+        filter_config=FilterConfig.from_raw(filters),
         **customisation,
-        **axes,
     ).build()
 
 

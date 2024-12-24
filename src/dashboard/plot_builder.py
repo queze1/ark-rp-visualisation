@@ -1,19 +1,72 @@
-from operator import itemgetter
+from dataclasses import dataclass
+from operator import itemgetter, attrgetter
 
 import pandas as pd
 
 from data_loader import df
-from enums import Field, GroupBy, Operator, Plot
+from enums import Field, Filter, GroupBy, Operator, Plot, Text
+
+
+@dataclass
+class AxisConfig:
+    fields: list[Field]
+    x_axis: Field
+    y_axis: Field
+
+    @classmethod
+    def from_raw(cls, selected_fields: list[str], selected_axes: list[str]):
+        selected_fields = [Field(field) for field in selected_fields]
+        primary_field, secondary_field, *_ = selected_fields
+
+        # Find field axes
+        if selected_axes == [Text.Y_AXIS, Text.X_AXIS]:
+            axes = dict(y_axis=primary_field, x_axis=secondary_field)
+        elif selected_axes == [Text.X_AXIS, Text.Y_AXIS]:
+            axes = dict(x_axis=primary_field, y_axis=secondary_field)
+        else:
+            raise ValueError("Invalid axes")
+        return cls(fields=selected_fields, **axes)
+
+
+@dataclass
+class FilterGroup:
+    field: str
+    operator: Operator
+    value: object
+
+    @classmethod
+    def from_raw(cls, type: str, operator: str, value: object):
+        return cls(
+            field=type,
+            operator=Operator(operator),
+            value=Filter(type).post_processing(value),
+        )
+
+    def apply(self, df: pd.DataFrame):
+        return df[self.operator(df[self.field], self.value)]
+
+
+@dataclass
+class FilterConfig:
+    filters: list[FilterGroup]
+
+    @classmethod
+    def from_raw(cls, filters):
+        return cls(
+            filters=[
+                FilterGroup.from_raw(type, operator, value)
+                for type, operator, value in zip(*filters)
+                if value
+            ]
+        )
 
 
 class PlotBuilder:
     def __init__(
         self,
-        fields: list[Field],
-        filters: list[tuple[Field, Operator, object]],
-        x_axis: Field,
-        y_axis: Field,
         plot_type: Plot,
+        axis_config: AxisConfig,
+        filter_config: FilterConfig,
         title: str,
         x_label: str,
         y_label: str,
@@ -28,10 +81,10 @@ class PlotBuilder:
         self._grouped_fields = None
         self._aggregations = None
 
-        self.fields = fields
-        self.filters = filters
-        self.x_axis = x_axis
-        self.y_axis = y_axis
+        self.fields, self.x_axis, self.y_axis = attrgetter(
+            "fields", "x_axis", "y_axis"
+        )(axis_config)
+        self.filters = filter_config.filters
         self.plot_type = plot_type
 
         # Way too many args
@@ -59,9 +112,9 @@ class PlotBuilder:
         elif field == Field.COUNT:
             self._df[field] = 1
 
-    def filter(self, field: Field, operator: Operator, value):
-        self.add_field(field)
-        self._df = self._df[operator(self._df[field], value)]
+    def apply_filter(self, filter: FilterGroup):
+        self.add_field(filter.field)
+        self._df = filter.apply(self._df)
 
     def set_aggregations(self, aggregations: dict[Field, GroupBy] = {}):
         """Sets aggregations, if not provided, uses default aggregations."""
@@ -209,7 +262,6 @@ class PlotBuilder:
 
         # Add rolling averages
         for window, enabled in self.moving_averages.items():
-            print(window, enabled)
             if enabled:
                 self.add_moving_average_line(window)
 
@@ -217,7 +269,7 @@ class PlotBuilder:
         for field in self.fields:
             self.add_field(field)
         for filter in self.filters:
-            self.filter(*filter)
+            self.apply_filter(filter)
 
         self.set_aggregations()
         self.groupby()
