@@ -9,12 +9,13 @@ def make_customisation_controls(tab: Tab):
             span=2,
         )
 
-    def make_checkbox_col(label, type, span):
+    def make_checkbox_col(label, type, span, disabled=False):
         return dmc.GridCol(
             dmc.Checkbox(
                 id={"type": type, "tab": tab},
                 label=label,
                 checked=False,
+                disabled=disabled,
             ),
             span=span,
         )
@@ -57,8 +58,18 @@ def make_customisation_controls(tab: Tab):
             make_label_col("Axes Options"),
             make_checkbox_col("X-Log", type=Page.X_LOG_CHECKBOX, span=2),
             make_checkbox_col("Y-Log", type=Page.Y_LOG_CHECKBOX, span=2),
-            make_checkbox_col("7-Day Moving Avg", type=Page.MOVING_AVERAGE_7, span=3),
-            make_checkbox_col("30-Day Moving Avg", type=Page.MOVING_AVERAGE_30, span=3),
+            make_checkbox_col(
+                "7-Day Moving Avg",
+                type=Page.MOVING_AVERAGE_7,
+                span=3,
+                disabled=tab != Tab.LINE,
+            ),
+            make_checkbox_col(
+                "30-Day Moving Avg",
+                type=Page.MOVING_AVERAGE_30,
+                span=3,
+                disabled=tab != Tab.LINE,
+            ),
         ],
         align="center",
     )
