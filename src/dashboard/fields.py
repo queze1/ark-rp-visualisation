@@ -1,7 +1,7 @@
 import dash_mantine_components as dmc
 from dash_iconify import DashIconify
 
-from enums import GroupBy, Page, Tab, Text
+from enums import Page, Tab, Text, Field
 
 
 def make_field_controls(tab: Tab):
@@ -9,31 +9,38 @@ def make_field_controls(tab: Tab):
         style = {"visibility": "hidden"} if hidden else {}
         return dmc.GridCol(dmc.Text(text, size="lg", style=style), span="content")
 
-    def make_field(field_options, index):
-        dropdown = dmc.Select(
+    def make_field_input(field_options, index):
+        default_field = field_options.get("default")
+        default_aggregations = (
+            Field(default_field).aggregations if default_field else []
+        )
+
+        aggregation_dropdown = dmc.Select(
+            id={"type": Page.FIELD_AGG_DROPDOWN, "tab": tab, "index": index},
+            data=[groupby for groupby in default_aggregations],
+            value=default_aggregations[0] if default_aggregations else None,
+        )
+
+        field_dropdown = dmc.Select(
             id={"type": Page.FIELD_DROPDOWN, "tab": tab, "index": index},
             data=[
                 {"label": field.label, "value": field}
                 for field in field_options["allowed"]
             ],
-            value=field_options.get("default"),
+            value=default_field,
         )
 
-        return dmc.GridCol(
-            dropdown,
-            span=3,
-        )
-
-    def make_field_agg(index):
-        dropdown = dmc.Select(
-            id={"type": Page.FIELD_AGG_DROPDOWN, "tab": tab, "index": index},
-            data=[groupby for groupby in GroupBy],
-        )
-
-        return dmc.GridCol(
-            dropdown,
-            span=1.5,
-        )
+        return [
+            dmc.GridCol(
+                aggregation_dropdown,
+                display="block" if len(default_aggregations) > 1 else "none",
+                span=1.5,
+            ),
+            dmc.GridCol(
+                field_dropdown,
+                span=3,
+            ),
+        ]
 
     def make_axis_text(text, index):
         # Same length as dropdown, to be centred under them
@@ -49,23 +56,22 @@ def make_field_controls(tab: Tab):
 
     if not tab.tertiary_field:
         # Two variables
-        dropdowns = [
-            make_field_agg(index=0),
-            make_field(tab.primary_field, index=0),
-            make_field_text(Text.BY),
-            make_field_agg(index=1),
-            make_field(tab.secondary_field, index=1),
-        ]
+        dropdowns = (
+            make_field_input(tab.primary_field, index=0)
+            + [make_field_text(Text.BY)]
+            + make_field_input(tab.secondary_field, index=1)
+        )
     else:
         # TODO: If has extra aggregations in 3 variables, drop span to 2
+        # TODO: Add spacing depending on if aggregation dropdown is visible
         # Three variables
-        dropdowns = [
-            make_field(tab.primary_field, index=0),
-            make_field_text(Text.AND),
-            make_field(tab.secondary_field, index=1),
-            make_field_text(Text.BY),
-            make_field(tab.tertiary_field, index=2),
-        ]
+        dropdowns = (
+            make_field_input(tab.primary_field, index=0)
+            + [make_field_text(Text.AND)]
+            + make_field_input(tab.secondary_field, index=1)
+            + [make_field_text(Text.BY)]
+            + make_field_input(tab.tertiary_field, index=2)
+        )
 
     # Manually add paddingX to match the width of its above div
     swap_axes_button = dmc.Button(

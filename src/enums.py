@@ -11,91 +11,6 @@ class FieldType(Enum):
     TEMPORAl = auto()
 
 
-class Field(StrEnum):
-    AUTHOR = "author"
-    CHANNEL_NAME = "channel_name"
-    COUNT = "count"
-    DATE = "date"
-    DAY = "day"
-    HOUR = "hour"
-    REACTION_COUNT = "reaction_count"
-    SCENE_END = "scene_end"
-    WORD_COUNT = "word_count"
-
-    # Internal use only
-    DATETIME = "datetime"
-    REACTIONS = "reactions"
-
-    @property
-    def _metadata(self):
-        return {
-            "AUTHOR": {"axis_label": "Users", FieldType.CATEGORICAL: True},
-            "DATE": {
-                "axis_label": "Date",
-                FieldType.TEMPORAl: True,
-                FieldType.CATEGORICAL: True,
-            },
-            "HOUR": {
-                "axis_label": "Hour of Day",
-                FieldType.TEMPORAl: True,
-                FieldType.CATEGORICAL: True,
-            },
-            "DAY": {
-                "axis_label": "Day of Month",
-                FieldType.TEMPORAl: True,
-                FieldType.CATEGORICAL: True,
-            },
-            "REACTION_COUNT": {
-                "axis_label": "Reactions",
-                "label": "Reaction Count",
-                FieldType.NUMERICAL: True,
-            },
-            "WORD_COUNT": {
-                "axis_label": "Words",
-                "label": "Word Count",
-                FieldType.NUMERICAL: True,
-            },
-            "CHANNEL_NAME": {
-                "axis_label": "Channels",
-                FieldType.CATEGORICAL: True,
-            },
-            "SCENE_END": {
-                "axis_label": "Scene Ends",
-                FieldType.NUMERICAL: True,
-            },
-            "COUNT": {
-                "axis_label": "Messages",
-                FieldType.NUMERICAL: True,
-            },
-        }.get(self.name, {})
-
-    @property
-    def axis_label(self):
-        return self._metadata.get("axis_label")
-
-    @property
-    def title_label(self):
-        # Title label defaults to axis label
-        return self._metadata.get("title_label", self.axis_label)
-
-    @property
-    def label(self):
-        # Label defaults to axis label
-        return self._metadata.get("label", self.axis_label)
-
-    @property
-    def numerical(self):
-        return self._metadata.get(FieldType.NUMERICAL, False)
-
-    @property
-    def categorical(self):
-        return self._metadata.get(FieldType.CATEGORICAL, False)
-
-    @property
-    def temporal(self):
-        return self._metadata.get(FieldType.TEMPORAl, False)
-
-
 class GroupBy(StrEnum):
     SUM = "Total"
     MEAN = "Average"
@@ -131,6 +46,107 @@ class GroupBy(StrEnum):
     @property
     def axis_prefix(self):
         return self._metadata[self.name].get("axis_prefix", "")
+
+
+class Field(StrEnum):
+    AUTHOR = "author"
+    CHANNEL_NAME = "channel_name"
+    COUNT = "count"
+    DATE = "date"
+    DAY = "day"
+    HOUR = "hour"
+    REACTION_COUNT = "reaction_count"
+    SCENE_END = "scene_end"
+    WORD_COUNT = "word_count"
+
+    # Internal use only
+    DATETIME = "datetime"
+    REACTIONS = "reactions"
+
+    @property
+    def _metadata(self):
+        return {
+            "AUTHOR": {
+                "axis_label": "Users",
+                "categorical": True,
+                "aggregations": [GroupBy.NUNIQUE],
+            },
+            "DATE": {
+                "axis_label": "Date",
+                "temporal": True,
+                "categorical": True,
+                "aggregations": [GroupBy.NUNIQUE],
+            },
+            "HOUR": {
+                "axis_label": "Hour of Day",
+                "temporal": True,
+                "categorical": True,
+                "aggregations": [GroupBy.NUNIQUE],
+            },
+            "DAY": {
+                "axis_label": "Day of Month",
+                "temporal": True,
+                "categorical": True,
+                "aggregations": [GroupBy.NUNIQUE],
+            },
+            "REACTION_COUNT": {
+                "axis_label": "Reactions",
+                "label": "Reaction Count",
+                "numerical": True,
+                "aggregations": [GroupBy.SUM, GroupBy.MEAN],
+            },
+            "WORD_COUNT": {
+                "axis_label": "Words",
+                "label": "Word Count",
+                "numerical": True,
+                "aggregations": [GroupBy.SUM, GroupBy.MEAN],
+            },
+            "CHANNEL_NAME": {
+                "axis_label": "Channels",
+                "categorical": True,
+                "aggregations": [GroupBy.NUNIQUE],
+            },
+            "SCENE_END": {
+                "axis_label": "Scene Ends",
+                "numerical": True,
+                "aggregations": [GroupBy.SUM],
+            },
+            "COUNT": {
+                "axis_label": "Messages",
+                "numerical": True,
+                "aggregations": [GroupBy.SUM],
+            },
+        }.get(self.name, {})
+
+    @property
+    def axis_label(self):
+        return self._metadata.get("axis_label")
+
+    @property
+    def title_label(self):
+        # Title label defaults to axis label
+        return self._metadata.get("title_label", self.axis_label)
+
+    @property
+    def label(self):
+        # Label defaults to axis label
+        return self._metadata.get("label", self.axis_label)
+
+    @property
+    def numerical(self):
+        return self._metadata.get("numerical", False)
+
+    @property
+    def categorical(self):
+        return self._metadata.get("categorical", False)
+
+    @property
+    def temporal(self):
+        return self._metadata.get("temporal", False)
+
+    @property
+    def aggregations(self):
+        return self._metadata.get("aggregations", [])
 
 
 class Plot(StrEnum):
