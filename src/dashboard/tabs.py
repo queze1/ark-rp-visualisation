@@ -2,6 +2,7 @@ import dash_mantine_components as dmc
 from dash import dcc
 
 from dashboard.fields import make_field_controls
+from dashboard.figures import make_figure_controls
 from dashboard.filters import make_filter_controls
 from enums import Page, Tab, Text
 
@@ -12,6 +13,8 @@ def make_tab(tab: Tab):
             make_field_controls(tab),
             dmc.Divider(my=25),
             make_filter_controls(tab),
+            # dmc.Divider(my=25),
+            make_figure_controls(tab),
             dmc.Space(h=20),
             dmc.Button(
                 Text.UPDATE_GRAPH_LABEL,
