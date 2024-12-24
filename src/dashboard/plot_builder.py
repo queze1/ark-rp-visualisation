@@ -1,7 +1,9 @@
-from enums import Operator, Plot
-from enums import Field, GroupBy
-from data_loader import df
 from operator import itemgetter
+
+import pandas as pd
+
+from data_loader import df
+from enums import Field, GroupBy, Operator, Plot
 
 
 class PlotBuilder:
@@ -148,6 +150,38 @@ class PlotBuilder:
             text=tertiary_field[0] if tertiary_field else None,
         )
 
+    def add_moving_average_line(self, window: int, label: str = None):
+        """
+        Adds a new line trace for a moving average of the Y-axis.
+
+        Parameters:
+        - window: The window size (e.g., 7 for weekly, 30 for monthly).
+        - label: Optional label for the trace in the legend. Defaults to "Weekly/Monthly Moving Avg", or "(window)-Day Moving Avg".
+        """
+        # Calculate the rolling average
+        x_values = self._fig.data[0].x
+        y_values = pd.Series(self._fig.data[0].y)
+        ma_values = y_values.rolling(window=window, min_periods=3).mean()
+
+        if label is None:
+            periods = {7: "Weekly", 30: "Monthly"}
+            label = f"{periods.get(window, f'{window}-Day')} Moving Avg"
+
+        # Add a new trace for the moving average
+        self._fig.add_trace(
+            dict(
+                x=x_values,
+                y=ma_values,
+                mode="lines",
+                name=label,
+                line=dict(dash="dot"),
+            )
+        )
+
+        # Add legend if not added already
+        self._fig.update_traces(selector=0, name="Daily", showlegend=True)
+        return self
+
     def format_figure(self):
         """
         Apply formatting to the current figure.
@@ -172,6 +206,12 @@ class PlotBuilder:
         # Format annotations if scatter plot
         if self.plot_type == Plot.SCATTER:
             self._fig.update_traces(textposition="top center", textfont_size=10)
+
+        # Add rolling averages
+        for window, enabled in self.moving_averages.items():
+            print(window, enabled)
+            if enabled:
+                self.add_moving_average_line(window)
 
     def build(self):
         for field in self.fields:

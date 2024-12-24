@@ -139,6 +139,28 @@ def delete_filter(n_clicks, children):
     return patched_children
 
 
+def reset_customisation(n_clicks):
+    if n_clicks is None:
+        return
+
+    # Set all options to empty
+    return dict(
+        title="",
+        x_label="",
+        y_label="",
+        moving_averages={
+            7: False,
+            30: False,
+        },
+        sort=dict(
+            order=None,
+            axis=None,
+        ),
+        x_log="",
+        y_log="",
+    )
+
+
 def register_callbacks(app):
     match_fields = {"type": Page.FIELD_DROPDOWN, "tab": MATCH, "index": ALL}
     app.callback(
@@ -205,8 +227,8 @@ def register_callbacks(app):
                 x_label=State(match_x_label, "value"),
                 y_label=State(match_y_label, "value"),
                 moving_averages={
-                    7: State(match_mavg_7, "value"),
-                    30: State(match_mavg_30, "value"),
+                    7: State(match_mavg_7, "checked"),
+                    30: State(match_mavg_30, "checked"),
                 },
                 sort=dict(
                     order=State(match_sort_order, "value"),
@@ -275,3 +297,23 @@ def register_callbacks(app):
         Input(match_delete_filter, "n_clicks"),
         State(match_filter_container, "children"),
     )(delete_filter)
+
+    match_reset_customisation = {"type": Page.RESET_CUSTOMISATION_BUTTON, "tab": MATCH}
+    app.callback(
+        output=dict(
+            title=Output(match_title_input, "value"),
+            x_label=Output(match_x_label, "value"),
+            y_label=Output(match_y_label, "value"),
+            moving_averages={
+                7: Output(match_mavg_7, "checked"),
+                30: Output(match_mavg_30, "checked"),
+            },
+            sort=dict(
+                order=Output(match_sort_order, "value"),
+                axis=Output(match_sort_axis, "value"),
+            ),
+            x_log=Output(match_x_log, "checked"),
+            y_log=Output(match_y_log, "checked"),
+        ),
+        inputs=Input(match_reset_customisation, "n_clicks"),
+    )(reset_customisation)
