@@ -9,10 +9,11 @@ def make_field_controls(tab: Tab):
         style = {"visibility": "hidden"} if hidden else {}
         return dmc.GridCol(dmc.Text(text, size="lg", style=style), span="content")
 
-    def make_field_input(field_options, index):
+    def make_field_dropdowns(field_options, index, grouped_by=False):
         default_field = field_options.get("default")
+        # Don't put any aggregations into data if not being grouped by
         default_aggregations = (
-            Field(default_field).aggregations if default_field else []
+            Field(default_field).aggregations if default_field and grouped_by else []
         )
 
         aggregation_dropdown = dmc.Select(
@@ -20,7 +21,6 @@ def make_field_controls(tab: Tab):
             data=[groupby for groupby in default_aggregations],
             value=default_aggregations[0] if default_aggregations else None,
         )
-
         field_dropdown = dmc.Select(
             id={"type": Page.FIELD_DROPDOWN, "tab": tab, "index": index},
             data=[
@@ -30,19 +30,23 @@ def make_field_controls(tab: Tab):
             value=default_field,
         )
 
-        return [
-            dmc.GridCol(
-                aggregation_dropdown,
-                display="block" if len(default_aggregations) > 1 else "none",
-                span=1.5,
-            ),
-            dmc.GridCol(
-                field_dropdown,
-                span=3,
-            ),
-        ]
+        return dict(
+            dropdowns=[
+                dmc.GridCol(
+                    aggregation_dropdown,
+                    # A field only has an aggregation dropdown shown if it has more than one possible option
+                    display="block" if len(default_aggregations) > 1 else "none",
+                    span=1.5,
+                ),
+                dmc.GridCol(
+                    field_dropdown,
+                    span=3,
+                ),
+            ],
+            total_span=4.5 if len(default_aggregations) > 1 else 3,
+        )
 
-    def make_axis_text(text, index):
+    def make_axis_text(text, span, index):
         # Same length as dropdown, to be centred under them
         return dmc.GridCol(
             dmc.Text(
@@ -51,26 +55,37 @@ def make_field_controls(tab: Tab):
                 size="md",
                 ta="center",
             ),
-            span=3,
+            span=span,
         )
 
     if not tab.tertiary_field:
+        primary_components, secondary_components, tertiary_components = (
+            make_field_dropdowns(tab.primary_field, index=0, grouped_by=True),
+            make_field_dropdowns(tab.secondary_field, index=1),
+            None,
+        )
+
         # Two variables
         dropdowns = (
-            make_field_input(tab.primary_field, index=0)
+            primary_components["dropdowns"]
             + [make_field_text(Text.BY)]
-            + make_field_input(tab.secondary_field, index=1)
+            + secondary_components["dropdowns"]
         )
     else:
+        primary_components, secondary_components, tertiary_components = (
+            make_field_dropdowns(tab.primary_field, index=0, grouped_by=True),
+            make_field_dropdowns(tab.secondary_field, index=1, grouped_by=True),
+            make_field_dropdowns(tab.tertiary_field, index=2),
+        )
+
         # TODO: If has extra aggregations in 3 variables, drop span to 2
-        # TODO: Add spacing depending on if aggregation dropdown is visible
         # Three variables
         dropdowns = (
-            make_field_input(tab.primary_field, index=0)
+            primary_components["dropdowns"]
             + [make_field_text(Text.AND)]
-            + make_field_input(tab.secondary_field, index=1)
+            + secondary_components["dropdowns"]
             + [make_field_text(Text.BY)]
-            + make_field_input(tab.tertiary_field, index=2)
+            + tertiary_components["dropdowns"]
         )
 
     # Manually add paddingX to match the width of its above div
@@ -95,14 +110,21 @@ def make_field_controls(tab: Tab):
             dmc.Grid(
                 [
                     make_field_text(Text.PLOT, hidden=True),
-                    make_axis_text(Text.Y_AXIS, index=0),
+                    make_axis_text(
+                        Text.Y_AXIS, span=primary_components["total_span"], index=0
+                    ),
                     swap_axes_button,
-                    make_axis_text(Text.X_AXIS, index=1),
+                    make_axis_text(
+                        Text.X_AXIS, span=secondary_components["total_span"], index=1
+                    ),
                 ]
                 # Insert extra space if three variables
                 + (
-                    [make_field_text(Text.BY, hidden=True), dmc.GridCol(span=3)]
-                    if tab.tertiary_field
+                    [
+                        make_field_text(Text.BY, hidden=True),
+                        dmc.GridCol(span=tertiary_components["total_span"]),
+                    ]
+                    if tertiary_components
                     else []
                 ),
                 justify="center",
