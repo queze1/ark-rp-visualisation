@@ -316,6 +316,7 @@ class Filter(StrEnum):
                 "select_input": dmc.DatePickerInput,
                 "select_kwargs": dict(
                     clearable=True,
+                    placeholder="Enter date...",
                 ),
                 "post_processing": lambda value: pd.to_datetime(value).date(),
             },
