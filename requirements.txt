@@ -4,3 +4,4 @@ pandas
 pytest
 dash-mantine-components
 dash-iconify
+gunicorn

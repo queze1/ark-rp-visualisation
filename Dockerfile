@@ -6,8 +6,7 @@
 
 # Want to help us make this template better? Share your feedback here: https://forms.gle/ybq9Krt8jtBL3iCk7
 
-ARG PYTHON_VERSION=3.11.0
-FROM python:${PYTHON_VERSION}-slim as base
+FROM python:3.12-slim as base
 
 # Prevents Python from writing pyc files.
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -42,8 +41,11 @@ USER appuser
 # Copy the source code into the container.
 COPY . .
 
+# Set PYTHONPATH
+ENV PYTHONPATH=/src
+
 # Expose the port that the application listens on.
 EXPOSE 8050
 
 # Run the application.
-CMD python src/app.py
+CMD gunicorn -b 0.0.0.0:8050 src.app:server
