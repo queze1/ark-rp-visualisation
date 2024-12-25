@@ -3,6 +3,16 @@ from dash_iconify import DashIconify
 
 from enums import Page, Tab, Text, Field
 
+FIELD_SPAN = 3
+AGGREGATION_SPAN = 1.5
+
+
+def get_aggregation_info(field: Field):
+    data = Field(field).aggregations if field else []
+    value = data[0] if data else None
+    display = "block" if len(data) > 1 else "none"
+    return dict(data=data, value=value, display=display)
+
 
 def make_field_controls(tab: Tab):
     def make_field_text(text, hidden=False):
@@ -11,16 +21,13 @@ def make_field_controls(tab: Tab):
 
     def make_field_dropdowns(field_options, index, grouped_by=False):
         default_field = field_options.get("default")
-        default_aggregations = (
-            Field(default_field).aggregations if default_field else []
-        )
-
+        aggregation_info = get_aggregation_info(default_field)
         # Don't render dropdown if not being grouped by
         aggregation_dropdown = (
             dmc.Select(
                 id={"type": Page.FIELD_AGG_DROPDOWN, "tab": tab, "index": index},
-                data=default_aggregations,
-                value=default_aggregations[0] if default_aggregations else None,
+                data=aggregation_info["data"],
+                value=aggregation_info["value"],
             )
             if grouped_by
             else None
@@ -39,8 +46,8 @@ def make_field_controls(tab: Tab):
                 aggregation_dropdown,
                 id={"type": Page.FIELD_AGG_CONTAINER, "tab": tab, "index": index},
                 # A field only has an aggregation dropdown shown if it has more than one possible option
-                display="block" if len(default_aggregations) > 1 else "none",
-                span=1.5,
+                display=aggregation_info["display"],
+                span=AGGREGATION_SPAN,
             )
             if grouped_by
             else None
@@ -48,20 +55,16 @@ def make_field_controls(tab: Tab):
 
         field_col = dmc.GridCol(
             field_dropdown,
-            span=3,
+            span=FIELD_SPAN,
         )
 
-        return dict(
-            dropdowns=([aggregation_col] if aggregation_col else []) + [field_col],
-            # Add extra space if aggregation dropdown is shown
-            spacing_span=1.5 if grouped_by and len(default_aggregations) > 1 else 0,
-        )
+        return ([aggregation_col] if aggregation_col else []) + [field_col]
 
-    def make_aggregation_spacing(span, index):
+    def make_aggregation_spacing(field: Field, index):
         return dmc.GridCol(
-            [],
             id={"type": Page.FIELD_AGG_SPACING, "tab": tab, "index": index},
-            span=span,
+            display=get_aggregation_info(field)["display"],
+            span=AGGREGATION_SPAN,
         )
 
     def make_axis_text(text, index):
@@ -73,24 +76,20 @@ def make_field_controls(tab: Tab):
                 size="md",
                 ta="center",
             ),
-            span=3,
+            span=FIELD_SPAN,
         )
 
     if not tab.tertiary_field:
-        primary_components, secondary_components, tertiary_components = (
+        primary_dropdowns, secondary_dropdowns, tertiary_dropdowns = (
             make_field_dropdowns(tab.primary_field, index=0, grouped_by=True),
             make_field_dropdowns(tab.secondary_field, index=1),
             None,
         )
 
         # Two variables
-        dropdowns = (
-            primary_components["dropdowns"]
-            + [make_field_text(Text.BY)]
-            + secondary_components["dropdowns"]
-        )
+        dropdowns = primary_dropdowns + [make_field_text(Text.BY)] + secondary_dropdowns
     else:
-        primary_components, secondary_components, tertiary_components = (
+        primary_dropdowns, secondary_dropdowns, tertiary_dropdowns = (
             make_field_dropdowns(tab.primary_field, index=0, grouped_by=True),
             make_field_dropdowns(tab.secondary_field, index=1, grouped_by=True),
             make_field_dropdowns(tab.tertiary_field, index=2),
@@ -99,11 +98,11 @@ def make_field_controls(tab: Tab):
         # TODO: If has extra aggregations in 3 variables, drop span to 2
         # Three variables
         dropdowns = (
-            primary_components["dropdowns"]
+            primary_dropdowns
             + [make_field_text(Text.AND)]
-            + secondary_components["dropdowns"]
+            + secondary_dropdowns
             + [make_field_text(Text.BY)]
-            + tertiary_components["dropdowns"]
+            + tertiary_dropdowns
         )
 
     # Manually add paddingX to match the width of its above div
@@ -124,25 +123,28 @@ def make_field_controls(tab: Tab):
         align="center",
     )
 
-    bottom_row = dmc.Grid(
-        [
+    if not tab.tertiary_field:
+        bottom_row_components = [
             make_field_text(Text.PLOT, hidden=True),
-            make_aggregation_spacing(span=primary_components["spacing_span"], index=0),
+            make_aggregation_spacing(tab.primary_field.get("default"), index=0),
             make_axis_text(Text.Y_AXIS, index=0),
             swap_axes_button,
-            make_aggregation_spacing(
-                span=secondary_components["spacing_span"], index=0
-            ),
             make_axis_text(Text.X_AXIS, index=1),
         ]
-        # Insert extra space if three variables
-        + (
-            [
-                make_field_text(Text.BY, hidden=True),
-            ]
-            if tertiary_components
-            else []
-        ),
+    else:
+        # Extra space if 3 variables
+        bottom_row_components = [
+            make_field_text(Text.PLOT, hidden=True),
+            make_aggregation_spacing(tab.primary_field.get("default"), index=0),
+            make_axis_text(Text.Y_AXIS, index=0),
+            swap_axes_button,
+            make_aggregation_spacing(tab.secondary_field.get("default"), index=1),
+            make_axis_text(Text.X_AXIS, index=1),
+            make_field_text(Text.BY, hidden=True),
+        ]
+
+    bottom_row = dmc.Grid(
+        bottom_row_components,
         justify="center",
         align="center",
     )

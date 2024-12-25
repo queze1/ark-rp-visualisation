@@ -39,42 +39,43 @@ def update_dropdown(selected_fields, current_options):
             patched_options[i]["disabled"] = process_option(opt)
         return patched_options
 
-    def process_aggregates():
-        triggered_index = ctx.triggered_id["index"]
-        # Get the list of aggregate outputs
-        c = ctx.outputs_grouping
-        aggs = c["aggregates"]["value"]
-        # Generate an empty patch for every agg output
-        patched_aggregates = dict(
-            display=[Patch() for _ in aggs],
-            option=[Patch() for _ in aggs],
-            value=[Patch() for _ in aggs],
-        )
-        # Generate an empty patch for every axis span (for updating spacing)
-        patched_spacing_spans = [Patch() for _ in c["spacing_spans"]]
+    # def process_aggregates():
+    #     triggered_index = ctx.triggered_id["index"]
+    #     # Get the list of aggregate outputs
+    #     c = ctx.outputs_grouping
+    #     aggs = c["aggregates"]["value"]
+    #     # Generate an empty patch for every agg output
+    #     patched_aggregates = dict(
+    #         display=[Patch() for _ in aggs],
+    #         option=[Patch() for _ in aggs],
+    #         value=[Patch() for _ in aggs],
+    #     )
+    #     # Generate an empty patch for every axis span (for updating spacing)
+    #     patched_spacing_spans = [Patch() for _ in c["spacing_spans"]]
 
-        # Update the agg of the changed dropdown if it has one
-        if triggered_index < len(aggs):
-            field = selected_fields[triggered_index]
-            field_aggs = Field(field).aggregations if field else []
-            patched_aggregates["display"][triggered_index] = (
-                "block" if len(field_aggs) > 1 else "none"
-            )
-            patched_aggregates["option"][triggered_index] = field_aggs
-            patched_aggregates["value"][triggered_index] = (
-                field_aggs[0] if field_aggs else None
-            )
-            # Update the spacing under this dropdown
-            patched_spacing_spans[triggered_index] = 1.5 if len(field_aggs) > 1 else 0
+    #     # Update the agg of the changed dropdown if it has one
+    #     if triggered_index < len(aggs):
+    #         field = selected_fields[triggered_index]
+    #         field_aggs = Field(field).aggregations if field else []
+    #         patched_aggregates["display"][triggered_index] = (
+    #             "block" if len(field_aggs) > 1 else "none"
+    #         )
+    #         patched_aggregates["option"][triggered_index] = field_aggs
+    #         patched_aggregates["value"][triggered_index] = (
+    #             field_aggs[0] if field_aggs else None
+    #         )
+    #         # Update the spacing under this dropdown
+    #         patched_spacing_spans[triggered_index] = 1.5 if len(field_aggs) > 1 else 0
 
-        return dict(aggregates=patched_aggregates, spacing_spans=patched_spacing_spans)
+    #     return dict(aggregates=patched_aggregates, spacing_spans=patched_spacing_spans)
 
     # Generate a patch for every field
     patched_field_options = [
         process_options(selected_field, options)
         for selected_field, options in zip(selected_fields, current_options)
     ]
-    return dict(field_options=patched_field_options) | process_aggregates()
+    return dict(field_options=patched_field_options)
+    # return dict(field_options=patched_field_options) | process_aggregates()
 
 
 def swap_axes(n_clicks, axes):
@@ -180,24 +181,24 @@ def register_callbacks(app):
     app.callback(
         output=dict(
             field_options=Output(match_fields, "data"),
-            aggregates=dict(
-                display=Output(
-                    {"type": Page.FIELD_AGG_CONTAINER, "tab": MATCH, "index": ALL},
-                    "display",
-                ),
-                option=Output(
-                    {"type": Page.FIELD_AGG_DROPDOWN, "tab": MATCH, "index": ALL},
-                    "data",
-                ),
-                value=Output(
-                    {"type": Page.FIELD_AGG_DROPDOWN, "tab": MATCH, "index": ALL},
-                    "value",
-                ),
-            ),
-            spacing_spans=Output(
-                {"type": Page.FIELD_AGG_SPACING, "tab": MATCH, "index": ALL},
-                "span",
-            ),
+            # aggregates=dict(
+            #     display=Output(
+            #         {"type": Page.FIELD_AGG_CONTAINER, "tab": MATCH, "index": ALL},
+            #         "display",
+            #     ),
+            #     option=Output(
+            #         {"type": Page.FIELD_AGG_DROPDOWN, "tab": MATCH, "index": ALL},
+            #         "data",
+            #     ),
+            #     value=Output(
+            #         {"type": Page.FIELD_AGG_DROPDOWN, "tab": MATCH, "index": ALL},
+            #         "value",
+            #     ),
+            # ),
+            # spacing_spans=Output(
+            #     {"type": Page.FIELD_AGG_SPACING, "tab": MATCH, "index": ALL},
+            #     "span",
+            # ),
         ),
         inputs=[Input(match_fields, "value"), State(match_fields, "data")],
     )(update_dropdown)
