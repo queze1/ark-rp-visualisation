@@ -51,7 +51,7 @@ def update_dropdown(selected_fields, current_options):
             value=[Patch() for _ in aggs],
         )
         # Generate an empty patch for every axis span (for updating spacing)
-        patched_axis_spans = [Patch() for _ in c["axis_spans"]]
+        patched_spacing_spans = [Patch() for _ in c["spacing_spans"]]
 
         # Update the agg of the changed dropdown if it has one
         if triggered_index < len(aggs):
@@ -65,9 +65,9 @@ def update_dropdown(selected_fields, current_options):
                 field_aggs[0] if field_aggs else None
             )
             # Update the spacing under this dropdown
-            patched_axis_spans[triggered_index] = 4.5 if len(field_aggs) > 1 else 3
+            patched_spacing_spans[triggered_index] = 1.5 if len(field_aggs) > 1 else 0
 
-        return dict(aggregates=patched_aggregates, axis_spans=patched_axis_spans)
+        return dict(aggregates=patched_aggregates, spacing_spans=patched_spacing_spans)
 
     # Generate a patch for every field
     patched_field_options = [
@@ -194,8 +194,9 @@ def register_callbacks(app):
                     "value",
                 ),
             ),
-            axis_spans=Output(
-                {"type": Page.AXIS_CONTAINER, "tab": MATCH, "index": ALL}, "span"
+            spacing_spans=Output(
+                {"type": Page.FIELD_AGG_SPACING, "tab": MATCH, "index": ALL},
+                "span",
             ),
         ),
         inputs=[Input(match_fields, "value"), State(match_fields, "data")],

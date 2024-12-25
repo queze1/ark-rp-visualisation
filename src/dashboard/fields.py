@@ -54,10 +54,17 @@ def make_field_controls(tab: Tab):
         return dict(
             dropdowns=([aggregation_col] if aggregation_col else []) + [field_col],
             # Add extra space if aggregation dropdown is shown
-            total_span=4.5 if grouped_by and len(default_aggregations) > 1 else 3,
+            spacing_span=1.5 if grouped_by and len(default_aggregations) > 1 else 0,
         )
 
-    def make_axis_text(text, span, index):
+    def make_aggregation_spacing(span, index):
+        return dmc.GridCol(
+            [],
+            id={"type": Page.FIELD_AGG_SPACING, "tab": tab, "index": index},
+            span=span,
+        )
+
+    def make_axis_text(text, index):
         # Same length as dropdown, to be centred under them
         return dmc.GridCol(
             dmc.Text(
@@ -66,8 +73,7 @@ def make_field_controls(tab: Tab):
                 size="md",
                 ta="center",
             ),
-            id={"type": Page.AXIS_CONTAINER, "tab": tab, "index": index},
-            span=span,
+            span=3,
         )
 
     if not tab.tertiary_field:
@@ -121,17 +127,18 @@ def make_field_controls(tab: Tab):
     bottom_row = dmc.Grid(
         [
             make_field_text(Text.PLOT, hidden=True),
-            make_axis_text(Text.Y_AXIS, span=primary_components["total_span"], index=0),
+            make_aggregation_spacing(span=primary_components["spacing_span"], index=0),
+            make_axis_text(Text.Y_AXIS, index=0),
             swap_axes_button,
-            make_axis_text(
-                Text.X_AXIS, span=secondary_components["total_span"], index=1
+            make_aggregation_spacing(
+                span=secondary_components["spacing_span"], index=0
             ),
+            make_axis_text(Text.X_AXIS, index=1),
         ]
         # Insert extra space if three variables
         + (
             [
                 make_field_text(Text.BY, hidden=True),
-                dmc.GridCol(span=tertiary_components["total_span"]),
             ]
             if tertiary_components
             else []

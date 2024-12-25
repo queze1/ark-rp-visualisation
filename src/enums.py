@@ -409,7 +409,7 @@ class Page(StrEnum):
     FIELD_DROPDOWN = "field-dropdown"
     FIELD_AGG_CONTAINER = "field-agg-container"
     FIELD_AGG_DROPDOWN = "field-agg-dropdown"
-    AXIS_CONTAINER = "axis-container"
+    FIELD_AGG_SPACING = "axis-container"
     AXIS_TEXT = "axis-text"
     SWAP_AXES_BUTTON = "swap-axis-btn"
 
