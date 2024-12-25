@@ -149,8 +149,8 @@ def render_graph(
     summary = f"""
     User created a graph:
         Plot Type: {tab.label}
-        X-Axis: {selected_axes[0]} ({selected_fields[0]})
-        Y-Axis: {selected_axes[1]} ({selected_fields[1]})
+        {selected_axes[0]}: ({selected_fields[0]})
+        {selected_axes[1]}: ({selected_fields[1]})
         Aggregations: {selected_aggregations}
         Filters: {filters}
         Customizations: {customisation}
