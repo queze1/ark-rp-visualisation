@@ -28,6 +28,7 @@ def make_field_controls(tab: Tab):
                 id={"type": Page.FIELD_AGG_DROPDOWN, "tab": tab, "index": index},
                 data=aggregation_info["data"],
                 value=aggregation_info["value"],
+                allowDeselect=False,
             )
             if grouped_by
             else None
