@@ -19,7 +19,7 @@ def make_field_controls(tab: Tab):
         aggregation_dropdown = (
             dmc.Select(
                 id={"type": Page.FIELD_AGG_DROPDOWN, "tab": tab, "index": index},
-                data=[groupby for groupby in default_aggregations],
+                data=default_aggregations,
                 value=default_aggregations[0] if default_aggregations else None,
             )
             if grouped_by
@@ -66,6 +66,7 @@ def make_field_controls(tab: Tab):
                 size="md",
                 ta="center",
             ),
+            id={"type": Page.AXIS_CONTAINER, "tab": tab, "index": index},
             span=span,
         )
 

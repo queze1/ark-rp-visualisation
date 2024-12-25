@@ -2,7 +2,7 @@ from dash import ALL, MATCH, Input, Output, Patch, State, ctx
 
 from dashboard.filters import make_default_filters, make_filter_group, make_filter_value
 from dashboard.plot_builder import AxisConfig, FigureConfig, FilterConfig, PlotBuilder
-from enums import Field, Filter, GroupBy, Page, Plot, Tab
+from enums import Field, Filter, Page, Plot, Tab
 
 
 def update_dropdown(selected_fields, current_options):
@@ -42,31 +42,39 @@ def update_dropdown(selected_fields, current_options):
     def process_aggregates():
         triggered_index = ctx.triggered_id["index"]
         # Get the list of aggregate outputs
-        aggs = ctx.outputs_grouping["aggregates"]["value"]
+        c = ctx.outputs_grouping
+        aggs = c["aggregates"]["value"]
         # Generate an empty patch for every agg output
         patched_aggregates = dict(
             display=[Patch() for _ in aggs],
             option=[Patch() for _ in aggs],
             value=[Patch() for _ in aggs],
         )
+        # Generate an empty patch for every axis span (for updating spacing)
+        patched_axis_spans = [Patch() for _ in c["axis_spans"]]
+
         # Update the agg of the changed dropdown if it has one
         if triggered_index < len(aggs):
-            patched_aggregates["display"][triggered_index] = "block"
-            patched_aggregates["option"][triggered_index] = [
-                groupby for groupby in GroupBy
-            ]
-            patched_aggregates["value"][triggered_index] = GroupBy.SUM
-        return patched_aggregates
+            field = selected_fields[triggered_index]
+            field_aggs = Field(field).aggregations if field else []
+            patched_aggregates["display"][triggered_index] = (
+                "block" if len(field_aggs) > 1 else "none"
+            )
+            patched_aggregates["option"][triggered_index] = field_aggs
+            patched_aggregates["value"][triggered_index] = (
+                field_aggs[0] if field_aggs else None
+            )
+            # Update the spacing under this dropdown
+            patched_axis_spans[triggered_index] = 4.5 if len(field_aggs) > 1 else 3
+
+        return dict(aggregates=patched_aggregates, axis_spans=patched_axis_spans)
 
     # Generate a patch for every field
     patched_field_options = [
         process_options(selected_field, options)
         for selected_field, options in zip(selected_fields, current_options)
     ]
-    return dict(
-        field_options=patched_field_options,
-        aggregates=process_aggregates(),
-    )
+    return dict(field_options=patched_field_options) | process_aggregates()
 
 
 def swap_axes(n_clicks, axes):
@@ -185,6 +193,9 @@ def register_callbacks(app):
                     {"type": Page.FIELD_AGG_DROPDOWN, "tab": MATCH, "index": ALL},
                     "value",
                 ),
+            ),
+            axis_spans=Output(
+                {"type": Page.AXIS_CONTAINER, "tab": MATCH, "index": ALL}, "span"
             ),
         ),
         inputs=[Input(match_fields, "value"), State(match_fields, "data")],
