@@ -1,9 +1,20 @@
+import logging
+
 from dash import ALL, MATCH, Input, Output, Patch, State, ctx
 
 from dashboard.fields import get_aggregation_info
 from dashboard.filters import make_default_filters, make_filter_group, make_filter_value
 from dashboard.plot_builder import AxisConfig, FigureConfig, FilterConfig, PlotBuilder
 from enums import Field, Filter, Page, Plot, Tab
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    handlers=[
+        logging.StreamHandler(),
+    ],
+)
+logger = logging.getLogger(__name__)
 
 
 def update_dropdown(selected_fields, current_options, aggregate_displays):
@@ -133,6 +144,19 @@ def render_graph(
         return {}
 
     tab = Tab(ctx.triggered_id["tab"])
+
+    # Log graph creation
+    summary = f"""
+    User created a graph:
+        Plot Type: {tab.label}
+        X-Axis: {selected_axes[0]} ({selected_fields[0]})
+        Y-Axis: {selected_axes[1]} ({selected_fields[1]})
+        Aggregations: {selected_aggregations}
+        Filters: {filters}
+        Customizations: {customisation}
+    """
+    logger.info(summary.strip())
+
     return PlotBuilder(
         plot_type=Plot(tab.plot_type),
         axis_config=AxisConfig.from_raw(
