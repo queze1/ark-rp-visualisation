@@ -1,5 +1,5 @@
 import dash_mantine_components as dmc
-
+from dash import html
 from enums import Tab, Text
 from dashboard.tabs import make_tab
 
@@ -23,9 +23,34 @@ tabs = dmc.Tabs(
     value=Tab.LINE,
 )
 
+footer = html.Footer(
+    dmc.Group(
+        [
+            dmc.Text(
+                [
+                    "Made by ",
+                    html.Strong("queze"),
+                    ", message on TTGSOC Discord for bugs and suggestions",
+                ],
+                size="xs",
+                c="dimmed",
+            ),
+            dmc.Anchor(
+                "Github",
+                href="https://github.com/queze1/ark-rp-visualisation",
+                size="xs",
+                c="dimmed",
+            ),
+        ],
+        my=10,
+        justify="space-between",
+    )
+)
+
 layout = dmc.Container(
     [
         header,
         tabs,
+        footer,
     ],
 )
