@@ -105,7 +105,6 @@ def make_field_controls(tab: Tab):
             make_field_dropdowns(tab.tertiary_field, index=2),
         )
 
-        # TODO: If has extra aggregations in 3 variables, drop span to 2
         # Three variables
         dropdowns = (
             primary_dropdowns
