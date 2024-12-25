@@ -6,7 +6,7 @@
 
 # Want to help us make this template better? Share your feedback here: https://forms.gle/ybq9Krt8jtBL3iCk7
 
-FROM python:3.12-slim as base
+FROM python:3.12-slim AS base
 
 # Prevents Python from writing pyc files.
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -48,4 +48,4 @@ ENV PYTHONPATH=/src
 EXPOSE 8050
 
 # Run the application.
-CMD gunicorn -b 0.0.0.0:8050 src.app:server
+CMD ["gunicorn",  "-b", "0.0.0.0:8050", "src.app:server"]
