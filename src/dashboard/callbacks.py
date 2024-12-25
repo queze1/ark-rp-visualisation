@@ -125,6 +125,7 @@ def render_graph(
     n_clicks,
     selected_fields,
     selected_axes,
+    selected_aggregations,
     filters,
     customisation,
 ):
@@ -135,7 +136,9 @@ def render_graph(
     return PlotBuilder(
         plot_type=Plot(tab.plot_type),
         axis_config=AxisConfig.from_raw(
-            selected_fields=selected_fields, selected_axes=selected_axes
+            selected_fields=selected_fields,
+            selected_axes=selected_axes,
+            selected_aggregations=selected_aggregations,
         ),
         filter_config=FilterConfig.from_raw(filters=filters),
         figure_config=FigureConfig.from_raw(**customisation),
@@ -301,6 +304,10 @@ def register_callbacks(app):
             n_clicks=Input(match_update_graph, "n_clicks"),
             selected_fields=State(match_fields, "value"),
             selected_axes=State(match_axes, "children"),
+            selected_aggregations=State(
+                match_agg_dropdowns,
+                "value",
+            ),
             filters=(
                 State(
                     match_filter_types,

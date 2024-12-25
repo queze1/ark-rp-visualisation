@@ -12,32 +12,29 @@ class FieldType(Enum):
 
 
 class GroupBy(StrEnum):
-    SUM = "Total"
-    MEAN = "Average"
-    NUNIQUE = "Unique"
-
-    def __call__(self, obj):
-        if self is GroupBy.SUM:
-            return obj.sum()
-        elif self is GroupBy.MEAN:
-            return obj.mean()
-        elif self is GroupBy.NUNIQUE:
-            return obj.nunique()
-        raise NotImplementedError(f"{self.name} groupby is not implemented.")
+    SUM = "sum"
+    MEAN = "mean"
+    NUNIQUE = "nunique"
 
     @property
     def _metadata(self):
         return {
-            "SUM": {"axis_prefix": "Number of "},
+            "SUM": {"label": "Total", "axis_prefix": "Number of "},
             "MEAN": {
+                "label": "Average",
                 "title_prefix": "Average ",
                 "axis_prefix": "Avg. ",
             },
             "NUNIQUE": {
+                "label": "Unique",
                 "title_prefix": "Unique ",
                 "axis_prefix": "Unique ",
             },
         }
+
+    @property
+    def label(self):
+        return self._metadata[self.name].get("label", self.value)
 
     @property
     def title_prefix(self):

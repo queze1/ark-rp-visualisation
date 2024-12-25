@@ -10,13 +10,23 @@ from enums import Field, Filter, GroupBy, Operator, Plot, Text
 @dataclass
 class AxisConfig:
     fields: list[Field]
+    aggregations: dict[Field, tuple[Field, GroupBy]]
     x_axis: Field
     y_axis: Field
 
     @classmethod
-    def from_raw(cls, selected_fields: list[str], selected_axes: list[str]):
+    def from_raw(
+        cls,
+        selected_fields: list[str],
+        selected_axes: list[str],
+        selected_aggregations: list[str],
+    ):
         selected_fields = [Field(field) for field in selected_fields]
         primary_field, secondary_field, *_ = selected_fields
+        aggregations = {
+            field: GroupBy(agg)
+            for field, agg in zip(selected_fields, selected_aggregations)
+        }
 
         # Find field axes
         if selected_axes == [Text.Y_AXIS, Text.X_AXIS]:
@@ -25,7 +35,7 @@ class AxisConfig:
             axes = dict(x_axis=primary_field, y_axis=secondary_field)
         else:
             raise ValueError("Invalid axes")
-        return cls(fields=selected_fields, **axes)
+        return cls(fields=selected_fields, aggregations=aggregations, **axes)
 
 
 @dataclass
@@ -121,12 +131,9 @@ class PlotBuilder:
     ):
         self._df = df.copy()
         self._fig = None
-        self._grouping_field = None
-        self._grouped_fields = None
-        self._aggregations = None
 
-        self.fields, self.x_axis, self.y_axis = attrgetter(
-            "fields", "x_axis", "y_axis"
+        self.fields, self.aggregations, self.x_axis, self.y_axis = attrgetter(
+            "fields", "aggregations", "x_axis", "y_axis"
         )(axis_config)
         self.filters = filter_config.filters
         self.plot_type = plot_type
@@ -166,36 +173,15 @@ class PlotBuilder:
             self.add_field(filter.field)
             self._df = filter.apply(self._df)
 
-    def set_aggregations(self, aggregations: dict[Field, GroupBy] = {}):
-        """Sets aggregations, if not provided, uses default aggregations."""
-        if aggregations:
-            self._grouped_fields = aggregations.keys()
-            # Find the one field which is not aggregated
-            (self._grouping_field,) = [
-                field for field in self.fields if field not in self._grouped_fields
-            ]
-            self._aggregations = aggregations
-
-        else:
-            # If aggregations are not supplied, group the rest by the last field
-            *self._grouped_fields, self._grouping_field = self.fields
-            # Use default aggregations
-            self._aggregations = {
-                field: GroupBy.NUNIQUE if Field(field).categorical else GroupBy.SUM
-                for field in self._grouped_fields
-            }
-
     def groupby(self):
         """Aggregate and group the current DataFrame."""
-        grouped = self._df.groupby(self._grouping_field)[self._grouped_fields]
-        self._df = grouped.agg(
-            **{
-                field: (field, aggregation)
-                for field, aggregation in self._aggregations.items()
-            }
-        ).reset_index()
+        *rest, grouping_field = self.fields
+        grouped = self._df.groupby(grouping_field)[rest]
+        self._df = grouped.agg(self.aggregations).reset_index()
 
     def apply_sort(self):
+        grouped_field, *_, grouping_field = self.fields
+
         # Use custom sort if provided
         if self.sort:
             self._df = self._df.sort_values(
@@ -203,9 +189,9 @@ class PlotBuilder:
                 ascending=self.sort.ascending,
             )
 
-        # By default, sort by grouped field unless you were grouping by a date
-        elif not self._grouping_field.temporal:
-            self._df = self._df.sort_values(by=self._grouped_fields[0], ascending=True)
+        elif not grouping_field.temporal:
+            # By default, sort by grouped field unless you were grouping by a date
+            self._df = self._df.sort_values(by=grouped_field, ascending=True)
 
     def get_label(self, field: Field, label_type="axis"):
         """
@@ -220,8 +206,8 @@ class PlotBuilder:
         label = field.axis_label if label_type == "axis" else field.title_label
 
         # If aggregation exists, add its prefix
-        if field in self._aggregations:
-            agg = self._aggregations[field]
+        if field in self.aggregations:
+            agg = self.aggregations[field]
             prefix = agg.axis_prefix if label_type == "axis" else agg.title_prefix
             return prefix + label
         return label
@@ -239,7 +225,6 @@ class PlotBuilder:
             or f"{self.get_title_label(primary_field)} by {self.get_title_label(secondary_field)}"
         )
         labels = {field: self.get_axis_label(field) for field in self.fields}
-
         self._fig = self.plot_type(
             self._df,
             x=self.x_axis,
@@ -316,7 +301,6 @@ class PlotBuilder:
     def build(self):
         self.add_fields()
         self.apply_filters()
-        self.set_aggregations()
         self.groupby()
         self.apply_sort()
         self.make_figure()

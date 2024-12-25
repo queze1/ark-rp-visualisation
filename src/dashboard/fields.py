@@ -1,15 +1,22 @@
 import dash_mantine_components as dmc
 from dash_iconify import DashIconify
 
-from enums import Page, Tab, Text, Field
+from enums import GroupBy, Page, Tab, Text, Field
 
 FIELD_SPAN = 3
 AGGREGATION_SPAN = 1.5
 
 
 def get_aggregation_info(field: Field):
-    data = Field(field).aggregations if field else []
-    value = data[0] if data else None
+    data = (
+        [
+            {"label": GroupBy(agg).label, "value": GroupBy(agg)}
+            for agg in Field(field).aggregations
+        ]
+        if field
+        else []
+    )
+    value = data[0]["value"] if data else None
     display = "block" if len(data) > 1 else "none"
     return dict(data=data, value=value, display=display)
 
