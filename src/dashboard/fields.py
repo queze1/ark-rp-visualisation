@@ -56,6 +56,7 @@ def make_field_controls(tab: Tab):
 
         field_col = dmc.GridCol(
             field_dropdown,
+            id={"type": Page.FIELD_CONTAINER, "tab": tab, "index": index},
             span=FIELD_SPAN,
         )
 
@@ -77,6 +78,7 @@ def make_field_controls(tab: Tab):
                 size="md",
                 ta="center",
             ),
+            id={"type": Page.FIELD_SPACING, "tab": tab, "index": index},
             span=FIELD_SPAN,
         )
 
@@ -142,6 +144,9 @@ def make_field_controls(tab: Tab):
             make_aggregation_spacing(tab.secondary_field.get("default"), index=1),
             make_axis_text(Text.X_AXIS, index=1),
             make_field_text(Text.BY, hidden=True),
+            dmc.GridCol(
+                id={"type": Page.FIELD_SPACING, "tab": tab, "index": 2}, span=3
+            ),
         ]
 
     bottom_row = dmc.Grid(

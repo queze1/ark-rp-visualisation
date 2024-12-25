@@ -6,7 +6,9 @@ from dashboard.plot_builder import AxisConfig, FigureConfig, FilterConfig, PlotB
 from enums import Field, Filter, Page, Plot, Tab
 
 
-def update_dropdown(selected_fields, current_options):
+def update_dropdown(selected_fields, current_options, aggregate_displays):
+    c = ctx.outputs_grouping
+
     # Check if any temporal field is already selected
     has_selected_temporal = any(
         [Field(field).temporal if field else None for field in selected_fields]
@@ -41,9 +43,10 @@ def update_dropdown(selected_fields, current_options):
         return patched_options
 
     def process_aggregates():
+        agg_change = 0
+
         triggered_index = ctx.triggered_id["index"]
         # Get the list of aggregate outputs
-        c = ctx.outputs_grouping
         aggs = c["aggregates"]["value"]
         # Generate an empty patch for every agg output
         patched_aggregates = dict(
@@ -62,14 +65,52 @@ def update_dropdown(selected_fields, current_options):
             patched_aggregates["option"][triggered_index] = agg_info["data"]
             patched_aggregates["value"][triggered_index] = agg_info["value"]
 
-        return patched_aggregates
+            # Calculate the change in aggs
+            agg_change += (agg_info["display"] == "block") - (
+                aggregate_displays[triggered_index] == "block"
+            )
+
+        return patched_aggregates, agg_change
+
+    def process_spans(agg_change):
+        patched_spans = dict(
+            field=[Patch() for _ in c["spans"]["field"]],
+            spacing=[Patch() for _ in c["spans"]["spacing"]],
+        )
+
+        # Skip if not 3 variables
+        if len(selected_fields) != 3:
+            return patched_spans
+
+        # Check if there is at least one aggregate displayed
+        current_aggs = (
+            sum([display == "block" for display in aggregate_displays]) + agg_change
+        )
+        # Set to 3 if no aggs
+        if current_aggs == 0:
+            return dict(
+                field=[3 for _ in c["spans"]["field"]],
+                spacing=[3 for _ in c["spans"]["spacing"]],
+            )
+        else:
+            # If aggs, reduce to 2
+            return dict(
+                field=[2 for _ in c["spans"]["field"]],
+                spacing=[2 for _ in c["spans"]["spacing"]],
+            )
 
     # Generate a patch for every field
     patched_field_options = [
         process_options(selected_field, options)
         for selected_field, options in zip(selected_fields, current_options)
     ]
-    return dict(field_options=patched_field_options, aggregates=process_aggregates())
+    patched_aggregates, agg_change = process_aggregates()
+    patched_spans = process_spans(agg_change)
+    return dict(
+        field_options=patched_field_options,
+        aggregates=patched_aggregates,
+        spans=patched_spans,
+    )
 
 
 def swap_axes(n_clicks, axes):
@@ -172,29 +213,53 @@ def reset_customisation(n_clicks):
 
 def register_callbacks(app):
     match_fields = {"type": Page.FIELD_DROPDOWN, "tab": MATCH, "index": ALL}
+    match_agg_containers = {
+        "type": Page.FIELD_AGG_CONTAINER,
+        "tab": MATCH,
+        "index": ALL,
+    }
+    match_agg_spacings = {"type": Page.FIELD_AGG_SPACING, "tab": MATCH, "index": ALL}
+    match_agg_dropdowns = {"type": Page.FIELD_AGG_DROPDOWN, "tab": MATCH, "index": ALL}
+    match_field_containers = {
+        "type": Page.FIELD_AGG_CONTAINER,
+        "tab": MATCH,
+        "index": ALL,
+    }
     app.callback(
         output=dict(
             field_options=Output(match_fields, "data"),
             aggregates=dict(
                 display=Output(
-                    {"type": Page.FIELD_AGG_CONTAINER, "tab": MATCH, "index": ALL},
+                    match_agg_containers,
                     "display",
                 ),
                 spacing_display=Output(
-                    {"type": Page.FIELD_AGG_SPACING, "tab": MATCH, "index": ALL},
+                    match_agg_spacings,
                     "display",
                 ),
                 option=Output(
-                    {"type": Page.FIELD_AGG_DROPDOWN, "tab": MATCH, "index": ALL},
+                    match_agg_dropdowns,
                     "data",
                 ),
                 value=Output(
-                    {"type": Page.FIELD_AGG_DROPDOWN, "tab": MATCH, "index": ALL},
+                    match_agg_dropdowns,
                     "value",
                 ),
             ),
+            spans=dict(
+                field=Output(
+                    {"type": Page.FIELD_CONTAINER, "tab": MATCH, "index": ALL}, "span"
+                ),
+                spacing=Output(
+                    {"type": Page.FIELD_SPACING, "tab": MATCH, "index": ALL}, "span"
+                ),
+            ),
         ),
-        inputs=[Input(match_fields, "value"), State(match_fields, "data")],
+        inputs=[
+            Input(match_fields, "value"),
+            State(match_fields, "data"),
+            State(match_field_containers, "display"),
+        ],
     )(update_dropdown)
 
     match_axes = {"type": Page.AXIS_TEXT, "tab": MATCH, "index": ALL}

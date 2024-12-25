@@ -406,10 +406,12 @@ class Page(StrEnum):
     GRAPH = "graph"
     UPDATE_GRAPH_BUTTON = "update-graph-btn"
 
+    FIELD_CONTAINER = "field-container"
     FIELD_DROPDOWN = "field-dropdown"
     FIELD_AGG_CONTAINER = "field-agg-container"
     FIELD_AGG_DROPDOWN = "field-agg-dropdown"
     FIELD_AGG_SPACING = "axis-container"
+    FIELD_SPACING = "field-spacing"
     AXIS_TEXT = "axis-text"
     SWAP_AXES_BUTTON = "swap-axis-btn"
 
