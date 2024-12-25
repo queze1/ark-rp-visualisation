@@ -6,7 +6,7 @@ def make_customisation_controls(tab: Tab):
     def make_label_col(text):
         return dmc.GridCol(
             dmc.Text(text),
-            span=2,
+            span=1.5,
         )
 
     def make_checkbox_col(label, type, span, disabled=False):

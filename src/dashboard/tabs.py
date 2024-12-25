@@ -15,7 +15,7 @@ def make_tab(tab: Tab):
             make_filter_controls(tab),
             dmc.Divider(mt=25, mb=15),
             make_customisation_controls(tab),
-            dmc.Space(h=30),
+            dmc.Space(h=20),
             dmc.Button(
                 Text.UPDATE_GRAPH_LABEL,
                 ml="auto",
