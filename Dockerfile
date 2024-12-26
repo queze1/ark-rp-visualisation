@@ -45,7 +45,7 @@ COPY . .
 ENV PYTHONPATH=/src
 
 # Expose the port that the application listens on.
-EXPOSE 8050
+EXPOSE 10000
 
 # Run the application.
-CMD ["gunicorn", "src.app:server", "-b", "0.0.0.0:8050", "--workers=1"]
+CMD ["gunicorn", "src.app:server", "-b", "0.0.0.0:10000", "--workers=1"]

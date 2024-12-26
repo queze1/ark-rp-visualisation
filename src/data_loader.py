@@ -114,9 +114,6 @@ class DataLoader:
         # Unstringify datetime and reactions
         self._process_datetime(format="ISO8601")
         self._df["reactions"] = self._df["reactions"].apply(ast.literal_eval)
-        print(
-            "just after process cache", self._df.memory_usage(deep=True).sum() / 1024**2
-        )
         return self
 
     def _write_cache(self):
@@ -148,7 +145,6 @@ class DataLoader:
         s3 = boto3.client("s3")
         with s3.get_object(**S3_PATH)["Body"] as response:
             self._df = pd.read_csv(response)
-        print("just after read", self._df.memory_usage(deep=True).sum() / 1024**2)
 
         print(f"S3 found: Loading from {S3_PATH['Bucket']}/{S3_PATH['Key']}")
         return self._process_cache()
@@ -174,9 +170,7 @@ df = None
 
 if __name__ == "__main__":
     pd.options.display.max_columns = None
-    # df = DataLoader().load_csv(force=True).df
-    df = DataLoader().load_s3().clean().df
-    print("just after clean", df.memory_usage(deep=True).sum() / 1024**2)
+    df = DataLoader().load_csv(force=True).df
 
 elif df is None:
     # Initialise singleton
