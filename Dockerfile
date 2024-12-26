@@ -48,4 +48,4 @@ ENV PYTHONPATH=/src
 EXPOSE 8050
 
 # Run the application.
-CMD ["gunicorn",  "-b", "0.0.0.0:8050", "src.app:server"]
+CMD ["gunicorn", "src.app:server", "-b", "0.0.0.0:8050", "--workers=1"]

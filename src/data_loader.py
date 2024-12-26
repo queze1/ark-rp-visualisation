@@ -2,7 +2,6 @@ import ast
 import glob
 import os
 import re
-from io import StringIO
 from dotenv import load_dotenv
 
 import boto3
@@ -88,15 +87,14 @@ class DataLoader:
         df["reaction_count"] = [max(d.values(), default=0) for d in df["reactions"]]
         return df
 
-    @staticmethod
-    def _process_datetime(df: pd.DataFrame, format=DATE_FORMAT) -> pd.DataFrame:
+    def _process_datetime(self, format=DATE_FORMAT):
         """
         Process the 'datetime' column.
         """
-        df["datetime"] = pd.to_datetime(
-            df["datetime"], format=format, utc=True
+        self._df["datetime"] = pd.to_datetime(
+            self._df["datetime"], format=format, utc=True
         ).dt.tz_convert(TIME_ZONE)
-        return df
+        return self
 
     @classmethod
     def _read_csv(cls, path: str) -> pd.DataFrame:
@@ -114,8 +112,11 @@ class DataLoader:
 
     def _process_cache(self):
         # Unstringify datetime and reactions
-        self._df = self._process_datetime(self._df, format="ISO8601")
+        self._process_datetime(format="ISO8601")
         self._df["reactions"] = self._df["reactions"].apply(ast.literal_eval)
+        print(
+            "just after process cache", self._df.memory_usage(deep=True).sum() / 1024**2
+        )
         return self
 
     def _write_cache(self):
@@ -145,10 +146,10 @@ class DataLoader:
         Load the dataset from a S3 object.
         """
         s3 = boto3.client("s3")
-        response = s3.get_object(**S3_PATH)
-        content = response["Body"].read().decode("utf-8")
-        csv_buffer = StringIO(content)
-        self._df = pd.read_csv(csv_buffer)
+        with s3.get_object(**S3_PATH)["Body"] as response:
+            self._df = pd.read_csv(response)
+        print("just after read", self._df.memory_usage(deep=True).sum() / 1024**2)
+
         print(f"S3 found: Loading from {S3_PATH['Bucket']}/{S3_PATH['Key']}")
         return self._process_cache()
 
@@ -156,7 +157,7 @@ class DataLoader:
         """
         Remove potentially sensitive data from the dataset.
         """
-        self._df = self._df.drop(columns=["author_id", "content", "attachments"])
+        self._df.drop(columns=["author_id", "content", "attachments"], inplace=True)
         return self
 
     @property
@@ -173,8 +174,10 @@ df = None
 
 if __name__ == "__main__":
     pd.options.display.max_columns = None
-    df = DataLoader().load_csv(force=True).df
-    print(df)
+    # df = DataLoader().load_csv(force=True).df
+    df = DataLoader().load_s3().clean().df
+    print("just after clean", df.memory_usage(deep=True).sum() / 1024**2)
+
 elif df is None:
     # Initialise singleton
     if ENV == "development":
