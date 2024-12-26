@@ -2,11 +2,19 @@ import ast
 import glob
 import os
 import re
+from io import StringIO
+from dotenv import load_dotenv
 
+import boto3
 import pandas as pd
 
+load_dotenv()
+
+ENV = os.getenv("ENV", "development")
 DATA_PATH = "data/25-12-2024"
 CACHE_PATH = "data/cache/25-12-2024.csv"
+S3_PATH = dict(Bucket="ark-rp-visualisation", Key="25-12-2024.csv")
+
 DATE_FORMAT = "%Y-%m-%dT%H:%M:%S.%f%z"
 TIME_ZONE = "Australia/Sydney"
 CHANNEL_NAME_REGEX = r".+ - (.+) \["
@@ -104,8 +112,7 @@ class DataLoader:
         df = cls._add_scene_end(df)
         return df
 
-    def _read_cache(self):
-        self._df = pd.read_csv(CACHE_PATH)
+    def _process_cache(self):
         # Unstringify datetime and reactions
         self._df = self._process_datetime(self._df, format="ISO8601")
         self._df["reactions"] = self._df["reactions"].apply(ast.literal_eval)
@@ -115,13 +122,14 @@ class DataLoader:
         os.makedirs(os.path.dirname(CACHE_PATH), exist_ok=True)
         self._df.to_csv(CACHE_PATH, index=False)
 
-    def read_csvs(self, force: bool = False):
+    def load_csv(self, force: bool = False):
         """
-        Read CSV files, process and cache them.
+        Load the dataset from a CSV cache. If no cache exists, process CSV files and cache them.
         """
         if not force and os.path.exists(CACHE_PATH):
             print(f"Cache found: Loading from {CACHE_PATH}")
-            return self._read_cache()
+            self._df = pd.read_csv(CACHE_PATH)
+            return self._process_cache()
 
         # If cache not used, process all files
         csv_paths = glob.glob(os.path.join(DATA_PATH, "*.csv"))
@@ -132,20 +140,23 @@ class DataLoader:
         print(f"Cache written: {CACHE_PATH}")
         return self
 
+    def load_s3(self):
+        """
+        Load the dataset from a S3 object.
+        """
+        s3 = boto3.client("s3")
+        response = s3.get_object(**S3_PATH)
+        content = response["Body"].read().decode("utf-8")
+        csv_buffer = StringIO(content)
+        self._df = pd.read_csv(csv_buffer)
+        print(f"S3 found: Loading from {S3_PATH['Bucket']}/{S3_PATH['Key']}")
+        return self._process_cache()
+
     def clean(self):
         """
         Remove potentially sensitive data from the dataset.
         """
         self._df = self._df.drop(columns=["author_id", "content", "attachments"])
-        return self
-
-    def load_data(self, force: bool = False, clean: bool = True):
-        """
-        Helper to load the dataset.
-        """
-        self.read_csvs(force=force)
-        if clean:
-            return self.clean()
         return self
 
     @property
@@ -162,8 +173,11 @@ df = None
 
 if __name__ == "__main__":
     pd.options.display.max_columns = None
-    df = DataLoader().load_data(force=True).df
+    df = DataLoader().load_csv(force=True).df
     print(df)
 elif df is None:
-    # Initalise singleton
-    df = DataLoader().load_data().df
+    # Initialise singleton
+    if ENV == "development":
+        df = DataLoader().load_csv().clean().df
+    elif ENV == "production":
+        df = DataLoader().load_s3().clean().df

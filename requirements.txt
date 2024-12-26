@@ -5,3 +5,5 @@ pytest
 dash-mantine-components
 dash-iconify
 gunicorn
+boto3
+python-dotenv

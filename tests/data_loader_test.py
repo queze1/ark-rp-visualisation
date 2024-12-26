@@ -8,16 +8,17 @@ from pandas.api.types import (
 )
 from pandas.testing import assert_frame_equal
 
+from enums import Field
 from data_loader import DataLoader
 
 DTYPES = {
-    "author": is_object_dtype,
-    "date": is_datetime64_any_dtype,
-    "reactions": is_object_dtype,
-    "word_count": is_any_real_numeric_dtype,
-    "channel_name": is_object_dtype,
-    "reaction_count": is_integer_dtype,
-    "scene_end": is_bool_dtype,
+    Field.AUTHOR: is_object_dtype,
+    Field.DATETIME: is_datetime64_any_dtype,
+    Field.REACTIONS: is_object_dtype,
+    Field.WORD_COUNT: is_any_real_numeric_dtype,
+    Field.CHANNEL_NAME: is_object_dtype,
+    Field.REACTION_COUNT: is_integer_dtype,
+    Field.SCENE_END: is_bool_dtype,
 }
 
 
@@ -26,7 +27,7 @@ def load_data_nocache():
     """
     Fixture to load the DataFrame.
     """
-    return DataLoader().load_data(force=True).df
+    return DataLoader().load_csv(force=True).clean().df
 
 
 @pytest.fixture(scope="session")
@@ -34,7 +35,15 @@ def load_data_cache():
     """
     Fixture to load the cached DataFrame.
     """
-    return DataLoader().load_data().df
+    return DataLoader().load_csv().clean().df
+
+
+@pytest.fixture(scope="session")
+def load_data_s3():
+    """
+    Fixture to load the remote DataFrame.
+    """
+    return DataLoader().load_s3().clean().df
 
 
 def test_nocache_column_keys_and_dtypes(load_data_nocache):
@@ -81,4 +90,17 @@ def test_cache_equal(load_data_nocache, load_data_cache):
     (
         assert_frame_equal(df_nocache, df_cache, check_dtype=True),
         "Cached DataFrame and uncached DataFrame are not equal.",
+    )
+
+
+def test_s3_equal(load_data_nocache, load_data_s3):
+    """
+    Test that the DataFrame loaded with force=True matches the remote DataFrame.
+    """
+    df_nocache = load_data_nocache
+    df_s3 = load_data_s3
+
+    (
+        assert_frame_equal(df_nocache, df_s3, check_dtype=True),
+        "Remote DataFrame and uncached DataFrame are not equal.",
     )
