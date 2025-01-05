@@ -7,13 +7,7 @@ from dashboard.filters import make_default_filters, make_filter_group, make_filt
 from dashboard.plot_builder import AxisConfig, FigureConfig, FilterConfig, PlotBuilder
 from enums import Field, Filter, Page, Plot, Tab
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s",
-    handlers=[
-        logging.StreamHandler(),
-    ],
-)
+
 logger = logging.getLogger(__name__)
 
 

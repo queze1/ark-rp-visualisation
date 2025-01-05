@@ -1,9 +1,16 @@
+import logging
+
 import dash_mantine_components as dmc
 from dash import Dash, _dash_renderer
 
 from dashboard.callbacks import register_callbacks
 from dashboard.layout import layout
 from enums import Text
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+)
 
 _dash_renderer._set_react_version("18.2.0")
 
