@@ -24,8 +24,24 @@ tabs = dmc.Tabs(
 )
 
 footer = html.Footer(
-    dmc.Group(
+    dmc.Stack(
         [
+            dmc.Group(
+                [
+                    dmc.Text(
+                        "Retrieved 25 December 2024.",
+                        size="xs",
+                        c="dimmed",
+                    ),
+                    dmc.Anchor(
+                        "Github",
+                        href="https://github.com/queze1/ark-rp-visualisation",
+                        size="xs",
+                        c="dimmed",
+                    ),
+                ],
+                justify="space-between",
+            ),
             dmc.Text(
                 [
                     "Made by ",
@@ -35,15 +51,9 @@ footer = html.Footer(
                 size="xs",
                 c="dimmed",
             ),
-            dmc.Anchor(
-                "Github",
-                href="https://github.com/queze1/ark-rp-visualisation",
-                size="xs",
-                c="dimmed",
-            ),
         ],
         my=10,
-        justify="space-between",
+        gap=5,
     )
 )
 
