@@ -1,8 +1,8 @@
 import dash_mantine_components as dmc
 from dash import dcc
 
-from dashboard.fields import make_field_controls
 from dashboard.customisation import make_customisation_controls
+from dashboard.fields import make_field_controls
 from dashboard.filters import make_filter_controls
 from enums import Page, Tab, Text
 

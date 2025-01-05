@@ -1,10 +1,11 @@
-from uuid import uuid4
-from dash_iconify import DashIconify
-import dash_mantine_components as dmc
-from enums import Filter, FilterOption, Tab, Page
-from data_loader import df
-
 from functools import lru_cache
+from uuid import uuid4
+
+import dash_mantine_components as dmc
+from dash_iconify import DashIconify
+
+from data_loader import df
+from enums import Filter, FilterOption, Page, Tab
 
 
 @lru_cache()

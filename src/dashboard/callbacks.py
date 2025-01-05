@@ -1,14 +1,12 @@
-import logging
-
 from dash import ALL, MATCH, Input, Output, Patch, State, ctx
 
 from dashboard.fields import get_aggregation_info
 from dashboard.filters import make_default_filters, make_filter_group, make_filter_value
 from dashboard.plot_builder import AxisConfig, FigureConfig, FilterConfig, PlotBuilder
 from enums import Field, Filter, Page, Plot, Tab
+from logging_setup import get_logger
 
-
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 def update_dropdown(selected_fields, current_options, aggregate_displays):

@@ -2,10 +2,15 @@ import ast
 import glob
 import os
 import re
-from dotenv import load_dotenv
 
 import boto3
 import pandas as pd
+from dotenv import load_dotenv
+
+from logging_setup import get_logger
+
+logger = get_logger(__name__)
+
 
 load_dotenv(override=True)
 
@@ -83,18 +88,19 @@ class DataLoader:
         """
         Process the 'reactions' column and add a 'reactionCount' column to a DataFrame.
         """
-        df["reactions"] = df["reactions"].apply(DataLoader._reactions_to_dict)
-        df["reaction_count"] = [max(d.values(), default=0) for d in df["reactions"]]
-        return df
+        reactions = df["reactions"].apply(DataLoader._reactions_to_dict)
+        reaction_count = [max(d.values(), default=0) for d in reactions]
+        return df.assign(reactions=reactions, reaction_count=reaction_count)
 
-    def _process_datetime(self, format=DATE_FORMAT):
+    @staticmethod
+    def _process_datetime(df, format=DATE_FORMAT):
         """
         Process the 'datetime' column.
         """
-        self._df["datetime"] = pd.to_datetime(
-            self._df["datetime"], format=format, utc=True
+        datetime = pd.to_datetime(
+            df["datetime"], format=format, utc=True
         ).dt.tz_convert(TIME_ZONE)
-        return self
+        return df.assign(datetime=datetime)
 
     @classmethod
     def _read_csv(cls, path: str) -> pd.DataFrame:
@@ -110,32 +116,35 @@ class DataLoader:
         df = cls._add_scene_end(df)
         return df
 
-    def _process_cache(self):
+    @classmethod
+    def _process_cache(cls, df):
         # Unstringify datetime and reactions
-        self._process_datetime(format="ISO8601")
-        self._df["reactions"] = self._df["reactions"].apply(ast.literal_eval)
-        return self
+        df = cls._process_datetime(df, format="ISO8601")
+        df = df.assign(reactions=df["reactions"].apply(ast.literal_eval))
+        return df
 
-    def _write_cache(self):
+    @staticmethod
+    def _write_cache(df):
         os.makedirs(os.path.dirname(CACHE_PATH), exist_ok=True)
-        self._df.to_csv(CACHE_PATH, index=False)
+        df.to_csv(CACHE_PATH, index=False)
 
     def load_csv(self, force: bool = False):
         """
         Load the dataset from a CSV cache. If no cache exists, process CSV files and cache them.
         """
         if not force and os.path.exists(CACHE_PATH):
-            print(f"Cache found: Loading from {CACHE_PATH}")
+            logger.info(f"Cache found: Loading from {CACHE_PATH}")
             self._df = pd.read_csv(CACHE_PATH)
-            return self._process_cache()
+            self._df = self._process_cache(self._df)
+            return self
 
         # If cache not used, process all files
         csv_paths = glob.glob(os.path.join(DATA_PATH, "*.csv"))
         dfs = [self._read_csv(path) for path in csv_paths]
         self._df = pd.concat(dfs, ignore_index=True)
+        self._write_cache(self._df)
 
-        self._write_cache()
-        print(f"Cache written: {CACHE_PATH}")
+        logger.info(f"Cache written: {CACHE_PATH}")
         return self
 
     def load_s3(self):
@@ -145,15 +154,16 @@ class DataLoader:
         s3 = boto3.client("s3")
         with s3.get_object(**S3_PATH)["Body"] as response:
             self._df = pd.read_csv(response)
+            self._df = self._process_cache(self._df)
 
-        print(f"S3 found: Loading from {S3_PATH['Bucket']}/{S3_PATH['Key']}")
-        return self._process_cache()
+        logger.info(f"S3 found: Loading from {S3_PATH['Bucket']}/{S3_PATH['Key']}")
+        return self
 
     def clean(self):
         """
         Remove potentially sensitive data from the dataset.
         """
-        self._df.drop(columns=["author_id", "content", "attachments"], inplace=True)
+        self._df = self._df.drop(columns=["author_id", "content", "attachments"])
         return self
 
     @property

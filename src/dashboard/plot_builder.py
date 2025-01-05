@@ -1,4 +1,5 @@
-from dataclasses import dataclass, field as data_field
+from dataclasses import dataclass
+from dataclasses import field as data_field
 from operator import attrgetter
 
 import pandas as pd

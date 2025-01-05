@@ -1,8 +1,8 @@
 import dash_mantine_components as dmc
 from dash import html
-from enums import Tab, Text
-from dashboard.tabs import make_tab
 
+from dashboard.tabs import make_tab
+from enums import Tab, Text
 
 header = dmc.Stack(
     [

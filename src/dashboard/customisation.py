@@ -1,5 +1,6 @@
-from enums import Tab, Page, Text
 import dash_mantine_components as dmc
+
+from enums import Page, Tab, Text
 
 
 def make_customisation_controls(tab: Tab):
