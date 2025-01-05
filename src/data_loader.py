@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 import boto3
 import pandas as pd
 
-load_dotenv()
+load_dotenv(override=True)
 
 ENV = os.getenv("ENV", "development")
 DATA_PATH = "data/25-12-2024"
