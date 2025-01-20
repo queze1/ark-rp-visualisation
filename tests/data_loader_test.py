@@ -75,9 +75,9 @@ def test_nocache_missing_values(load_data_nocache):
     df = load_data_nocache
     columns_with_na = df.columns[df.isna().any()].tolist()
 
-    assert (
-        not columns_with_na
-    ), f"The following columns have missing values: {columns_with_na}"
+    assert not columns_with_na, (
+        f"The following columns have missing values: {columns_with_na}"
+    )
 
 
 def test_cache_equal(load_data_nocache, load_data_cache):
