@@ -46,6 +46,7 @@ def load_data_s3():
     return DataLoader().load_s3().clean().df
 
 
+@pytest.mark.local
 def test_nocache_column_keys_and_dtypes(load_data_nocache):
     """
     Test that the DataFrame matches the required columns
@@ -68,6 +69,7 @@ def test_nocache_column_keys_and_dtypes(load_data_nocache):
         )
 
 
+@pytest.mark.local
 def test_nocache_missing_values(load_data_nocache):
     """
     Test that the DataFrame contains no missing values.
@@ -80,6 +82,7 @@ def test_nocache_missing_values(load_data_nocache):
     )
 
 
+@pytest.mark.local
 def test_cache_equal(load_data_nocache, load_data_cache):
     """
     Test that the DataFrame loaded with force=True matches the cached DataFrame.
@@ -93,6 +96,7 @@ def test_cache_equal(load_data_nocache, load_data_cache):
     )
 
 
+@pytest.mark.local
 def test_s3_equal(load_data_nocache, load_data_s3):
     """
     Test that the DataFrame loaded with force=True matches the remote DataFrame.
