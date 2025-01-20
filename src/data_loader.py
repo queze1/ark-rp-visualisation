@@ -7,6 +7,7 @@ import boto3
 import pandas as pd
 from dotenv import load_dotenv
 
+from enums import Field
 from logging_setup import get_logger
 
 logger = get_logger(__name__)
@@ -37,12 +38,12 @@ class DataLoader:
         """
         return df.rename(
             columns={
-                "AuthorID": "author_id",
-                "Author": "author",
-                "Date": "datetime",
-                "Content": "content",
-                "Attachments": "attachments",
-                "Reactions": "reactions",
+                "AuthorID": Field.AUTHOR_ID,
+                "Author": Field.AUTHOR,
+                "Date": Field.DATETIME,
+                "Content": Field.CONTENT,
+                "Attachments": Field.ATTACHMENTS,
+                "Reactions": Field.REACTIONS,
             },
         )
 
@@ -53,23 +54,28 @@ class DataLoader:
         """
         filename = os.path.basename(path)
         channel_name = re.search(CHANNEL_NAME_REGEX, filename).group(1)
-        return df.assign(channel_name=channel_name)
+        df[Field.CHANNEL_NAME] = channel_name
+        return df
 
     @staticmethod
     def _add_word_count(df: pd.DataFrame) -> pd.DataFrame:
         """
         Add a 'word_count' column.
         """
-        word_count = df["content"].str.split().str.len().fillna(0)
-        return df.assign(word_count=word_count)
+        word_count = df[Field.CONTENT].str.split().str.len().fillna(0)
+        df[Field.WORD_COUNT] = word_count
+        return df
 
     @staticmethod
     def _add_scene_end(df: pd.DataFrame) -> pd.DataFrame:
         """
         Add an 'scene_end' column.
         """
-        scene_end = df["content"].str.contains(SCENE_END_REGEX, case=False, na=False)
-        return df.assign(scene_end=scene_end)
+        scene_end = df[Field.CONTENT].str.contains(
+            SCENE_END_REGEX, case=False, na=False
+        )
+        df[Field.SCENE_END] = scene_end
+        return df
 
     @staticmethod
     def _reactions_to_dict(reactions: str) -> dict[str, int]:
@@ -90,7 +96,9 @@ class DataLoader:
         """
         reactions = df["reactions"].apply(DataLoader._reactions_to_dict)
         reaction_count = [max(d.values(), default=0) for d in reactions]
-        return df.assign(reactions=reactions, reaction_count=reaction_count)
+        df[Field.REACTIONS] = reactions
+        df[Field.REACTION_COUNT] = reaction_count
+        return df
 
     @staticmethod
     def _process_datetime(df, format=DATE_FORMAT):
@@ -98,9 +106,10 @@ class DataLoader:
         Process the 'datetime' column.
         """
         datetime = pd.to_datetime(
-            df["datetime"], format=format, utc=True
+            df[Field.DATETIME], format=format, utc=True
         ).dt.tz_convert(TIME_ZONE)
-        return df.assign(datetime=datetime)
+        df[Field.DATETIME] = datetime
+        return df
 
     @classmethod
     def _read_csv(cls, path: str) -> pd.DataFrame:
@@ -120,7 +129,7 @@ class DataLoader:
     def _process_cache(cls, df):
         # Unstringify datetime and reactions
         df = cls._process_datetime(df, format="ISO8601")
-        df = df.assign(reactions=df["reactions"].apply(ast.literal_eval))
+        df[Field.REACTIONS] = df[Field.REACTIONS].apply(ast.literal_eval)
         return df
 
     @staticmethod
@@ -163,7 +172,9 @@ class DataLoader:
         """
         Remove potentially sensitive data from the dataset.
         """
-        self._df = self._df.drop(columns=["author_id", "content", "attachments"])
+        self._df = self._df.drop(
+            columns=[Field.AUTHOR_ID, Field.CONTENT, Field.ATTACHMENTS]
+        )
         return self
 
     @property

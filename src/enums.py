@@ -57,6 +57,9 @@ class Field(StrEnum):
     WORD_COUNT = "word_count"
 
     # Internal use only
+    AUTHOR_ID = "author_id"
+    ATTACHMENTS = "attachments"
+    CONTENT = "content"
     DATETIME = "datetime"
     REACTIONS = "reactions"
 
