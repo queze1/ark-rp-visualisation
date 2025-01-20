@@ -16,7 +16,7 @@ load_dotenv(override=True)
 
 ENV = os.getenv("ENV", "development")
 DATA_PATH = "data/25-12-2024"
-CACHE_PATH = "data/cache/25-12-2024.csv"
+CACHE_PATH = ".cache/25-12-2024.csv"
 S3_PATH = dict(Bucket=os.getenv("S3_BUCKET"), Key="25-12-2024.csv")
 
 DATE_FORMAT = "%Y-%m-%dT%H:%M:%S.%f%z"
