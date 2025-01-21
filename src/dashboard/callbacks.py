@@ -279,6 +279,7 @@ def register_callbacks(app):
             State(match_fields, "data"),
             State(match_field_containers, "display"),
         ],
+        prevent_initial_call=True,
     )(update_dropdown)
 
     match_axes = {"type": Page.AXIS_TEXT, "tab": MATCH, "index": ALL}
@@ -287,6 +288,7 @@ def register_callbacks(app):
         Output(match_axes, "children"),
         Input(match_swap_axes, "n_clicks"),
         State(match_axes, "children"),
+        prevent_initial_call=True,
     )(swap_axes)
 
     match_update_graph = {"type": Page.UPDATE_GRAPH_BUTTON, "tab": MATCH}
@@ -352,6 +354,7 @@ def register_callbacks(app):
                 y_log=State(match_y_log, "checked"),
             ),
         ),
+        prevent_initial_call=True,
     )(render_graph)
 
     match_filter_container = {"type": Page.FILTER_CONTAINER, "tab": MATCH}
@@ -360,10 +363,12 @@ def register_callbacks(app):
     app.callback(
         Output(match_filter_container, "children", allow_duplicate=True),
         Input(match_reset_filter, "n_clicks"),
+        prevent_initial_call=True,
     )(reset_filters)
     app.callback(
         Output(match_filter_container, "children", allow_duplicate=True),
         Input(match_add_filter, "n_clicks"),
+        prevent_initial_call=True,
     )(add_filter)
 
     # Matches single elements within a filter group
@@ -399,6 +404,7 @@ def register_callbacks(app):
             match_filter_type,
             "value",
         ),
+        prevent_initial_call=True,
     )(update_filter_options)
 
     match_delete_filter = {
@@ -410,6 +416,7 @@ def register_callbacks(app):
         Output(match_filter_container, "children", allow_duplicate=True),
         Input(match_delete_filter, "n_clicks"),
         State(match_filter_container, "children"),
+        prevent_initial_call=True,
     )(delete_filter)
 
     match_reset_customisation = {"type": Page.RESET_CUSTOMISATION_BUTTON, "tab": MATCH}
@@ -428,4 +435,5 @@ def register_callbacks(app):
             y_log=Output(match_y_log, "checked"),
         ),
         inputs=Input(match_reset_customisation, "n_clicks"),
+        prevent_initial_call=True,
     )(reset_customisation)
