@@ -2,6 +2,8 @@ from functools import lru_cache
 from uuid import uuid4
 
 import dash_mantine_components as dmc
+from dash import ALL, MATCH, Input, Output, Patch, State, ctx
+from dash.exceptions import PreventUpdate
 from dash_iconify import DashIconify
 
 from data_loader import df
@@ -125,3 +127,110 @@ def make_filter_controls(tab: Tab):
     return dmc.Stack(
         [header, dmc.Space(h=10), filter_groups, dmc.Space(h=15), footer], gap=0
     )
+
+
+def register_filter_callbacks(app):
+    # Callback to reset filters
+    def reset_filters(n_clicks):
+        if n_clicks is None:
+            raise PreventUpdate
+
+        tab = Tab(ctx.triggered_id["tab"])
+        return make_default_filters(tab)
+
+    match_filter_container = {"type": Page.FILTER_CONTAINER, "tab": MATCH}
+    match_reset_filter = {"type": Page.RESET_FILTER_BUTTON, "tab": MATCH}
+    app.callback(
+        Output(match_filter_container, "children", allow_duplicate=True),
+        Input(match_reset_filter, "n_clicks"),
+    )(reset_filters)
+
+    # Callback to add a new filter
+    def add_filter(n_clicks):
+        if n_clicks is None:
+            raise PreventUpdate
+        tab = Tab(ctx.triggered_id["tab"])
+        patched_children = Patch()
+        patched_children.append(make_filter_group(tab, Filter.DATE))
+        return patched_children
+
+    match_add_filter = {"type": Page.ADD_FILTER_BUTTON, "tab": MATCH}
+    app.callback(
+        Output(match_filter_container, "children", allow_duplicate=True),
+        Input(match_add_filter, "n_clicks"),
+    )(add_filter)
+
+    # Callback to update filter options
+    def update_filter_options(filter_type):
+        filter_type = Filter(filter_type)
+
+        c = ctx.triggered_id
+        tab, index = c["tab"], c["index"]
+        return (
+            filter_type.operators,
+            filter_type.default_operator,
+            make_filter_value(filter_type, tab, index),
+        )
+
+    match_filter_operator = {
+        "type": Page.FILTER_OPERATOR,
+        "tab": MATCH,
+        "index": MATCH,
+    }
+    match_filter_value_container = {
+        "type": Page.FILTER_VALUE_CONTAINER,
+        "tab": MATCH,
+        "index": MATCH,
+    }
+    match_filter_type = {
+        "type": Page.FILTER_TYPE,
+        "tab": MATCH,
+        "index": MATCH,
+    }
+    app.callback(
+        Output(
+            match_filter_operator,
+            "data",
+        ),
+        Output(
+            match_filter_operator,
+            "value",
+        ),
+        Output(
+            match_filter_value_container,
+            "children",
+        ),
+        Input(
+            match_filter_type,
+            "value",
+        ),
+    )(update_filter_options)
+
+    # Callback to delete a filter group
+    def delete_filter(n_clicks, children):
+        if not any(n_clicks):
+            raise PreventUpdate
+
+        # Find the filter group with same index and get its position in children
+        index = ctx.triggered_id["index"]
+        (filter_index,) = [
+            i
+            for i, child in enumerate(children)
+            if child["props"]["id"]["index"] == index
+        ]
+
+        # Delete the filter group from children
+        patched_children = Patch()
+        del patched_children[filter_index]
+        return patched_children
+
+    match_delete_filter = {
+        "type": Page.DELETE_FILTER_BUTTON,
+        "tab": MATCH,
+        "index": ALL,
+    }
+    app.callback(
+        Output(match_filter_container, "children", allow_duplicate=True),
+        Input(match_delete_filter, "n_clicks"),
+        State(match_filter_container, "children"),
+    )(delete_filter)
