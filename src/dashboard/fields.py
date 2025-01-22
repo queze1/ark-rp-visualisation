@@ -1,5 +1,5 @@
 import dash_mantine_components as dmc
-from dash import ALL, MATCH, Input, Output, Patch, State, ctx
+from dash import Input, Output, Patch, State, ctx
 from dash_iconify import DashIconify
 
 from dashboard.callback_patterns import (
@@ -10,6 +10,7 @@ from dashboard.callback_patterns import (
     match_field_containers,
     match_fields,
     match_swap_axes,
+    match_field_spacings,
 )
 from enums import Field, GroupBy, Page, Tab, Text
 
@@ -39,17 +40,13 @@ def make_field_controls(tab: Tab):
     def make_field_dropdowns(field_options, index, grouped_by=False):
         default_field = field_options.get("default")
         aggregation_info = get_aggregation_info(default_field)
-        # Don't render dropdown if not being grouped by
-        aggregation_dropdown = (
-            dmc.Select(
-                id={"type": Page.FIELD_AGG_DROPDOWN, "tab": tab, "index": index},
-                data=aggregation_info["data"],
-                value=aggregation_info["value"],
-                allowDeselect=False,
-            )
-            if grouped_by
-            else None
+        aggregation_dropdown = dmc.Select(
+            id={"type": Page.FIELD_AGG_DROPDOWN, "tab": tab, "index": index},
+            data=aggregation_info["data"],
+            value=aggregation_info["value"],
+            allowDeselect=False,
         )
+
         field_dropdown = dmc.Select(
             id={"type": Page.FIELD_DROPDOWN, "tab": tab, "index": index},
             data=[
@@ -59,25 +56,30 @@ def make_field_controls(tab: Tab):
             value=default_field,
         )
 
-        aggregation_col = (
-            dmc.GridCol(
-                aggregation_dropdown,
-                id={"type": Page.FIELD_AGG_CONTAINER, "tab": tab, "index": index},
-                # A field only has an aggregation dropdown shown if it has more than one possible option
-                display=aggregation_info["display"],
-                span=AGGREGATION_SPAN,
+        # Don't render dropdown if not being grouped by
+        components = [
+            (
+                dmc.GridCol(
+                    aggregation_dropdown,
+                    id={
+                        "type": Page.FIELD_AGG_CONTAINER,
+                        "tab": tab,
+                        "index": index,
+                    },
+                    display=aggregation_info["display"],
+                    span=AGGREGATION_SPAN,
+                )
             )
             if grouped_by
-            else None
-        )
+            else None,
+            dmc.GridCol(
+                field_dropdown,
+                id={"type": Page.FIELD_CONTAINER, "tab": tab, "index": index},
+                span=FIELD_SPAN,
+            ),
+        ]
 
-        field_col = dmc.GridCol(
-            field_dropdown,
-            id={"type": Page.FIELD_CONTAINER, "tab": tab, "index": index},
-            span=FIELD_SPAN,
-        )
-
-        return ([aggregation_col] if aggregation_col else []) + [field_col]
+        return [component for component in components if component]
 
     def make_aggregation_spacing(field: Field, index):
         return dmc.GridCol(
@@ -86,95 +88,91 @@ def make_field_controls(tab: Tab):
             span=AGGREGATION_SPAN,
         )
 
-    def make_axis_text(text, index):
-        # Same length as dropdown, to be centred under them
+    def make_axis_text(index):
+        # Only render text for X and Y axes
+        text = [Text.Y_AXIS, Text.X_AXIS, None][index]
         return dmc.GridCol(
             dmc.Text(
                 text,
                 id={"type": Page.AXIS_TEXT, "tab": tab, "index": index},
                 size="md",
                 ta="center",
-            ),
+            )
+            if text
+            else None,
             id={"type": Page.FIELD_SPACING, "tab": tab, "index": index},
+            # Same length as dropdown
             span=FIELD_SPAN,
         )
 
-    if not tab.tertiary_field:
-        primary_dropdowns, secondary_dropdowns, tertiary_dropdowns = (
-            make_field_dropdowns(tab.primary_field, index=0, grouped_by=True),
-            make_field_dropdowns(tab.secondary_field, index=1),
-            None,
-        )
+    # def make_field_spacing(field_options, index, grouped_by=False):
+    #     default_field = field_options.get("default")
+    #     components = [
+    #         make_aggregation_spacing(default_field, index=index)
+    #         if grouped_by
+    #         else None,
+    #         make_axis_text(index=index),
+    #     ]
+    #     return [component for component in components if component]
 
-        # Two variables
-        dropdowns = primary_dropdowns + [make_field_text(Text.BY)] + secondary_dropdowns
-    else:
-        primary_dropdowns, secondary_dropdowns, tertiary_dropdowns = (
-            make_field_dropdowns(tab.primary_field, index=0, grouped_by=True),
-            make_field_dropdowns(tab.secondary_field, index=1, grouped_by=True),
-            make_field_dropdowns(tab.tertiary_field, index=2),
-        )
-
-        # Three variables
-        dropdowns = (
-            primary_dropdowns
-            + [make_field_text(Text.AND)]
-            + secondary_dropdowns
-            + [make_field_text(Text.BY)]
-            + tertiary_dropdowns
-        )
-
-    # Manually add paddingX to match the width of its above div
     swap_axes_button = dmc.Button(
         id={"type": Page.SWAP_AXES_BUTTON, "tab": tab},
         children=DashIconify(icon="bi:arrow-left-right", width=18),
         variant="subtle",
         color="none",
-        px=(15 if tab.tertiary_field else 8),
     )
 
-    top_row = dmc.Grid(
-        [
-            make_field_text(Text.PLOT),
-        ]
-        + dropdowns,
-        justify="center",
-        align="center",
-    )
+    if len(tab.fields) == 2:
+        top_separators = [Text.BY]
+        swap_axes_button.px = 8
+    elif len(tab.fields) == 3:
+        top_separators = [Text.AND, Text.BY]
+        swap_axes_button.px = 15
 
-    if not tab.tertiary_field:
-        bottom_row_components = [
-            make_field_text(Text.PLOT, hidden=True),
-            make_aggregation_spacing(tab.primary_field.get("default"), index=0),
-            make_axis_text(Text.Y_AXIS, index=0),
-            swap_axes_button,
-            make_axis_text(Text.X_AXIS, index=1),
-        ]
-    else:
-        # Extra space if 3 variables
-        bottom_row_components = [
-            make_field_text(Text.PLOT, hidden=True),
-            make_aggregation_spacing(tab.primary_field.get("default"), index=0),
-            make_axis_text(Text.Y_AXIS, index=0),
-            swap_axes_button,
-            make_aggregation_spacing(tab.secondary_field.get("default"), index=1),
-            make_axis_text(Text.X_AXIS, index=1),
-            make_field_text(Text.BY, hidden=True),
-            dmc.GridCol(
-                id={"type": Page.FIELD_SPACING, "tab": tab, "index": 2}, span=3
-            ),
-        ]
+    # Start with "Plot" text and hidden "Plot" text for spacing
+    top_components = [make_field_text(Text.PLOT)]
+    bottom_components = [make_field_text(Text.PLOT, hidden=True)]
 
-    bottom_row = dmc.Grid(
-        bottom_row_components,
-        justify="center",
-        align="center",
-    )
+    for i, field in enumerate(tab.fields):
+        # Group by all fields except the last one
+        grouped_by = i < len(tab.fields) - 1
+        # Add dropdowns to top components
+        top_components.extend(
+            make_field_dropdowns(field, index=i, grouped_by=grouped_by)
+        )
+
+        # Add spacing and axis text to bottom components
+        if grouped_by:
+            bottom_components.append(
+                make_aggregation_spacing(field.get("default"), index=i)
+            )
+        bottom_components.append(
+            make_axis_text(index=i),
+        )
+
+        if i < len(top_separators):
+            # Add separator text to top components (e.g. "by" or "and")
+            top_components.append(make_field_text(top_separators[i]))
+            # Add swap axes button or hidden text for spacing to bottom components
+            if i == 0:
+                bottom_components.append(swap_axes_button)
+            else:
+                bottom_components.append(
+                    make_field_text(top_separators[i], hidden=True)
+                )
 
     return dmc.Stack(
         [
-            top_row,
-            bottom_row,
+            dmc.Grid(
+                top_components,
+                justify="center",
+                align="center",
+            ),
+            dmc.Grid(
+                bottom_components,
+                justify="center",
+                align="center",
+            ),
         ],
         gap=7,
     )
@@ -311,12 +309,8 @@ def register_field_callbacks(app):
                 ),
             ),
             spans=dict(
-                field=Output(
-                    {"type": Page.FIELD_CONTAINER, "tab": MATCH, "index": ALL}, "span"
-                ),
-                spacing=Output(
-                    {"type": Page.FIELD_SPACING, "tab": MATCH, "index": ALL}, "span"
-                ),
+                field=Output(match_field_containers, "span"),
+                spacing=Output(match_field_spacings, "span"),
             ),
         ),
         inputs=[

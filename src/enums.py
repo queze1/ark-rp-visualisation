@@ -222,43 +222,54 @@ class Tab(StrEnum):
             "LINE": {
                 "label": "Time Series",
                 "plot_type": Plot.LINE,
-                "primary_field": {
-                    "allowed": non_temporal_fields,
-                },
-                "secondary_field": {"allowed": [Field.DATE], "default": Field.DATE},
+                "fields": [
+                    {
+                        "allowed": non_temporal_fields,
+                    },
+                    {
+                        "allowed": [Field.DATE],
+                        "default": Field.DATE,
+                    },
+                ],
             },
             "BAR": {
                 "label": "Bar",
                 "plot_type": Plot.BAR,
-                "primary_field": {
-                    "allowed": fields_with_label,
-                },
-                "secondary_field": {
-                    "allowed": groupable_fields,
-                },
+                "fields": [
+                    {
+                        "allowed": fields_with_label,
+                    },
+                    {
+                        "allowed": groupable_fields,
+                    },
+                ],
             },
             "SCATTER": {
                 "label": "Scatter (2 vars)",
                 "plot_type": Plot.SCATTER,
-                "primary_field": {
-                    "allowed": fields_with_label,
-                },
-                "secondary_field": {
-                    "allowed": groupable_fields,
-                },
+                "fields": [
+                    {
+                        "allowed": fields_with_label,
+                    },
+                    {
+                        "allowed": groupable_fields,
+                    },
+                ],
             },
             "SCATTER_2": {
                 "label": "Scatter (3 vars)",
                 "plot_type": Plot.SCATTER,
-                "primary_field": {
-                    "allowed": fields_with_label,
-                },
-                "secondary_field": {
-                    "allowed": fields_with_label,
-                },
-                "tertiary_field": {
-                    "allowed": groupable_fields,
-                },
+                "fields": [
+                    {
+                        "allowed": fields_with_label,
+                    },
+                    {
+                        "allowed": fields_with_label,
+                    },
+                    {
+                        "allowed": groupable_fields,
+                    },
+                ],
             },
         }.get(self.name, {})
 
@@ -271,16 +282,8 @@ class Tab(StrEnum):
         return self._metadata.get("plot_type")
 
     @property
-    def primary_field(self):
-        return self._metadata.get("primary_field")
-
-    @property
-    def secondary_field(self):
-        return self._metadata.get("secondary_field")
-
-    @property
-    def tertiary_field(self):
-        return self._metadata.get("tertiary_field")
+    def fields(self):
+        return self._metadata.get("fields")
 
 
 class FilterOption(Enum):

@@ -11,12 +11,9 @@ match_axes = {"type": Page.AXIS_TEXT, "tab": MATCH, "index": ALL}
 match_swap_axes = {"type": Page.SWAP_AXES_BUTTON, "tab": MATCH}
 
 # Field patterns
-match_field_containers = {
-    "type": Page.FIELD_AGG_CONTAINER,
-    "tab": MATCH,
-    "index": ALL,
-}
+match_field_containers = {"type": Page.FIELD_CONTAINER, "tab": MATCH, "index": ALL}
 match_fields = {"type": Page.FIELD_DROPDOWN, "tab": MATCH, "index": ALL}
+match_field_spacings = {"type": Page.FIELD_SPACING, "tab": MATCH, "index": ALL}
 match_agg_containers = {
     "type": Page.FIELD_AGG_CONTAINER,
     "tab": MATCH,

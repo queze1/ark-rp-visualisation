@@ -156,6 +156,7 @@ def register_filter_callbacks(app):
     def add_filter(n_clicks):
         if n_clicks is None:
             raise PreventUpdate
+
         tab = Tab(ctx.triggered_id["tab"])
         patched_children = Patch()
         patched_children.append(make_filter_group(tab, Filter.DATE))
