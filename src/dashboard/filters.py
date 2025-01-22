@@ -2,10 +2,19 @@ from functools import lru_cache
 from uuid import uuid4
 
 import dash_mantine_components as dmc
-from dash import ALL, MATCH, Input, Output, Patch, State, ctx
+from dash import Input, Output, Patch, State, ctx
 from dash.exceptions import PreventUpdate
 from dash_iconify import DashIconify
 
+from dashboard.callback_patterns import (
+    match_add_filter,
+    match_delete_filter,
+    match_filter_container,
+    match_filter_operator,
+    match_filter_type,
+    match_filter_value_container,
+    match_reset_filter,
+)
 from data_loader import df
 from enums import Filter, FilterOption, Page, Tab
 
@@ -138,8 +147,6 @@ def register_filter_callbacks(app):
         tab = Tab(ctx.triggered_id["tab"])
         return make_default_filters(tab)
 
-    match_filter_container = {"type": Page.FILTER_CONTAINER, "tab": MATCH}
-    match_reset_filter = {"type": Page.RESET_FILTER_BUTTON, "tab": MATCH}
     app.callback(
         Output(match_filter_container, "children", allow_duplicate=True),
         Input(match_reset_filter, "n_clicks"),
@@ -154,7 +161,6 @@ def register_filter_callbacks(app):
         patched_children.append(make_filter_group(tab, Filter.DATE))
         return patched_children
 
-    match_add_filter = {"type": Page.ADD_FILTER_BUTTON, "tab": MATCH}
     app.callback(
         Output(match_filter_container, "children", allow_duplicate=True),
         Input(match_add_filter, "n_clicks"),
@@ -172,21 +178,6 @@ def register_filter_callbacks(app):
             make_filter_value(filter_type, tab, index),
         )
 
-    match_filter_operator = {
-        "type": Page.FILTER_OPERATOR,
-        "tab": MATCH,
-        "index": MATCH,
-    }
-    match_filter_value_container = {
-        "type": Page.FILTER_VALUE_CONTAINER,
-        "tab": MATCH,
-        "index": MATCH,
-    }
-    match_filter_type = {
-        "type": Page.FILTER_TYPE,
-        "tab": MATCH,
-        "index": MATCH,
-    }
     app.callback(
         Output(
             match_filter_operator,
@@ -224,11 +215,6 @@ def register_filter_callbacks(app):
         del patched_children[filter_index]
         return patched_children
 
-    match_delete_filter = {
-        "type": Page.DELETE_FILTER_BUTTON,
-        "tab": MATCH,
-        "index": ALL,
-    }
     app.callback(
         Output(match_filter_container, "children", allow_duplicate=True),
         Input(match_delete_filter, "n_clicks"),

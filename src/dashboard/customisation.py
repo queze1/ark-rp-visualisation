@@ -1,5 +1,18 @@
 import dash_mantine_components as dmc
+from dash import Input, Output
 
+from dashboard.callback_patterns import (
+    match_mavg_7,
+    match_mavg_30,
+    match_reset_customisation,
+    match_sort_axis,
+    match_sort_order,
+    match_title_input,
+    match_x_label,
+    match_x_log,
+    match_y_label,
+    match_y_log,
+)
 from enums import Page, Tab, Text
 
 
@@ -113,3 +126,41 @@ def make_customisation_controls(tab: Tab):
         ],
         gap=10,
     )
+
+
+def register_customisation_callbacks(app):
+    def reset_customisation(n_clicks):
+        if n_clicks is None:
+            return
+
+        # Set all options to empty
+        return dict(
+            title="",
+            x_label="",
+            y_label="",
+            moving_averages={
+                7: False,
+                30: False,
+            },
+            sort_order=None,
+            sort_axis=None,
+            x_log="",
+            y_log="",
+        )
+
+    app.callback(
+        output=dict(
+            title=Output(match_title_input, "value"),
+            x_label=Output(match_x_label, "value"),
+            y_label=Output(match_y_label, "value"),
+            moving_averages={
+                7: Output(match_mavg_7, "checked"),
+                30: Output(match_mavg_30, "checked"),
+            },
+            sort_order=Output(match_sort_order, "value"),
+            sort_axis=Output(match_sort_axis, "value"),
+            x_log=Output(match_x_log, "checked"),
+            y_log=Output(match_y_log, "checked"),
+        ),
+        inputs=Input(match_reset_customisation, "n_clicks"),
+    )(reset_customisation)
