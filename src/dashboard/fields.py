@@ -27,6 +27,7 @@ def get_aggregation_info(field: Field):
         if field
         else []
     )
+    # Default aggregation is first one in the list
     value = data[0]["value"] if data else None
     display = "block" if len(data) > 1 else "none"
     return dict(data=data, value=value, display=display)
@@ -105,16 +106,6 @@ def make_field_controls(tab: Tab):
             span=FIELD_SPAN,
         )
 
-    # def make_field_spacing(field_options, index, grouped_by=False):
-    #     default_field = field_options.get("default")
-    #     components = [
-    #         make_aggregation_spacing(default_field, index=index)
-    #         if grouped_by
-    #         else None,
-    #         make_axis_text(index=index),
-    #     ]
-    #     return [component for component in components if component]
-
     swap_axes_button = dmc.Button(
         id={"type": Page.SWAP_AXES_BUTTON, "tab": tab},
         children=DashIconify(icon="bi:arrow-left-right", width=18),
@@ -179,7 +170,7 @@ def make_field_controls(tab: Tab):
 
 
 def register_field_callbacks(app):
-    def update_dropdown(selected_fields, current_options, aggregate_displays):
+    def update_dropdown(selected_fields, current_options):
         c = ctx.outputs_grouping
 
         # Check if any temporal field is already selected
@@ -192,7 +183,6 @@ def register_field_callbacks(app):
             Rules for dropdown options:
             1. No duplicate options.
             2. No more than one temporal field.
-
             """
 
             def process_option(opt):
@@ -216,9 +206,9 @@ def register_field_callbacks(app):
             return patched_options
 
         def process_aggregates():
-            agg_change = 0
+            # print(f"c['aggregates'] {c['aggregates']}")
+            # print(f"len {[len(_) for _ in c['aggregates'].values()]}")
 
-            triggered_index = ctx.triggered_id["index"]
             # Get the list of aggregate outputs
             aggs = c["aggregates"]["value"]
             # Generate an empty patch for every agg output
@@ -229,9 +219,11 @@ def register_field_callbacks(app):
                 value=[Patch() for _ in aggs],
             )
 
+            triggered_index = ctx.triggered_id["index"]
             # Update the agg of the changed dropdown if it has one
             if triggered_index < len(aggs):
                 field = selected_fields[triggered_index]
+
                 agg_info = get_aggregation_info(field)
                 patched_aggregates["display"][triggered_index] = agg_info["display"]
                 patched_aggregates["spacing_display"][triggered_index] = agg_info[
@@ -240,14 +232,9 @@ def register_field_callbacks(app):
                 patched_aggregates["option"][triggered_index] = agg_info["data"]
                 patched_aggregates["value"][triggered_index] = agg_info["value"]
 
-                # Calculate the change in aggs
-                agg_change += (agg_info["display"] == "block") - (
-                    aggregate_displays[triggered_index] == "block"
-                )
+            return patched_aggregates
 
-            return patched_aggregates, agg_change
-
-        def process_spans(agg_change):
+        def process_spans():
             patched_spans = dict(
                 field=[Patch() for _ in c["spans"]["field"]],
                 spacing=[Patch() for _ in c["spans"]["spacing"]],
@@ -258,11 +245,15 @@ def register_field_callbacks(app):
                 return patched_spans
 
             # Check if there is at least one aggregate displayed
-            current_aggs = (
-                sum([display == "block" for display in aggregate_displays]) + agg_change
+            num_aggs = sum(
+                [
+                    get_aggregation_info(field)["display"] == "block"
+                    for field in selected_fields
+                ]
             )
+
             # Set to 3 if no aggs
-            if current_aggs == 0:
+            if num_aggs == 0:
                 return dict(
                     field=[3 for _ in c["spans"]["field"]],
                     spacing=[3 for _ in c["spans"]["spacing"]],
@@ -279,12 +270,10 @@ def register_field_callbacks(app):
             process_options(selected_field, options)
             for selected_field, options in zip(selected_fields, current_options)
         ]
-        patched_aggregates, agg_change = process_aggregates()
-        patched_spans = process_spans(agg_change)
         return dict(
             field_options=patched_field_options,
-            aggregates=patched_aggregates,
-            spans=patched_spans,
+            aggregates=process_aggregates(),
+            spans=process_spans(),
         )
 
     app.callback(
@@ -316,7 +305,6 @@ def register_field_callbacks(app):
         inputs=[
             Input(match_fields, "value"),
             State(match_fields, "data"),
-            State(match_field_containers, "display"),
         ],
     )(update_dropdown)
 
