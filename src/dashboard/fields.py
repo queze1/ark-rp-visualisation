@@ -251,7 +251,7 @@ def register_field_callbacks(app):
             num_aggs = sum(
                 [
                     get_aggregation_info(field)["display"] == "block"
-                    for field in selected_fields
+                    for field in selected_fields[:2]
                 ]
             )
 
