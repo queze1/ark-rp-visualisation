@@ -255,18 +255,12 @@ def register_field_callbacks(app):
                 ]
             )
 
-            # Use default length if no aggs
-            if num_aggs == 0:
-                return dict(
-                    field=[FIELD_SPAN for _ in c["spans"]["field"]],
-                    spacing=[FIELD_SPAN for _ in c["spans"]["spacing"]],
-                )
-            else:
-                # If aggs, shrink length of fields
-                return dict(
-                    field=[SMALL_FIELD_SPAN for _ in c["spans"]["field"]],
-                    spacing=[SMALL_FIELD_SPAN for _ in c["spans"]["spacing"]],
-                )
+            # Adjust spans to prevent overflow from aggregation dropdowns
+            field_span = FIELD_SPAN if num_aggs == 0 else SMALL_FIELD_SPAN
+            return dict(
+                field=[field_span for _ in c["spans"]["field"]],
+                spacing=[field_span for _ in c["spans"]["spacing"]],
+            )
 
         return dict(
             field_options=process_field_options(),
