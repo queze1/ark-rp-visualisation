@@ -8,13 +8,14 @@ from dashboard.callback_patterns import (
     match_agg_spacings,
     match_axes,
     match_field_containers,
+    match_field_spacings,
     match_fields,
     match_swap_axes,
-    match_field_spacings,
 )
 from enums import Field, GroupBy, Page, Tab, Text
 
 FIELD_SPAN = 3
+SMALL_FIELD_SPAN = 2
 AGGREGATION_SPAN = 1.5
 
 
@@ -38,49 +39,45 @@ def make_field_controls(tab: Tab):
         style = {"visibility": "hidden"} if hidden else {}
         return dmc.GridCol(dmc.Text(text, size="lg", style=style), span="content")
 
-    def make_field_dropdowns(field_options, index, grouped_by=False):
-        default_field = field_options.get("default")
-        aggregation_info = get_aggregation_info(default_field)
-        aggregation_dropdown = dmc.Select(
-            id={"type": Page.FIELD_AGG_DROPDOWN, "tab": tab, "index": index},
-            data=aggregation_info["data"],
-            value=aggregation_info["value"],
-            allowDeselect=False,
-        )
+    def make_field_dropdowns(field, index, grouped_by=False):
+        default_field = field.get("default")
 
+        components = []
+        # Render aggregation dropdown if grouped by
+        if grouped_by:
+            aggregation_info = get_aggregation_info(default_field)
+            aggregation_dropdown = dmc.Select(
+                id={"type": Page.FIELD_AGG_DROPDOWN, "tab": tab, "index": index},
+                data=aggregation_info["data"],
+                value=aggregation_info["value"],
+                allowDeselect=False,
+            )
+            aggregation_col = dmc.GridCol(
+                aggregation_dropdown,
+                id={
+                    "type": Page.FIELD_AGG_CONTAINER,
+                    "tab": tab,
+                    "index": index,
+                },
+                display=aggregation_info["display"],
+                span=AGGREGATION_SPAN,
+            )
+            components.append(aggregation_col)
+
+        # Render field dropdown
         field_dropdown = dmc.Select(
             id={"type": Page.FIELD_DROPDOWN, "tab": tab, "index": index},
-            data=[
-                {"label": field.label, "value": field}
-                for field in field_options["allowed"]
-            ],
+            data=[{"label": field.label, "value": field} for field in field["allowed"]],
             value=default_field,
         )
+        field_col = dmc.GridCol(
+            field_dropdown,
+            id={"type": Page.FIELD_CONTAINER, "tab": tab, "index": index},
+            span=FIELD_SPAN,
+        )
+        components.append(field_col)
 
-        # Don't render dropdown if not being grouped by
-        components = [
-            (
-                dmc.GridCol(
-                    aggregation_dropdown,
-                    id={
-                        "type": Page.FIELD_AGG_CONTAINER,
-                        "tab": tab,
-                        "index": index,
-                    },
-                    display=aggregation_info["display"],
-                    span=AGGREGATION_SPAN,
-                )
-            )
-            if grouped_by
-            else None,
-            dmc.GridCol(
-                field_dropdown,
-                id={"type": Page.FIELD_CONTAINER, "tab": tab, "index": index},
-                span=FIELD_SPAN,
-            ),
-        ]
-
-        return [component for component in components if component]
+        return components
 
     def make_aggregation_spacing(field: Field, index):
         return dmc.GridCol(
@@ -105,6 +102,17 @@ def make_field_controls(tab: Tab):
             # Same length as dropdown
             span=FIELD_SPAN,
         )
+
+    def make_field_bottom(field, index, grouped_by=False):
+        components = []
+        if grouped_by:
+            components.append(
+                make_aggregation_spacing(field.get("default"), index=index)
+            )
+        components.append(
+            make_axis_text(index=index),
+        )
+        return components
 
     swap_axes_button = dmc.Button(
         id={"type": Page.SWAP_AXES_BUTTON, "tab": tab},
@@ -131,14 +139,9 @@ def make_field_controls(tab: Tab):
         top_components.extend(
             make_field_dropdowns(field, index=i, grouped_by=grouped_by)
         )
-
         # Add spacing and axis text to bottom components
-        if grouped_by:
-            bottom_components.append(
-                make_aggregation_spacing(field.get("default"), index=i)
-            )
-        bottom_components.append(
-            make_axis_text(index=i),
+        bottom_components.extend(
+            make_field_bottom(field, index=i, grouped_by=grouped_by)
         )
 
         if i < len(top_separators):
@@ -155,15 +158,11 @@ def make_field_controls(tab: Tab):
     return dmc.Stack(
         [
             dmc.Grid(
-                top_components,
+                components,
                 justify="center",
                 align="center",
-            ),
-            dmc.Grid(
-                bottom_components,
-                justify="center",
-                align="center",
-            ),
+            )
+            for components in (top_components, bottom_components)
         ],
         gap=7,
     )
@@ -173,42 +172,47 @@ def register_field_callbacks(app):
     def update_dropdown(selected_fields, current_options):
         c = ctx.outputs_grouping
 
-        # Check if any temporal field is already selected
-        has_selected_temporal = any(
-            [Field(field).temporal if field else None for field in selected_fields]
-        )
+        def process_field_options():
+            # Check if any temporal field is already selected
+            has_selected_temporal = any(
+                [Field(field).temporal if field else None for field in selected_fields]
+            )
 
-        def process_options(selected_field, options):
-            """
-            Rules for dropdown options:
-            1. No duplicate options.
-            2. No more than one temporal field.
-            """
+            # Process each dropdown's options
+            def process_field(selected_field, options):
+                def process_option(opt):
+                    """
+                    Rules for dropdown options:
+                    1. No duplicate options.
+                    2. No more than one temporal field.
+                    """
+                    field = Field(opt["value"])
 
-            def process_option(opt):
-                field = Field(opt["value"])
+                    # Check if field is already selected in another dropdown
+                    is_duplicate = field in selected_fields and field != selected_field
+                    # Check if this dropdown has selected a temporal field
+                    selected_temporal = (
+                        Field(selected_field).temporal if selected_field else False
+                    )
+                    is_invalid_temporal = (
+                        field.temporal
+                        and has_selected_temporal
+                        and not selected_temporal
+                    )
+                    return is_duplicate or is_invalid_temporal
 
-                # Check if field is already selected in another dropdown
-                is_duplicate = field in selected_fields and field != selected_field
-                # Check if this dropdown has selected a temporal field
-                selected_temporal = (
-                    Field(selected_field).temporal if selected_field else False
-                )
-                is_invalid_temporal = (
-                    field.temporal and has_selected_temporal and not selected_temporal
-                )
+                patched_options = Patch()
+                for i, opt in enumerate(options):
+                    patched_options[i]["disabled"] = process_option(opt)
+                return patched_options
 
-                return is_duplicate or is_invalid_temporal
-
-            patched_options = Patch()
-            for i, opt in enumerate(options):
-                patched_options[i]["disabled"] = process_option(opt)
-            return patched_options
+            # Create a patch for each field dropdown
+            return [
+                process_field(selected_field, options)
+                for selected_field, options in zip(selected_fields, current_options)
+            ]
 
         def process_aggregates():
-            # print(f"c['aggregates'] {c['aggregates']}")
-            # print(f"len {[len(_) for _ in c['aggregates'].values()]}")
-
             # Get the list of aggregate outputs
             aggs = c["aggregates"]["value"]
             # Generate an empty patch for every agg output
@@ -223,7 +227,6 @@ def register_field_callbacks(app):
             # Update the agg of the changed dropdown if it has one
             if triggered_index < len(aggs):
                 field = selected_fields[triggered_index]
-
                 agg_info = get_aggregation_info(field)
                 patched_aggregates["display"][triggered_index] = agg_info["display"]
                 patched_aggregates["spacing_display"][triggered_index] = agg_info[
@@ -252,26 +255,21 @@ def register_field_callbacks(app):
                 ]
             )
 
-            # Set to 3 if no aggs
+            # Use default length if no aggs
             if num_aggs == 0:
                 return dict(
-                    field=[3 for _ in c["spans"]["field"]],
-                    spacing=[3 for _ in c["spans"]["spacing"]],
+                    field=[FIELD_SPAN for _ in c["spans"]["field"]],
+                    spacing=[FIELD_SPAN for _ in c["spans"]["spacing"]],
                 )
             else:
-                # If aggs, reduce to 2
+                # If aggs, shrink length of fields
                 return dict(
-                    field=[2 for _ in c["spans"]["field"]],
-                    spacing=[2 for _ in c["spans"]["spacing"]],
+                    field=[SMALL_FIELD_SPAN for _ in c["spans"]["field"]],
+                    spacing=[SMALL_FIELD_SPAN for _ in c["spans"]["spacing"]],
                 )
 
-        # Generate a patch for every field
-        patched_field_options = [
-            process_options(selected_field, options)
-            for selected_field, options in zip(selected_fields, current_options)
-        ]
         return dict(
-            field_options=patched_field_options,
+            field_options=process_field_options(),
             aggregates=process_aggregates(),
             spans=process_spans(),
         )
