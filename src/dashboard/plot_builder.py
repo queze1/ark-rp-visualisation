@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from dataclasses import field as data_field
 from operator import attrgetter
+from typing import Any
 
 import pandas as pd
 from dash import Input, Output, State, ctx
@@ -66,15 +67,7 @@ class AxisConfig:
 class FilterGroup:
     field: str
     operator: Operator
-    value: object
-
-    @classmethod
-    def from_raw(cls, type: str, operator: str, value: object):
-        return cls(
-            field=type,
-            operator=Operator(operator),
-            value=Filter(type).post_processing(value),
-        )
+    value: Any
 
     def apply(self, df: pd.DataFrame):
         return df[self.operator(df[self.field], self.value)]
@@ -85,14 +78,24 @@ class FilterConfig:
     filters: list[FilterGroup]
 
     @classmethod
-    def from_raw(cls, filters):
-        return cls(
-            filters=[
-                FilterGroup.from_raw(type, operator, value)
-                for type, operator, value in zip(*filters)
-                if value
-            ]
-        )
+    def from_raw(
+        cls,
+        filter_types: list[str],
+        filter_operators: list[str],
+        filter_values: list[Any],
+    ):
+        filters = [
+            FilterGroup(
+                field=filter_type,
+                operator=Operator(operator),
+                value=Filter(filter_type).post_processing(value),
+            )
+            for filter_type, operator, value in zip(
+                filter_types, filter_operators, filter_values
+            )
+            if value
+        ]
+        return cls(filters)
 
 
 @dataclass
@@ -208,13 +211,13 @@ class PlotBuilder:
 
         # Use custom sort if provided
         if self.sort:
+            by_axis = self.x_axis if self.sort.axis == Text.X_AXIS else self.y_axis
             self._df = self._df.sort_values(
-                by=self.x_axis if self.sort.axis == Text.X_AXIS else self.y_axis,
+                by=by_axis,
                 ascending=self.sort.ascending,
             )
-
+        # Otherwise, sort by date if grouping by date
         elif not grouping_field.temporal:
-            # By default, sort by grouped field unless you were grouping by a date
             self._df = self._df.sort_values(by=grouped_field, ascending=True)
 
     def get_label(self, field: Field, label_type="axis"):
@@ -365,7 +368,7 @@ def register_graph_callbacks(app):
                 selected_axes=selected_axes,
                 selected_aggregations=selected_aggregations,
             ),
-            filter_config=FilterConfig.from_raw(filters=filters),
+            filter_config=FilterConfig.from_raw(*filters),
             figure_config=FigureConfig.from_raw(**customisation),
         ).build()
 
