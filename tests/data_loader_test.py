@@ -1,22 +1,27 @@
+import pandas as pd
 import pytest
 from pandas.api.types import (
-    is_any_real_numeric_dtype,
-    is_datetime64_any_dtype,
-    is_object_dtype,
     is_bool_dtype,
+    is_datetime64_any_dtype,
     is_integer_dtype,
+    is_object_dtype,
 )
 from pandas.testing import assert_frame_equal
 
-from enums import Field
 from data_loader import DataLoader
+from enums import Field
+
+
+def is_categorical_dtype(column):
+    return isinstance(column.dtype, pd.CategoricalDtype)
+
 
 DTYPES = {
-    Field.AUTHOR: is_object_dtype,
+    Field.AUTHOR: is_categorical_dtype,
     Field.DATETIME: is_datetime64_any_dtype,
     Field.REACTIONS: is_object_dtype,
-    Field.WORD_COUNT: is_any_real_numeric_dtype,
-    Field.CHANNEL_NAME: is_object_dtype,
+    Field.WORD_COUNT: is_integer_dtype,
+    Field.CHANNEL_NAME: is_categorical_dtype,
     Field.REACTION_COUNT: is_integer_dtype,
     Field.SCENE_END: is_bool_dtype,
 }
@@ -27,7 +32,7 @@ def load_data_nocache():
     """
     Fixture to load the DataFrame.
     """
-    return DataLoader().load_csv(force=True).clean().df
+    return DataLoader().load_pickle(force=True).clean().df
 
 
 @pytest.fixture(scope="session")
@@ -35,7 +40,7 @@ def load_data_cache():
     """
     Fixture to load the cached DataFrame.
     """
-    return DataLoader().load_csv().clean().df
+    return DataLoader().load_pickle().clean().df
 
 
 @pytest.fixture(scope="session")

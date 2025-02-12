@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 
 load_dotenv(override=True)
 
-
+ENV = os.getenv("ENV", "development")
 S3_LOG_PATH = dict(Bucket=os.getenv("S3_BUCKET"), Key="app.log")
 
 
@@ -58,7 +58,10 @@ def get_logger(name: str) -> logging.Logger:
         console_handler.setFormatter(formatter)
         logger.addHandler(console_handler)
 
-        # Add S3 handler
+        if ENV != "production":
+            return logger
+
+        # Add S3 handler for prod
         s3_handler = S3Handler()
         s3_handler.setLevel(logging.INFO)
         s3_handler.setFormatter(formatter)

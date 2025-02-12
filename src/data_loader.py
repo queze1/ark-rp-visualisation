@@ -1,4 +1,3 @@
-import ast
 import glob
 import os
 import re
@@ -17,8 +16,8 @@ load_dotenv(override=True)
 
 ENV = os.getenv("ENV", "development")
 DATA_PATH = "data/25-12-2024"
-CACHE_PATH = ".cache/25-12-2024.csv"
-S3_PATH = dict(Bucket=os.getenv("S3_BUCKET"), Key="25-12-2024.csv")
+CACHE_PATH = ".cache/25-12-2024.pkl"
+S3_PATH = dict(Bucket=os.getenv("S3_BUCKET"), Key="25-12-2024.pkl")
 
 DATE_FORMAT = "%Y-%m-%dT%H:%M:%S.%f%z"
 TIME_ZONE = "Australia/Sydney"
@@ -63,7 +62,7 @@ class DataLoader:
         Add a 'word_count' column.
         """
         word_count = df[Field.CONTENT].str.split().str.len().fillna(0)
-        df[Field.WORD_COUNT] = word_count
+        df[Field.WORD_COUNT] = pd.to_numeric(word_count, downcast="integer")
         return df
 
     @staticmethod
@@ -97,7 +96,7 @@ class DataLoader:
         reactions = df["reactions"].apply(DataLoader._reactions_to_dict)
         reaction_count = [max(d.values(), default=0) for d in reactions]
         df[Field.REACTIONS] = reactions
-        df[Field.REACTION_COUNT] = reaction_count
+        df[Field.REACTION_COUNT] = pd.to_numeric(reaction_count, downcast="integer")
         return df
 
     @staticmethod
@@ -125,34 +124,36 @@ class DataLoader:
         df = cls._add_scene_end(df)
         return df
 
-    @classmethod
-    def _process_cache(cls, df):
-        # Unstringify datetime and reactions
-        df = cls._process_datetime(df, format="ISO8601")
-        df[Field.REACTIONS] = df[Field.REACTIONS].apply(ast.literal_eval)
-        return df
-
     @staticmethod
     def _write_cache(df):
         os.makedirs(os.path.dirname(CACHE_PATH), exist_ok=True)
-        df.to_csv(CACHE_PATH, index=False)
+        df.to_pickle(CACHE_PATH)
 
-    def load_csv(self, force: bool = False):
+    @classmethod
+    def _read_csvs(cls):
+        # Read and combine CSVs
+        csv_paths = glob.glob(os.path.join(DATA_PATH, "*.csv"))
+        dfs = [cls._read_csv(path) for path in csv_paths]
+        df = pd.concat(dfs, ignore_index=True)
+
+        # https://stackoverflow.com/questions/45639350/retaining-categorical-dtype-upon-dataframe-concatenation
+        df[Field.CHANNEL_NAME] = df[Field.CHANNEL_NAME].astype("category")
+        df[Field.AUTHOR_ID] = df[Field.AUTHOR_ID].astype("category")
+        df[Field.AUTHOR] = df[Field.AUTHOR].astype("category")
+        return df
+
+    def load_pickle(self, force: bool = False):
         """
-        Load the dataset from a CSV cache. If no cache exists, process CSV files and cache them.
+        Load the dataset from a pickle cache. If no cache exists, process raw CSVs and cache the result.
         """
         if not force and os.path.exists(CACHE_PATH):
             logger.info(f"Cache found: Loading from {CACHE_PATH}")
-            self._df = pd.read_csv(CACHE_PATH)
-            self._df = self._process_cache(self._df)
+            self._df = pd.read_pickle(CACHE_PATH)
             return self
 
-        # If cache not used, process all files
-        csv_paths = glob.glob(os.path.join(DATA_PATH, "*.csv"))
-        dfs = [self._read_csv(path) for path in csv_paths]
-        self._df = pd.concat(dfs, ignore_index=True)
+        # If cache not used, get from raw CSVs
+        self._df = self._read_csvs()
         self._write_cache(self._df)
-
         logger.info(f"Cache written: {CACHE_PATH}")
         return self
 
@@ -162,8 +163,7 @@ class DataLoader:
         """
         s3 = boto3.client("s3")
         with s3.get_object(**S3_PATH)["Body"] as response:
-            self._df = pd.read_csv(response)
-            self._df = self._process_cache(self._df)
+            self._df = pd.read_pickle(response)
 
         logger.info(f"S3 found: Loading from {S3_PATH['Bucket']}/{S3_PATH['Key']}")
         return self
@@ -191,11 +191,11 @@ df = None
 
 if __name__ == "__main__":
     pd.options.display.max_columns = None
-    df = DataLoader().load_csv(force=True).df
+    df = DataLoader().load_pickle(force=True).df
 
 elif df is None:
     # Initialise singleton
     if ENV == "development":
-        df = DataLoader().load_csv().clean().df
+        df = DataLoader().load_pickle().clean().df
     elif ENV == "production":
         df = DataLoader().load_s3().clean().df

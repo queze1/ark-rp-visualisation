@@ -32,6 +32,20 @@ from logging_setup import get_logger
 logger = get_logger(__name__)
 
 
+def _add_derived_field(df: pd.DataFrame, field: Field) -> pd.DataFrame:
+    """Adds a derived field to the DataFrame if it doesn't exist."""
+    if field not in df.columns:
+        if field == Field.HOUR:
+            df[field] = df[Field.DATETIME].dt.hour
+        elif field == Field.DAY:
+            df[field] = df[Field.DATETIME].dt.day
+        elif field == Field.DATE:
+            df[field] = df[Field.DATETIME].dt.date
+        elif field == Field.COUNT:
+            df[field] = 1
+    return df
+
+
 @dataclass
 class AxisConfig:
     fields: list[Field]
@@ -61,6 +75,12 @@ class AxisConfig:
         else:
             raise ValueError("Invalid axes")
         return cls(fields=selected_fields, aggregations=aggregations, **axes)
+
+    def prepare_dataframe(self, df: pd.DataFrame) -> pd.DataFrame:
+        df = df.copy()
+        for field in self.fields:
+            df = _add_derived_field(df, field)
+        return df
 
 
 @dataclass
@@ -96,6 +116,15 @@ class FilterConfig:
             if value
         ]
         return cls(filters)
+
+    def prepare_dataframe(self, df: pd.DataFrame) -> pd.DataFrame:
+        df = df.copy()
+        for filter_group in self.filters:
+            df = _add_derived_field(df, filter_group.field)
+        return df
+
+    # TODO: Replace add_fields with prepare_dataframe
+    # TODO: Add an apply filters function on this
 
 
 @dataclass
@@ -159,6 +188,7 @@ class PlotBuilder:
         self._df = df.copy()
         self._fig = None
 
+        self.axis_config = axis_config
         self.fields, self.aggregations, self.x_axis, self.y_axis = attrgetter(
             "fields", "aggregations", "x_axis", "y_axis"
         )(axis_config)
