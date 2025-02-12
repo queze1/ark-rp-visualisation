@@ -52,8 +52,14 @@ class DataLoader:
         Add a 'channel_name' column.
         """
         filename = os.path.basename(path)
-        channel_name = re.search(CHANNEL_NAME_REGEX, filename).group(1)
-        df[Field.CHANNEL_NAME] = channel_name
+        match = re.search(CHANNEL_NAME_REGEX, filename)
+
+        if match:
+            channel_name = match.group(1)
+            df[Field.CHANNEL_NAME] = channel_name
+        else:
+            # Handle the case where no channel name is found
+            raise ValueError(f"Could not extract channel name from {filename}")
         return df
 
     @staticmethod
@@ -190,7 +196,7 @@ class DataLoader:
 df = None
 
 if __name__ == "__main__":
-    pd.options.display.max_columns = None
+    pd.options.display.max_columns = None  # type: ignore[assignment]
     df = DataLoader().load_pickle(force=True).df
 
 elif df is None:

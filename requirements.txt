@@ -7,3 +7,4 @@ dash-iconify
 gunicorn
 boto3
 python-dotenv
+pandas-stubs

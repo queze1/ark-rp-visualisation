@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from dataclasses import field as data_field
 from operator import attrgetter
-from typing import Any
+from typing import Any, Optional
 
 import pandas as pd
 from dash import Input, Output, State, ctx
@@ -49,7 +49,7 @@ def _add_derived_field(df: pd.DataFrame, field: Field) -> pd.DataFrame:
 @dataclass
 class AxisConfig:
     fields: list[Field]
-    aggregations: dict[Field, tuple[Field, GroupBy]]
+    aggregations: dict[Field, GroupBy]
     x_axis: Field
     y_axis: Field
 
@@ -60,11 +60,10 @@ class AxisConfig:
         selected_axes: list[str],
         selected_aggregations: list[str],
     ):
-        selected_fields = [Field(field) for field in selected_fields]
-        primary_field, secondary_field, *_ = selected_fields
+        fields = [Field(field) for field in selected_fields]
+        primary_field, secondary_field, *_ = fields
         aggregations = {
-            field: GroupBy(agg)
-            for field, agg in zip(selected_fields, selected_aggregations)
+            field: GroupBy(agg) for field, agg in zip(fields, selected_aggregations)
         }
 
         # Find field axes
@@ -74,10 +73,9 @@ class AxisConfig:
             axes = dict(x_axis=primary_field, y_axis=secondary_field)
         else:
             raise ValueError("Invalid axes")
-        return cls(fields=selected_fields, aggregations=aggregations, **axes)
+        return cls(fields=fields, aggregations=aggregations, **axes)
 
     def prepare_dataframe(self, df: pd.DataFrame) -> pd.DataFrame:
-        df = df.copy()
         for field in self.fields:
             df = _add_derived_field(df, field)
         return df
@@ -85,11 +83,11 @@ class AxisConfig:
 
 @dataclass
 class FilterGroup:
-    field: str
+    field: Field
     operator: Operator
     value: Any
 
-    def apply(self, df: pd.DataFrame):
+    def apply(self, df: pd.DataFrame) -> pd.DataFrame:
         return df[self.operator(df[self.field], self.value)]
 
 
@@ -100,13 +98,13 @@ class FilterConfig:
     @classmethod
     def from_raw(
         cls,
-        filter_types: list[str],
+        filter_types: list[Field],
         filter_operators: list[str],
         filter_values: list[Any],
     ):
         filters = [
             FilterGroup(
-                field=filter_type,
+                field=Field(filter_type),
                 operator=Operator(operator),
                 value=Filter(filter_type).post_processing(value),
             )
@@ -118,7 +116,6 @@ class FilterConfig:
         return cls(filters)
 
     def prepare_dataframe(self, df: pd.DataFrame) -> pd.DataFrame:
-        df = df.copy()
         for filter_group in self.filters:
             df = _add_derived_field(df, filter_group.field)
         return df
@@ -142,13 +139,13 @@ class SortConfig:
 
 @dataclass
 class FigureConfig:
-    title: str = None
-    x_label: str = None
-    y_label: str = None
+    title: Optional[str] = None
+    x_label: Optional[str] = None
+    y_label: Optional[str] = None
     x_log: bool = False
     y_log: bool = False
-    moving_averages: list = data_field(default_factory=[])
-    sort: SortConfig = None
+    moving_averages: list[int] = data_field(default_factory=list)
+    sort: Optional[SortConfig] = None
 
     @classmethod
     def from_raw(
@@ -185,6 +182,8 @@ class PlotBuilder:
         filter_config: FilterConfig,
         figure_config: FigureConfig,
     ):
+        if df is None:
+            raise ValueError("Data has not been read yet")
         self._df = df.copy()
         self._fig = None
 
@@ -294,7 +293,7 @@ class PlotBuilder:
             text=tertiary_field[0] if tertiary_field else None,
         )
 
-    def add_moving_average_line(self, window: int, label: str = None):
+    def add_moving_average_line(self, window: int, label: Optional[str] = None):
         """
         Adds a new line trace for a moving average of the Y-axis.
 
@@ -302,6 +301,9 @@ class PlotBuilder:
         - window: The window size (e.g., 7 for weekly, 30 for monthly).
         - label: Optional label for the trace in the legend. Defaults to "Weekly/Monthly Moving Avg", or "(window)-Day Moving Avg".
         """
+        if self._fig is None:
+            raise ValueError("Figure not created yet")
+
         # Calculate the rolling average
         x_values = self._fig.data[0].x
         y_values = pd.Series(self._fig.data[0].y)

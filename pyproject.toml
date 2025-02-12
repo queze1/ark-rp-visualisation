@@ -3,3 +3,7 @@ pythonpath = "src"
 markers = [
     "local",
 ]
+
+[[tool.mypy.overrides]]
+module = ["dash.*", "dash_mantine_components.*", "boto3.*", "plotly.*", "dash_iconify.*"]
+ignore_missing_imports = true
