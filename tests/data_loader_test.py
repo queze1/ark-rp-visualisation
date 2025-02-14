@@ -28,40 +28,60 @@ DTYPES = {
 
 
 @pytest.fixture(scope="session")
-def load_data_nocache():
-    """
-    Fixture to load the DataFrame.
-    """
-    DataLoader().reset()
-    return DataLoader().load_pickle(force=True).clean().df
+def data_loader():
+    loader = DataLoader()
+    yield loader
+    loader.reset()
 
 
 @pytest.fixture(scope="session")
-def load_data_cache():
-    """
-    Fixture to load the cached DataFrame.
-    """
-    DataLoader().reset()
-    return DataLoader().load_pickle().clean().df
+def load_data_nocache(data_loader):
+    """Loads data without caching."""
+    return data_loader.load_pickle(force=True).clean().df
 
 
 @pytest.fixture(scope="session")
-def load_data_s3():
-    """
-    Fixture to load the remote DataFrame.
-    """
-    DataLoader().reset()
-    return DataLoader().load_s3().clean().df
+def load_data_cache(data_loader):
+    """Loads data with caching."""
+    return data_loader.load_pickle().clean().df
 
 
-@pytest.mark.local
-def test_nocache_column_keys_and_dtypes(load_data_nocache):
+@pytest.fixture(scope="session")
+def load_data_s3(data_loader):
+    """Loads data from S3."""
+    return data_loader.load_s3().clean().df
+
+
+@pytest.fixture(
+    params=[
+        pytest.param("load_data_nocache", marks=pytest.mark.local),
+        pytest.param("load_data_cache", marks=pytest.mark.local),
+        "load_data_s3",
+    ],
+    scope="session",
+)
+def load_data(request):
+    return request.getfixturevalue(request.param)
+
+
+@pytest.fixture(
+    params=[
+        "load_data_cache",
+        "load_data_s3",
+    ],
+    scope="session",
+)
+def load_data_other(request):
+    return request.getfixturevalue(request.param)
+
+
+def test_nocache_column_keys_and_dtypes(load_data):
     """
     Test that the DataFrame matches the required columns
     and the dtype of each column satisfies the associated functions.
     """
 
-    df = load_data_nocache
+    df = load_data
 
     # Assert that the DataFrame has the exact expected columns
     assert set(df.columns) == set(DTYPES.keys()), (
@@ -77,12 +97,11 @@ def test_nocache_column_keys_and_dtypes(load_data_nocache):
         )
 
 
-@pytest.mark.local
-def test_nocache_missing_values(load_data_nocache):
+def test_nocache_missing_values(load_data):
     """
     Test that the DataFrame contains no missing values.
     """
-    df = load_data_nocache
+    df = load_data
     columns_with_na = df.columns[df.isna().any()].tolist()
 
     assert not columns_with_na, (
@@ -91,28 +110,14 @@ def test_nocache_missing_values(load_data_nocache):
 
 
 @pytest.mark.local
-def test_cache_equal(load_data_nocache, load_data_cache):
+def test_equal(load_data_nocache, load_data_other):
     """
-    Test that the DataFrame loaded with force=True matches the cached DataFrame.
-    """
-    df_nocache = load_data_nocache
-    df_cache = load_data_cache
-
-    (
-        assert_frame_equal(df_nocache, df_cache, check_dtype=True),
-        "Cached DataFrame and uncached DataFrame are not equal.",
-    )
-
-
-@pytest.mark.local
-def test_s3_equal(load_data_nocache, load_data_s3):
-    """
-    Test that the DataFrame loaded with force=True matches the remote DataFrame.
+    Test that the DataFrame loaded with force=True matches the other DataFrames.
     """
     df_nocache = load_data_nocache
-    df_s3 = load_data_s3
+    df_other = load_data_other
 
     (
-        assert_frame_equal(df_nocache, df_s3, check_dtype=True),
-        "Remote DataFrame and uncached DataFrame are not equal.",
+        assert_frame_equal(df_nocache, df_other, check_dtype=True),
+        "DataFrames are not equal.",
     )

@@ -160,10 +160,6 @@ class DataLoader:
         """
         Load the dataset from a pickle cache. If no cache exists, process raw CSVs and cache the result.
         """
-        # Don't repeat initialisation
-        if self._df is not None:
-            return self
-
         if not force and os.path.exists(CACHE_PATH):
             logger.info(f"Cache found: Loading from {CACHE_PATH}")
             self._df = pd.read_pickle(CACHE_PATH)
@@ -179,10 +175,6 @@ class DataLoader:
         """
         Load the dataset from a S3 object.
         """
-        # Don't repeat initialisation
-        if self._df is not None:
-            return self
-
         s3 = boto3.client("s3")
         with s3.get_object(**S3_PATH)["Body"] as response:
             self._df = pd.read_pickle(response)
@@ -199,18 +191,22 @@ class DataLoader:
         )
         return self
 
-    def load_data(self, force: bool = False):
+    def load_data(self, force: bool = False, clean: bool = True):
         """
         Loads data based on the environment.
         """
         if ENV == "development":
-            return self.load_pickle(force=force)
+            self.load_pickle(force=force)
         elif ENV == "production":
-            return self.load_s3()
+            self.load_s3()
         else:
             raise ValueError(
                 f"Invalid ENV value: {ENV}. Choose 'development' or 'production'."
             )
+
+        if clean:
+            self.clean()
+        return self
 
     @property
     def df(self) -> pd.DataFrame:
