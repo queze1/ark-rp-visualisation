@@ -25,7 +25,7 @@ from dashboard.callback_patterns import (
     match_y_label,
     match_y_log,
 )
-from data_loader import df
+from data_loader import DataLoader
 from enums import Field, Filter, GroupBy, Operator, Plot, Tab, Text
 from logging_setup import get_logger
 
@@ -182,9 +182,7 @@ class PlotBuilder:
         filter_config: FilterConfig,
         figure_config: FigureConfig,
     ):
-        if df is None:
-            raise ValueError("Data has not been read yet")
-        self._df = df.copy()
+        self._df = DataLoader().df.copy()
         self._fig = None
 
         self.axis_config = axis_config

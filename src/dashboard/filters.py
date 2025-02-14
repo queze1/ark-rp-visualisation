@@ -15,8 +15,10 @@ from dashboard.callback_patterns import (
     match_filter_value_container,
     match_reset_filter,
 )
-from data_loader import df
+from data_loader import DataLoader
 from enums import Filter, FilterOption, Page, Tab
+
+df = DataLoader().df
 
 
 @lru_cache()

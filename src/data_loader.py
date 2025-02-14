@@ -27,8 +27,16 @@ SCENE_END_REGEX = r"\/\s*(?:end\sscene)|(?:scene\send)|(?:SCENESHIFT)"
 
 
 class DataLoader:
-    def __init__(self):
-        self._df = None
+    """DataLoader singleton for loading the dataset."""
+
+    _instance = None
+    _df: pd.DataFrame
+
+    def __new__(cls, *args, **kwargs):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls, *args, **kwargs)
+            cls._instance._df = None
+        return cls._instance
 
     @staticmethod
     def _rename_columns(df: pd.DataFrame) -> pd.DataFrame:
@@ -152,6 +160,10 @@ class DataLoader:
         """
         Load the dataset from a pickle cache. If no cache exists, process raw CSVs and cache the result.
         """
+        # Don't repeat initialisation
+        if self._df is not None:
+            return self
+
         if not force and os.path.exists(CACHE_PATH):
             logger.info(f"Cache found: Loading from {CACHE_PATH}")
             self._df = pd.read_pickle(CACHE_PATH)
@@ -167,6 +179,10 @@ class DataLoader:
         """
         Load the dataset from a S3 object.
         """
+        # Don't repeat initialisation
+        if self._df is not None:
+            return self
+
         s3 = boto3.client("s3")
         with s3.get_object(**S3_PATH)["Body"] as response:
             self._df = pd.read_pickle(response)
@@ -183,25 +199,34 @@ class DataLoader:
         )
         return self
 
+    def load_data(self, force: bool = False):
+        """
+        Loads data based on the environment.
+        """
+        if ENV == "development":
+            return self.load_pickle(force=force)
+        elif ENV == "production":
+            return self.load_s3()
+        else:
+            raise ValueError(
+                f"Invalid ENV value: {ENV}. Choose 'development' or 'production'."
+            )
+
     @property
     def df(self) -> pd.DataFrame:
         """
         Return the current DataFrame.
         """
         if self._df is None:
-            raise ValueError("Data has not been read yet")
+            self.load_data()
         return self._df
 
+    def reset(self):
+        """Reset the singleton instance."""
+        DataLoader._instance = None
 
-df = None
 
 if __name__ == "__main__":
     pd.options.display.max_columns = None  # type: ignore[assignment]
     df = DataLoader().load_pickle(force=True).df
-
-elif df is None:
-    # Initialise singleton
-    if ENV == "development":
-        df = DataLoader().load_pickle().clean().df
-    elif ENV == "production":
-        df = DataLoader().load_s3().clean().df
+    print(df)

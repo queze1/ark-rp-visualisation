@@ -32,6 +32,7 @@ def load_data_nocache():
     """
     Fixture to load the DataFrame.
     """
+    DataLoader().reset()
     return DataLoader().load_pickle(force=True).clean().df
 
 
@@ -40,6 +41,7 @@ def load_data_cache():
     """
     Fixture to load the cached DataFrame.
     """
+    DataLoader().reset()
     return DataLoader().load_pickle().clean().df
 
 
@@ -48,6 +50,7 @@ def load_data_s3():
     """
     Fixture to load the remote DataFrame.
     """
+    DataLoader().reset()
     return DataLoader().load_s3().clean().df
 
 
