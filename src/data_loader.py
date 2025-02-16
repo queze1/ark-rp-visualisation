@@ -15,9 +15,9 @@ logger = get_logger(__name__)
 load_dotenv(override=True)
 
 ENV = os.getenv("ENV", "development")
-DATA_PATH = "data/25-12-2024"
-CACHE_PATH = ".cache/25-12-2024.pkl"
-S3_PATH = dict(Bucket=os.getenv("S3_BUCKET"), Key="25-12-2024.pkl")
+DATA_PATH = "data/16-2-2025"
+CACHE_PATH = ".cache/16-2-2025.pkl"
+S3_PATH = dict(Bucket=os.getenv("S3_BUCKET"), Key="16-2-2025.pkl")
 
 DATE_FORMAT = "%Y-%m-%dT%H:%M:%S.%f%z"
 TIME_ZONE = "Australia/Sydney"

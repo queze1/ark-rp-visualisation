@@ -29,7 +29,7 @@ footer = html.Footer(
             dmc.Group(
                 [
                     dmc.Text(
-                        "Retrieved 25 December 2024.",
+                        "Retrieved 16 February 2025.",
                         size="xs",
                         c="dimmed",
                     ),
