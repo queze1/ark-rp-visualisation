@@ -155,12 +155,14 @@ class Plot(StrEnum):
     LINE = "line"
 
     def __call__(self, *args, **kwargs):
-        if self is Plot.BAR:
-            return px.bar(*args, **kwargs)
-        elif self is Plot.SCATTER:
-            return px.scatter(*args, **kwargs)
-        elif self is Plot.LINE:
-            return px.line(*args, **kwargs)
+        plot_func = {
+            Plot.BAR: px.bar,
+            Plot.SCATTER: px.scatter,
+            Plot.LINE: px.line,
+        }.get(self)
+
+        if plot_func:
+            return plot_func(*args, **kwargs)
         raise NotImplementedError(f"{self.name} plot is not implemented.")
 
 
