@@ -230,7 +230,7 @@ class PlotBuilder:
     def groupby(self):
         """Aggregate and group the current DataFrame."""
         *rest, grouping_field = self.fields
-        grouped = self._df.groupby(grouping_field)[rest]
+        grouped = self._df.groupby(grouping_field, observed=False)[rest]
         self._df = grouped.agg(self.aggregations).reset_index()
 
     def apply_sort(self):
