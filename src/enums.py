@@ -413,6 +413,10 @@ class Text(StrEnum):
 
 
 class Page(StrEnum):
+    CONTAINER = "container"
+    URL = "url"
+    CONTENT = "content"
+
     GRAPH = "graph"
     UPDATE_GRAPH_BUTTON = "update-graph-btn"
     FULLSCREEN_BUTTON = "full-screen-btn"

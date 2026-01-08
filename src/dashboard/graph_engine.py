@@ -32,6 +32,7 @@ from dashboard.callback_patterns import (
     match_y_log,
 )
 from dashboard.models import AxisConfig, FigureConfig, FilterConfig
+from dashboard.serialisation import encode_state
 from data_loader import DataLoader
 from enums import Field, PlotType, Tab, Text
 from logging_setup import get_logger
@@ -219,19 +220,33 @@ def register_graph_callbacks(app):
         """
         logger.info(summary.strip())
 
-        # TODO: JSON dumps the graph inputs, then zlib compress and convert to b64, then put those options in a new /graph/ route
+        # 1. Create a fullscreen URL which renders this graph
+        graph_state = {
+            "tab": active_tab.value,
+            "fields": selected_fields,
+            "axes": selected_axes,
+            "aggs": selected_aggregations,
+            "filters": filters,
+            "custom": customisation,
+        }
+        encoded_params = encode_state(graph_state)
+        fullscreen_url = f"/graph?state={encoded_params}"
+
+        # 2. Build the figure
+        fig = PlotBuilder(
+            plot_type=PlotType(active_tab.plot_type),
+            axis_config=AxisConfig.from_raw(
+                selected_fields=selected_fields,
+                selected_axes=selected_axes,
+                selected_aggregations=selected_aggregations,
+            ),
+            filter_config=FilterConfig.from_raw(*filters),
+            figure_config=FigureConfig.from_raw(**customisation),
+        ).build()
+
         return dict(
-            fig=PlotBuilder(
-                plot_type=PlotType(active_tab.plot_type),
-                axis_config=AxisConfig.from_raw(
-                    selected_fields=selected_fields,
-                    selected_axes=selected_axes,
-                    selected_aggregations=selected_aggregations,
-                ),
-                filter_config=FilterConfig.from_raw(*filters),
-                figure_config=FigureConfig.from_raw(**customisation),
-            ).build(),
-            fullscreen_url="https://dash.plotly.com/",
+            fig=fig,
+            fullscreen_url=fullscreen_url,
             fullscreen_disabled=False,
         )
 
