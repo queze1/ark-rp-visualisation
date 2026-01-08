@@ -365,7 +365,11 @@ def register_graph_callbacks(app):
         customisation,
     ):
         if n_clicks is None or not all(selected_fields) or not ctx.triggered_id:
-            return [{}, "#", True]
+            return dict(
+                fig={},
+                fullscreen_url="#",
+                fullscreen_disabled=True,
+            )
 
         active_tab = Tab(ctx.triggered_id["tab"])
 
@@ -381,29 +385,28 @@ def register_graph_callbacks(app):
         """
         logger.info(summary.strip())
 
-        fig = PlotBuilder(
-            plot_type=PlotType(active_tab.plot_type),
-            axis_config=AxisConfig.from_raw(
-                selected_fields=selected_fields,
-                selected_axes=selected_axes,
-                selected_aggregations=selected_aggregations,
-            ),
-            filter_config=FilterConfig.from_raw(*filters),
-            figure_config=FigureConfig.from_raw(**customisation),
-        ).build()
-
-        return [
-            fig,
-            "https://dash.plotly.com/",
-            False,
-        ]
+        # TODO: JSON dumps the graph inputs, then zlib compress and convert to b64, then put those options in a new /graph/ route
+        return dict(
+            fig=PlotBuilder(
+                plot_type=PlotType(active_tab.plot_type),
+                axis_config=AxisConfig.from_raw(
+                    selected_fields=selected_fields,
+                    selected_axes=selected_axes,
+                    selected_aggregations=selected_aggregations,
+                ),
+                filter_config=FilterConfig.from_raw(*filters),
+                figure_config=FigureConfig.from_raw(**customisation),
+            ).build(),
+            fullscreen_url="https://dash.plotly.com/",
+            fullscreen_disabled=False,
+        )
 
     app.callback(
-        output=[
-            Output(match_graph, "figure"),
-            Output(match_fullscreen_button, "href"),
-            Output(match_fullscreen_button_icon, "disabled"),
-        ],
+        output=dict(
+            fig=Output(match_graph, "figure"),
+            fullscreen_url=Output(match_fullscreen_button, "href"),
+            fullscreen_disabled=Output(match_fullscreen_button_icon, "disabled"),
+        ),
         inputs=dict(
             n_clicks=Input(match_update_graph, "n_clicks"),
             selected_fields=State(match_fields, "value"),
