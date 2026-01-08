@@ -411,6 +411,7 @@ class Text(StrEnum):
 class Page(StrEnum):
     GRAPH = "graph"
     UPDATE_GRAPH_BUTTON = "update-graph-btn"
+    FULLSCREEN_BUTTON = "full-screen-btn"
 
     FIELD_CONTAINER = "field-container"
     FIELD_DROPDOWN = "field-dropdown"
