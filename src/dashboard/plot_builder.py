@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from dataclasses import field as data_field
-from operator import attrgetter
 from typing import Any, Optional
 
 import pandas as pd
@@ -76,6 +75,7 @@ class AxisConfig:
         return cls(fields=fields, aggregations=aggregations, **axes)
 
     def prepare_dataframe(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Ensure all fields required for axes exist in the df."""
         for field in self.fields:
             df = _add_derived_field(df, field)
         return df
@@ -116,12 +116,16 @@ class FilterConfig:
         return cls(filters)
 
     def prepare_dataframe(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Ensure all fields required for filtering exist in the df."""
         for filter_group in self.filters:
             df = _add_derived_field(df, filter_group.field)
         return df
 
-    # TODO: Replace add_fields with prepare_dataframe
-    # TODO: Add an apply filters function on this
+    def apply(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Apply all filter groups to the dataframe."""
+        for f in self.filters:
+            df = f.apply(df)
+        return df
 
 
 @dataclass
@@ -185,109 +189,75 @@ class PlotBuilder:
         self._df = DataLoader().df.copy()
         self._fig = None
 
-        self.axis_config = axis_config
-        self.fields, self.aggregations, self.x_axis, self.y_axis = attrgetter(
-            "fields", "aggregations", "x_axis", "y_axis"
-        )(axis_config)
-        self.filters = filter_config.filters
         self.plot_type = plot_type
-
-        (
-            self.title,
-            self.x_label,
-            self.y_label,
-            self.x_log,
-            self.y_log,
-            self.moving_averages,
-            self.sort,
-        ) = attrgetter(
-            "title", "x_label", "y_label", "x_log", "y_log", "moving_averages", "sort"
-        )(figure_config)
-
-    def add_field(self, field: Field):
-        # Create the field if it doesn't already exist
-        if field in self._df:
-            return
-
-        if field == Field.HOUR:
-            self._df[field] = self._df[Field.DATETIME].dt.hour
-        elif field == Field.DAY:
-            self._df[field] = self._df[Field.DATETIME].dt.day
-        elif field == Field.DATE:
-            self._df[field] = self._df[Field.DATETIME].dt.date
-        elif field == Field.COUNT:
-            self._df[field] = 1
-
-    def add_fields(self):
-        for field in self.fields:
-            self.add_field(field)
-
-    def apply_filters(self):
-        for filter in self.filters:
-            self.add_field(filter.field)
-            self._df = filter.apply(self._df)
+        self.axis_config = axis_config
+        self.filter_config = filter_config
+        self.figure_config = figure_config
 
     def groupby(self):
         """Aggregate and group the current DataFrame."""
-        *rest, grouping_field = self.fields
+        *rest, grouping_field = self.axis_config.fields
         grouped = self._df.groupby(grouping_field, observed=False)[rest]
-        self._df = grouped.agg(self.aggregations).reset_index()
+        self._df = grouped.agg(self.axis_config.aggregations).reset_index()
 
     def apply_sort(self):
-        grouped_field, *_, grouping_field = self.fields
+        sort = self.figure_config.sort
 
-        # Use custom sort if provided
-        if self.sort:
-            by_axis = self.x_axis if self.sort.axis == Text.X_AXIS else self.y_axis
+        if sort:
+            by_axis = (
+                self.axis_config.x_axis
+                if sort.axis == Text.X_AXIS
+                else self.axis_config.y_axis
+            )
             self._df = self._df.sort_values(
                 by=by_axis,
-                ascending=self.sort.ascending,
+                ascending=sort.ascending,
             )
-        # Otherwise, sort by date if grouping by date
-        elif not grouping_field.temporal:
-            self._df = self._df.sort_values(by=grouped_field, ascending=True)
+        else:
+            # Fallback logic
+            *_, grouping_field = self.axis_config.fields
+            if not grouping_field.temporal:
+                primary_field = self.axis_config.fields[0]
+                self._df = self._df.sort_values(by=primary_field, ascending=True)
 
     def get_label(self, field: Field, label_type="axis"):
         """
         Returns the label for a Field.
         """
         # Customisation
-        if field == self.x_axis and self.x_label:
-            return self.x_label
-        if field == self.y_axis and self.y_label:
-            return self.y_label
+        if field == self.axis_config.x_axis and self.figure_config.x_label:
+            return self.figure_config.x_label
+        if field == self.axis_config.y_axis and self.figure_config.y_label:
+            return self.figure_config.y_label
 
         label = field.axis_label if label_type == "axis" else field.title_label
 
         # If aggregation exists, add its prefix
-        if field in self.aggregations:
-            agg = self.aggregations[field]
+        if field in self.axis_config.aggregations:
+            agg = self.axis_config.aggregations[field]
             prefix = agg.axis_prefix if label_type == "axis" else agg.title_prefix
             return prefix + label
         return label
 
-    def get_axis_label(self, field: Field):
-        return self.get_label(field, label_type="axis")
-
-    def get_title_label(self, field: Field):
-        return self.get_label(field, label_type="title")
-
     def make_figure(self):
-        primary_field, secondary_field, *tertiary_field = self.fields
+        primary_field, secondary_field, *tertiary_field = self.axis_config.fields
+
         title = (
-            self.title
-            or f"{self.get_title_label(primary_field)} by {self.get_title_label(secondary_field)}"
+            self.figure_config.title
+            or f"{self.get_label(primary_field, 'title')} by {self.get_label(secondary_field, 'title')}"
         )
-        labels = {field: self.get_axis_label(field) for field in self.fields}
+        labels = {
+            field: self.get_label(field, "axis") for field in self.axis_config.fields
+        }
+
         self._fig = self.plot_type(
             self._df,
-            x=self.x_axis,
-            y=self.y_axis,
+            x=self.axis_config.x_axis,
+            y=self.axis_config.y_axis,
             title=title,
             labels=labels,
-            log_x=self.x_log,
-            log_y=self.y_log,
-            # Add annotations if 3 vars
+            log_x=self.figure_config.x_log,
+            log_y=self.figure_config.y_log,
             text=tertiary_field[0] if tertiary_field else None,
         )
 
@@ -330,38 +300,49 @@ class PlotBuilder:
         """
         Apply formatting to the current figure.
         """
+        if self._fig is None:
+            raise ValueError("Figure does not exist")
+
         layout_kwargs = {}
 
-        # Set 1 tick per unit if bar plot and X-axis is hour or day
-        if self.x_axis in {Field.HOUR, Field.DAY} and self.plot_type == Plot.SCATTER:
+        # Set 1 tick per unit if specific conditions met
+        if (
+            self.axis_config.x_axis in {Field.HOUR, Field.DAY}
+            and self.plot_type == Plot.SCATTER
+        ):
             layout_kwargs["xaxis"] = dict(dtick=1)
 
-        # Update titles if log scale and default labels
-        if self.x_log and not self.x_label:
+        # Log scale titles
+        if self.figure_config.x_log and not self.figure_config.x_label:
             new_title = f"{self._fig.layout.xaxis.title.text} (log scale)"
             layout_kwargs.setdefault("xaxis", {})["title"] = new_title
-        if self.y_log and not self.y_label:
+        if self.figure_config.y_log and not self.figure_config.y_label:
             new_title = f"{self._fig.layout.yaxis.title.text} (log scale)"
             layout_kwargs.setdefault("yaxis", {})["title"] = new_title
 
-        # Apply combined layout
         self._fig.update_layout(**layout_kwargs)
 
-        # Format annotations if scatter plot
         if self.plot_type == Plot.SCATTER:
             self._fig.update_traces(textposition="top center", textfont_size=10)
 
-        # Add rolling averages
-        for window in self.moving_averages:
+        # Add moving averages from figure_config
+        for window in self.figure_config.moving_averages:
             self.add_moving_average_line(window)
 
     def build(self):
-        self.add_fields()
-        self.apply_filters()
+        # 1. Prepare data (add derived columns needed by axes and filters)
+        self._df = self.axis_config.prepare_dataframe(self._df)
+        self._df = self.filter_config.prepare_dataframe(self._df)
+
+        # 2. Filter data
+        self._df = self.filter_config.apply(self._df)
+
+        # 3. Process and plot
         self.groupby()
         self.apply_sort()
         self.make_figure()
         self.format_figure()
+
         return self._fig
 
 
@@ -374,7 +355,7 @@ def register_graph_callbacks(app):
         filters,
         customisation,
     ):
-        if n_clicks is None or not all(selected_fields):
+        if n_clicks is None or not all(selected_fields) or not ctx.triggered_id:
             return {}
 
         tab = Tab(ctx.triggered_id["tab"])

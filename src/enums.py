@@ -120,7 +120,8 @@ class Field(StrEnum):
 
     @property
     def axis_label(self):
-        return self._metadata.get("axis_label")
+        # Fall back to field ID if label was not provided
+        return self._metadata.get("axis_label", self.value)
 
     @property
     def title_label(self):
