@@ -170,7 +170,7 @@ class FigureConfig:
             x_log=x_log,
             y_log=y_log,
             moving_averages=[
-                window for window, enabled in moving_averages.items() if enabled
+                int(window) for window, enabled in moving_averages.items() if enabled
             ],
             sort=SortConfig.from_raw(sort_order, sort_axis)
             if sort_order and sort_axis
