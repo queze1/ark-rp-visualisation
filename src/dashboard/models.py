@@ -50,6 +50,30 @@ class AxisConfig:
             raise ValueError("Invalid axes")
         return cls(fields=fields, aggregations=aggregations, **axes)
 
+    def get_label(
+        self, field: Field, figure_config: "FigureConfig", label_type: str = "axis"
+    ) -> str:
+        """
+        Determine the label for a field by checking overrides,
+        aggregations, and metadata.
+        """
+        # 1. Check for manual overrides from the Customisation tab
+        if field == self.x_axis and figure_config.x_label:
+            return figure_config.x_label
+        if field == self.y_axis and figure_config.y_label:
+            return figure_config.y_label
+
+        # 2. Get the base label from the Field enum
+        base_label = field.axis_label if label_type == "axis" else field.title_label
+
+        # 3. Prepend aggregation prefixes if an aggregation is active for this field
+        if field in self.aggregations:
+            agg = self.aggregations[field]
+            prefix = agg.axis_prefix if label_type == "axis" else agg.title_prefix
+            return f"{prefix}{base_label}"
+
+        return base_label
+
     def prepare_dataframe(self, df: pd.DataFrame) -> pd.DataFrame:
         """Ensure all fields required for axes exist in the df."""
         for field in self.fields:

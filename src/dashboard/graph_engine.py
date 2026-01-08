@@ -81,34 +81,16 @@ class PlotBuilder:
                 primary_field = self.axis_config.fields[0]
                 self._df = self._df.sort_values(by=primary_field, ascending=True)
 
-    def get_label(self, field: Field, label_type="axis"):
-        """
-        Returns the label for a Field.
-        """
-        # Customisation
-        if field == self.axis_config.x_axis and self.figure_config.x_label:
-            return self.figure_config.x_label
-        if field == self.axis_config.y_axis and self.figure_config.y_label:
-            return self.figure_config.y_label
-
-        label = field.axis_label if label_type == "axis" else field.title_label
-
-        # If aggregation exists, add its prefix
-        if field in self.axis_config.aggregations:
-            agg = self.axis_config.aggregations[field]
-            prefix = agg.axis_prefix if label_type == "axis" else agg.title_prefix
-            return prefix + label
-        return label
-
     def make_figure(self):
         primary_field, secondary_field, *tertiary_field = self.axis_config.fields
-
-        title = (
-            self.figure_config.title
-            or f"{self.get_label(primary_field, 'title')} by {self.get_label(secondary_field, 'title')}"
+        title = self.figure_config.title or (
+            f"{self.axis_config.get_label(primary_field, self.figure_config, 'title')}"
+            " by "
+            f"{self.axis_config.get_label(secondary_field, self.figure_config, 'title')}"
         )
         labels = {
-            field: self.get_label(field, "axis") for field in self.axis_config.fields
+            field: self.axis_config.get_label(field, self.figure_config, "axis")
+            for field in self.axis_config.fields
         }
 
         self._fig = self.plot_type(
