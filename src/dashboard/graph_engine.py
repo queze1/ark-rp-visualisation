@@ -16,7 +16,7 @@ from dashboard.callback_patterns import (
     match_fields,
     match_filter_operators,
     match_filter_types,
-    match_filter_values,
+    match_filter_value_inputs,
     match_fullscreen_button,
     match_fullscreen_button_icon,
     match_graph,
@@ -106,7 +106,7 @@ class PlotBuilder:
 
     def add_moving_average_line(self, window: int, label: Optional[str] = None):
         """
-        Adds a new line trace for a moving average of the Y-axis.
+        Add a new line trace for a moving average of the Y-axis.
 
         Parameters:
         - window: The window size (e.g., 7 for weekly, 30 for monthly).
@@ -259,7 +259,7 @@ def register_graph_callbacks(app):
                     "value",
                 ),
                 State(
-                    match_filter_values,
+                    match_filter_value_inputs,
                     "value",
                 ),
             ),

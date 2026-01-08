@@ -52,8 +52,8 @@ match_filter_value_container = {
     "tab": MATCH,
     "index": MATCH,
 }
-match_filter_values = {
-    "type": Page.FILTER_VALUE,
+match_filter_value_inputs = {
+    "type": Page.FILTER_VALUE_INPUT,
     "tab": MATCH,
     "index": ALL,
 }

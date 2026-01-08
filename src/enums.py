@@ -120,7 +120,7 @@ class Field(StrEnum):
 
     @property
     def is_public(self) -> bool:
-        """Returns True if the field is intended for public use."""
+        """Return True if the field is intended for public use."""
         return bool(self._metadata)
 
     @property
@@ -435,7 +435,7 @@ class Page(StrEnum):
     FILTER_TYPE = "filter-type"
     FILTER_OPERATOR = "filter-operator"
     FILTER_VALUE_CONTAINER = "filter-value-container"
-    FILTER_VALUE = "filter-value"
+    FILTER_VALUE_INPUT = "filter-value-input"
 
     RESET_CUSTOMISATION_BUTTON = "reset-customisation-btn"
     TITLE_INPUT = "title-input"

@@ -196,7 +196,7 @@ class DataLoader:
 
     def load_data(self, force: bool = False, clean: bool = True):
         """
-        Loads data based on the environment.
+        Load data based on the environment.
         """
         if ENV == "development":
             self.load_pickle(force=force)

@@ -26,8 +26,7 @@ def get_unique(field):
     return sorted(df[field].unique())
 
 
-# Creates a filter value input
-def make_filter_value(filter: Filter, tab: Tab, index):
+def make_filter_value_input(filter: Filter, tab: Tab, index):
     select_kwargs = filter.select_kwargs.copy()
     # Check if options need to be loaded dynamically
     if select_kwargs.get("data") == FilterOption.FIELD_UNIQUE:
@@ -35,7 +34,7 @@ def make_filter_value(filter: Filter, tab: Tab, index):
 
     return filter.select_input(
         id={
-            "type": Page.FILTER_VALUE,
+            "type": Page.FILTER_VALUE_INPUT,
             "tab": tab,
             "index": index,
         },
@@ -91,7 +90,7 @@ def make_filter_group(tab: Tab, filter: Filter):
                 span="content",
             ),
             dmc.GridCol(
-                make_filter_value(filter, tab, index),
+                make_filter_value_input(filter, tab, index),
                 id={"type": Page.FILTER_VALUE_CONTAINER, "tab": tab, "index": index},
                 span="auto",
             ),
@@ -102,7 +101,7 @@ def make_filter_group(tab: Tab, filter: Filter):
 
 
 def make_default_filters(tab):
-    # Creates one of every possible filter
+    # Create one of every possible filter
     return [make_filter_group(tab, filter) for filter in Filter]
 
 
@@ -180,7 +179,7 @@ def register_filter_callbacks(app):
         return (
             filter_type.operators,
             filter_type.default_operator,
-            make_filter_value(filter_type, tab, index),
+            make_filter_value_input(filter_type, tab, index),
         )
 
     app.callback(

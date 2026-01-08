@@ -8,7 +8,7 @@ from enums import Field, Filter, GroupBy, Operator, Text
 
 
 def _add_derived_field(df: pd.DataFrame, field: Field) -> pd.DataFrame:
-    """Adds a derived field to the DataFrame if it doesn't exist."""
+    """Add a derived field to the DataFrame if it doesn't exist."""
     if field not in df.columns:
         if field == Field.HOUR:
             df[field] = df[Field.DATETIME].dt.hour
