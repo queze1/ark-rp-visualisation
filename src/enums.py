@@ -119,6 +119,11 @@ class Field(StrEnum):
         }.get(self.name, {})
 
     @property
+    def is_public(self) -> bool:
+        """Returns True if the field is intended for public use."""
+        return bool(self._metadata)
+
+    @property
     def axis_label(self):
         # Fall back to field ID if label was not provided
         return self._metadata.get("axis_label", self.value)
@@ -210,14 +215,12 @@ class Tab(StrEnum):
 
     @property
     def _metadata(self):
-        fields_with_label = [field for field in Field if field.label]
-        non_temporal_fields = [
-            field for field in fields_with_label if not field.temporal
-        ]
+        public_fields = [field for field in Field if field.is_public]
+        non_temporal_fields = [field for field in public_fields if not field.temporal]
         # Cannot group by COUNT because it's trivial, cannot group by SCENE_END because it's a boolean
         groupable_fields = [
             field
-            for field in fields_with_label
+            for field in public_fields
             if field not in {Field.COUNT, Field.SCENE_END}
         ]
 
@@ -240,7 +243,7 @@ class Tab(StrEnum):
                 "plot_type": Plot.BAR,
                 "fields": [
                     {
-                        "allowed": fields_with_label,
+                        "allowed": public_fields,
                     },
                     {
                         "allowed": groupable_fields,
@@ -252,7 +255,7 @@ class Tab(StrEnum):
                 "plot_type": Plot.SCATTER,
                 "fields": [
                     {
-                        "allowed": fields_with_label,
+                        "allowed": public_fields,
                     },
                     {
                         "allowed": groupable_fields,
@@ -264,10 +267,10 @@ class Tab(StrEnum):
                 "plot_type": Plot.SCATTER,
                 "fields": [
                     {
-                        "allowed": fields_with_label,
+                        "allowed": public_fields,
                     },
                     {
-                        "allowed": fields_with_label,
+                        "allowed": public_fields,
                     },
                     {
                         "allowed": groupable_fields,
@@ -278,7 +281,7 @@ class Tab(StrEnum):
 
     @property
     def label(self):
-        return self._metadata.get("label")
+        return self._metadata.get("label", self.value)
 
     @property
     def plot_type(self):
@@ -286,7 +289,7 @@ class Tab(StrEnum):
 
     @property
     def fields(self):
-        return self._metadata.get("fields")
+        return self._metadata.get("fields", [])
 
 
 class FilterOption(Enum):
@@ -372,11 +375,11 @@ class Filter(StrEnum):
 
     @property
     def label(self):
-        return self._metadata.get("label")
+        return self._metadata.get("label", self.value)
 
     @property
     def operators(self):
-        return self._metadata.get("operators")
+        return self._metadata.get("operators", [])
 
     @property
     def default_operator(self):
@@ -384,7 +387,7 @@ class Filter(StrEnum):
 
     @property
     def select_input(self):
-        return self._metadata.get("select_input")
+        return self._metadata["select_input"]
 
     @property
     def select_kwargs(self):

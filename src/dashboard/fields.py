@@ -1,6 +1,7 @@
 import dash_mantine_components as dmc
 from dash import Input, Output, Patch, State, ctx
 from dash_iconify import DashIconify
+from typing import cast, Any
 
 from dashboard.callback_patterns import (
     match_agg_containers,
@@ -123,14 +124,16 @@ def make_field_controls(tab: Tab):
 
     if len(tab.fields) == 2:
         top_separators = [Text.BY]
-        swap_axes_button.px = 8
+        setattr(swap_axes_button, "px", 8)
     elif len(tab.fields) == 3:
         top_separators = [Text.AND, Text.BY]
-        swap_axes_button.px = 15
+        setattr(swap_axes_button, "px", 15)
+    else:
+        raise NotImplementedError("Only tabs with 2 or 3 fields are supported")
 
     # Start with "Plot" text and hidden "Plot" text for spacing
     top_components = [make_field_text(Text.PLOT)]
-    bottom_components = [make_field_text(Text.PLOT, hidden=True)]
+    bottom_components: list = [make_field_text(Text.PLOT, hidden=True)]
 
     for i, field in enumerate(tab.fields):
         # Group by all fields except the last one
@@ -170,7 +173,7 @@ def make_field_controls(tab: Tab):
 
 def register_field_callbacks(app):
     def update_dropdown(selected_fields, current_options):
-        c = ctx.outputs_grouping
+        c = cast(dict[str, Any], ctx.outputs_grouping)
 
         def process_field_options():
             # Check if any temporal field is already selected
@@ -212,28 +215,29 @@ def register_field_callbacks(app):
                 for selected_field, options in zip(selected_fields, current_options)
             ]
 
-        def process_aggregates():
+        def process_aggregates() -> dict:
             # Get the list of aggregate outputs
             aggs = c["aggregates"]["value"]
             # Generate an empty patch for every agg output
-            patched_aggregates = dict(
+            patched_aggregates: dict = dict(
                 display=[Patch() for _ in aggs],
                 spacing_display=[Patch() for _ in aggs],
                 option=[Patch() for _ in aggs],
                 value=[Patch() for _ in aggs],
             )
 
-            triggered_index = ctx.triggered_id["index"]
-            # Update the agg of the changed dropdown if it has one
-            if triggered_index < len(aggs):
-                field = selected_fields[triggered_index]
-                agg_info = get_aggregation_info(field)
-                patched_aggregates["display"][triggered_index] = agg_info["display"]
-                patched_aggregates["spacing_display"][triggered_index] = agg_info[
-                    "display"
-                ]
-                patched_aggregates["option"][triggered_index] = agg_info["data"]
-                patched_aggregates["value"][triggered_index] = agg_info["value"]
+            if ctx.triggered_id:
+                triggered_index = ctx.triggered_id["index"]
+                # Update the agg of the changed dropdown if it has one
+                if triggered_index < len(aggs):
+                    field = selected_fields[triggered_index]
+                    agg_info = get_aggregation_info(field)
+                    patched_aggregates["display"][triggered_index] = agg_info["display"]
+                    patched_aggregates["spacing_display"][triggered_index] = agg_info[
+                        "display"
+                    ]
+                    patched_aggregates["option"][triggered_index] = agg_info["data"]
+                    patched_aggregates["value"][triggered_index] = agg_info["value"]
 
             return patched_aggregates
 

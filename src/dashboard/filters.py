@@ -143,7 +143,7 @@ def make_filter_controls(tab: Tab):
 def register_filter_callbacks(app):
     # Callback to reset filters
     def reset_filters(n_clicks):
-        if n_clicks is None:
+        if n_clicks is None or not ctx.triggered_id:
             raise PreventUpdate
 
         tab = Tab(ctx.triggered_id["tab"])
@@ -156,7 +156,7 @@ def register_filter_callbacks(app):
 
     # Callback to add a new filter
     def add_filter(n_clicks):
-        if n_clicks is None:
+        if n_clicks is None or not ctx.triggered_id:
             raise PreventUpdate
 
         tab = Tab(ctx.triggered_id["tab"])
@@ -171,9 +171,11 @@ def register_filter_callbacks(app):
 
     # Callback to update filter options
     def update_filter_options(filter_type):
-        filter_type = Filter(filter_type)
-
         c = ctx.triggered_id
+        if not c:
+            return
+
+        filter_type = Filter(filter_type)
         tab, index = c["tab"], c["index"]
         return (
             filter_type.operators,
@@ -202,7 +204,7 @@ def register_filter_callbacks(app):
 
     # Callback to delete a filter group
     def delete_filter(n_clicks, children):
-        if not any(n_clicks):
+        if not any(n_clicks) or not ctx.triggered_id:
             raise PreventUpdate
 
         # Find the filter group with same index and get its position in children
