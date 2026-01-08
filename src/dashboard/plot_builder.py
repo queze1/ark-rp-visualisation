@@ -1,3 +1,10 @@
+"""
+Reminder:
+Figure = The Plotly object (e.g. self._fig, make_figure())
+Graph = The Dash component/UI (e.g. dcc.Graph, match_graph, register_graph_callbacks)
+Plot = The type or logic (e.g. PlotBuilder, PlotType.LINE, plot_type)
+"""
+
 from dataclasses import dataclass
 from dataclasses import field as data_field
 from typing import Any, Optional
@@ -27,7 +34,7 @@ from dashboard.callback_patterns import (
     match_y_log,
 )
 from data_loader import DataLoader
-from enums import Field, Filter, GroupBy, Operator, Plot, Tab, Text
+from enums import Field, Filter, GroupBy, Operator, PlotType, Tab, Text
 from logging_setup import get_logger
 
 logger = get_logger(__name__)
@@ -183,7 +190,7 @@ class FigureConfig:
 class PlotBuilder:
     def __init__(
         self,
-        plot_type: Plot,
+        plot_type: PlotType,
         axis_config: AxisConfig,
         filter_config: FilterConfig,
         figure_config: FigureConfig,
@@ -310,7 +317,7 @@ class PlotBuilder:
         # Set 1 tick per unit if specific conditions met
         if (
             self.axis_config.x_axis in {Field.HOUR, Field.DAY}
-            and self.plot_type == Plot.SCATTER
+            and self.plot_type == PlotType.SCATTER
         ):
             layout_kwargs["xaxis"] = dict(dtick=1)
 
@@ -324,7 +331,7 @@ class PlotBuilder:
 
         self._fig.update_layout(**layout_kwargs)
 
-        if self.plot_type == Plot.SCATTER:
+        if self.plot_type == PlotType.SCATTER:
             self._fig.update_traces(textposition="top center", textfont_size=10)
 
         # Add moving averages from figure_config
@@ -360,12 +367,12 @@ def register_graph_callbacks(app):
         if n_clicks is None or not all(selected_fields) or not ctx.triggered_id:
             return [{}, "#", True]
 
-        tab = Tab(ctx.triggered_id["tab"])
+        active_tab = Tab(ctx.triggered_id["tab"])
 
         # Log graph creation
         summary = f"""
         User created a graph:
-            Plot Type: {tab.label}
+            Tab: {active_tab.label}
             {selected_axes[0]}: {selected_fields[0]}
             {selected_axes[1]}: {selected_fields[1]}
             Aggregations: {selected_aggregations}
@@ -374,17 +381,19 @@ def register_graph_callbacks(app):
         """
         logger.info(summary.strip())
 
+        fig = PlotBuilder(
+            plot_type=PlotType(active_tab.plot_type),
+            axis_config=AxisConfig.from_raw(
+                selected_fields=selected_fields,
+                selected_axes=selected_axes,
+                selected_aggregations=selected_aggregations,
+            ),
+            filter_config=FilterConfig.from_raw(*filters),
+            figure_config=FigureConfig.from_raw(**customisation),
+        ).build()
+
         return [
-            PlotBuilder(
-                plot_type=Plot(tab.plot_type),
-                axis_config=AxisConfig.from_raw(
-                    selected_fields=selected_fields,
-                    selected_axes=selected_axes,
-                    selected_aggregations=selected_aggregations,
-                ),
-                filter_config=FilterConfig.from_raw(*filters),
-                figure_config=FigureConfig.from_raw(**customisation),
-            ).build(),
+            fig,
             "https://dash.plotly.com/",
             False,
         ]

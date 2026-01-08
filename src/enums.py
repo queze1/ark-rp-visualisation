@@ -155,16 +155,16 @@ class Field(StrEnum):
         return self._metadata.get("aggregations", [])
 
 
-class Plot(StrEnum):
+class PlotType(StrEnum):
     BAR = "bar"
     SCATTER = "scatter"
     LINE = "line"
 
     def __call__(self, *args, **kwargs):
         plot_func = {
-            Plot.BAR: px.bar,
-            Plot.SCATTER: px.scatter,
-            Plot.LINE: px.line,
+            PlotType.BAR: px.bar,
+            PlotType.SCATTER: px.scatter,
+            PlotType.LINE: px.line,
         }.get(self)
 
         if plot_func:
@@ -227,7 +227,7 @@ class Tab(StrEnum):
         return {
             "LINE": {
                 "label": "Time Series",
-                "plot_type": Plot.LINE,
+                "plot_type": PlotType.LINE,
                 "fields": [
                     {
                         "allowed": non_temporal_fields,
@@ -240,7 +240,7 @@ class Tab(StrEnum):
             },
             "BAR": {
                 "label": "Bar",
-                "plot_type": Plot.BAR,
+                "plot_type": PlotType.BAR,
                 "fields": [
                     {
                         "allowed": public_fields,
@@ -252,7 +252,7 @@ class Tab(StrEnum):
             },
             "SCATTER": {
                 "label": "Scatter (2 vars)",
-                "plot_type": Plot.SCATTER,
+                "plot_type": PlotType.SCATTER,
                 "fields": [
                     {
                         "allowed": public_fields,
@@ -264,7 +264,7 @@ class Tab(StrEnum):
             },
             "SCATTER_2": {
                 "label": "Scatter (3 vars)",
-                "plot_type": Plot.SCATTER,
+                "plot_type": PlotType.SCATTER,
                 "fields": [
                     {
                         "allowed": public_fields,
