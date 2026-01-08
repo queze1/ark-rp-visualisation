@@ -6,6 +6,7 @@ from enums import Page
 match_graph = {"type": Page.GRAPH, "tab": MATCH}
 match_update_graph = {"type": Page.UPDATE_GRAPH_BUTTON, "tab": MATCH}
 match_fullscreen_button = {"type": Page.FULLSCREEN_BUTTON, "tab": MATCH}
+match_fullscreen_button_icon = {"type": Page.FULLSCREEN_BUTTON_ICON, "tab": MATCH}
 
 # Axes patterns
 match_axes = {"type": Page.AXIS_TEXT, "tab": MATCH, "index": ALL}

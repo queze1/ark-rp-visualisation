@@ -416,6 +416,7 @@ class Page(StrEnum):
     GRAPH = "graph"
     UPDATE_GRAPH_BUTTON = "update-graph-btn"
     FULLSCREEN_BUTTON = "full-screen-btn"
+    FULLSCREEN_BUTTON_ICON = "full-screen-btn-icon"
 
     FIELD_CONTAINER = "field-container"
     FIELD_DROPDOWN = "field-dropdown"

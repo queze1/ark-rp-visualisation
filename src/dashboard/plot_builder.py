@@ -12,6 +12,8 @@ from dashboard.callback_patterns import (
     match_filter_operators,
     match_filter_types,
     match_filter_values,
+    match_fullscreen_button,
+    match_fullscreen_button_icon,
     match_graph,
     match_mavg_7,
     match_mavg_30,
@@ -356,7 +358,7 @@ def register_graph_callbacks(app):
         customisation,
     ):
         if n_clicks is None or not all(selected_fields) or not ctx.triggered_id:
-            return {}
+            return [{}, "#", True]
 
         tab = Tab(ctx.triggered_id["tab"])
 
@@ -364,27 +366,35 @@ def register_graph_callbacks(app):
         summary = f"""
         User created a graph:
             Plot Type: {tab.label}
-            {selected_axes[0]}: ({selected_fields[0]})
-            {selected_axes[1]}: ({selected_fields[1]})
+            {selected_axes[0]}: {selected_fields[0]}
+            {selected_axes[1]}: {selected_fields[1]}
             Aggregations: {selected_aggregations}
             Filters: {filters}
             Customizations: {customisation}
         """
         logger.info(summary.strip())
 
-        return PlotBuilder(
-            plot_type=Plot(tab.plot_type),
-            axis_config=AxisConfig.from_raw(
-                selected_fields=selected_fields,
-                selected_axes=selected_axes,
-                selected_aggregations=selected_aggregations,
-            ),
-            filter_config=FilterConfig.from_raw(*filters),
-            figure_config=FigureConfig.from_raw(**customisation),
-        ).build()
+        return [
+            PlotBuilder(
+                plot_type=Plot(tab.plot_type),
+                axis_config=AxisConfig.from_raw(
+                    selected_fields=selected_fields,
+                    selected_axes=selected_axes,
+                    selected_aggregations=selected_aggregations,
+                ),
+                filter_config=FilterConfig.from_raw(*filters),
+                figure_config=FigureConfig.from_raw(**customisation),
+            ).build(),
+            "https://dash.plotly.com/",
+            False,
+        ]
 
     app.callback(
-        Output(match_graph, "figure"),
+        output=[
+            Output(match_graph, "figure"),
+            Output(match_fullscreen_button, "href"),
+            Output(match_fullscreen_button_icon, "disabled"),
+        ],
         inputs=dict(
             n_clicks=Input(match_update_graph, "n_clicks"),
             selected_fields=State(match_fields, "value"),

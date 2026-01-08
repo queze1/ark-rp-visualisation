@@ -7,6 +7,7 @@ from dashboard.fields import make_field_controls
 from dashboard.filters import make_filter_controls
 from enums import Page, Tab, Text
 
+
 def make_tab(tab: Tab):
     return dmc.Card(
         [
@@ -16,7 +17,6 @@ def make_tab(tab: Tab):
             dmc.Divider(mt=25, mb=15),
             make_customisation_controls(tab),
             dmc.Space(h=20),
-            
             # --- ACTION ROW ---
             dmc.Group(
                 [
@@ -24,9 +24,11 @@ def make_tab(tab: Tab):
                     dmc.Anchor(
                         dmc.ActionIcon(
                             DashIconify(icon="lucide:maximize", width=20),
+                            id={"type": Page.FULLSCREEN_BUTTON_ICON, "tab": tab},
                             variant="light",
                             size="lg",
                             color="blue",
+                            disabled=True,
                         ),
                         id={"type": Page.FULLSCREEN_BUTTON, "tab": tab},
                         href="#",
@@ -42,7 +44,6 @@ def make_tab(tab: Tab):
                 justify="flex-end",
                 gap="sm",
             ),
-
             dmc.Space(h=20),
             dcc.Loading(
                 dcc.Graph(
