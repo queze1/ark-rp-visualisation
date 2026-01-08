@@ -1,5 +1,6 @@
 import dash_mantine_components as dmc
 from dash import Input, Output
+from dash.exceptions import PreventUpdate
 
 from dashboard.callback_patterns import (
     match_mavg_7,
@@ -131,7 +132,7 @@ def make_customisation_controls(tab: Tab):
 def register_customisation_callbacks(app):
     def reset_customisation(n_clicks):
         if n_clicks is None:
-            return
+            raise PreventUpdate
 
         # Set all options to empty
         return dict(
