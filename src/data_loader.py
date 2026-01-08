@@ -30,7 +30,7 @@ class DataLoader:
     """DataLoader singleton for loading the dataset."""
 
     _instance = None
-    _df: pd.DataFrame
+    _df: pd.DataFrame | None
 
     def __new__(cls, *args, **kwargs):
         if cls._instance is None:
@@ -186,6 +186,9 @@ class DataLoader:
         """
         Remove potentially sensitive data from the dataset.
         """
+        if self._df is None:
+            return self
+
         self._df = self._df.drop(
             columns=[Field.AUTHOR_ID, Field.CONTENT, Field.ATTACHMENTS]
         )
@@ -215,6 +218,10 @@ class DataLoader:
         """
         if self._df is None:
             self.load_data()
+
+        if self._df is None:
+            raise RuntimeError("Failed to load data")
+
         return self._df
 
     def reset(self):
