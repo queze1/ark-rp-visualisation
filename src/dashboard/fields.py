@@ -1,7 +1,8 @@
+from typing import Any, cast
+
 import dash_mantine_components as dmc
 from dash import Input, Output, Patch, State, ctx
 from dash_iconify import DashIconify
-from typing import cast, Any
 
 from dashboard.callback_patterns import (
     match_agg_containers,

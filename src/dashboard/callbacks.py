@@ -3,7 +3,7 @@ from dashboard.fields import register_field_callbacks
 from dashboard.filters import (
     register_filter_callbacks,
 )
-from dashboard.plot_builder import (
+from dashboard.graph_engine import (
     register_graph_callbacks,
 )
 

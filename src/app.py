@@ -5,7 +5,6 @@ from dashboard.callbacks import register_callbacks
 from dashboard.layout import layout
 from enums import Text
 
-
 _dash_renderer._set_react_version("18.2.0")
 
 app = Dash(external_stylesheets=dmc.styles.ALL, prevent_initial_callbacks=True)  # type: ignore
