@@ -12,7 +12,7 @@ from enums import Page
 def register_router_callbacks(app):
     def display_page(href):
         if not href:
-            return [header, tabs, footer]
+            return dict(content=[header, tabs, footer], fluid=False)
 
         parsed_url = urlparse(href)
 
@@ -20,11 +20,17 @@ def register_router_callbacks(app):
         if parsed_url.path == "/graph":
             params = parse_qs(parsed_url.query)
             state_str = params.get("state", [None])[0]
+
             if not state_str:
-                return dmc.Alert("No graph URL", color="red")
+                return dict(content=dmc.Alert("No graph URL", color="red"), fluid=False)
+
             state = decode_state(state_str)
+
             if not state:
-                return dmc.Alert("Invalid graph URL", color="red")
+                return dict(
+                    content=dmc.Alert("Invalid graph URL", color="red"), fluid=False
+                )
+
             return dict(content=make_fullscreen_layout(state), fluid=True)
 
         # /: Graph dashboard
