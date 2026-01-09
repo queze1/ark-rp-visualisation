@@ -1,8 +1,22 @@
-# ark-rp-visualisation
-TODO
+# ARK RP Visualisation
+
+A dashboard for analysing Discord roleplay data. Built to visualise engagement and trends for the *ARK: Journey Through the Realms* (2024) Dungeons and Dragons campaign.
+
+*Not endorsed by the UNSW Tabletop Games Society.*
+
+## Technical Highlights
+- **Pattern Matching**: Uses Dash's `MATCH` and `ALL` selectors to handle dynamic filter groups.
+- **Data Pipeline**: Cleans and aggregates raw Discord exports via Pandas; serves data via AWS S3 in production.
+
+## Setup
+1. `pip install -r requirements.txt`
+2. Create a `.env` with your S3 credentials.
+3. `python src/app.py`
 
 ## Features
-TODO
+- Time-series analysis with 7/30 day moving averages.
+- Multi-variable scatter plots.
+- Filtering by author, date, and reaction count.
 
 ## Hosting
 TODO
