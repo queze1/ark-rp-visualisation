@@ -2,7 +2,7 @@ import dash_mantine_components as dmc
 from dash import dcc
 
 from dashboard.graph_engine import PlotBuilder
-from dashboard.models import AxisConfig, FigureConfig, FilterConfig
+from models import AxisConfig, FigureConfig, FilterConfig
 from enums import PlotType, Tab, Text
 
 

@@ -31,7 +31,7 @@ from dashboard.callback_patterns import (
     match_y_label,
     match_y_log,
 )
-from dashboard.models import AxisConfig, FigureConfig, FilterConfig
+from models import AxisConfig, FigureConfig, FilterConfig
 from dashboard.serialisation import encode_state
 from data_loader import DataLoader
 from enums import Field, PlotType, Tab, Text
