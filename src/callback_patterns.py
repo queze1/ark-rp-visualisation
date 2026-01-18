@@ -1,6 +1,6 @@
 from dash import ALL, MATCH
 
-from enums import Page
+from core.enums import Page
 
 # Graph patterns
 match_graph = {"type": Page.GRAPH, "tab": MATCH}

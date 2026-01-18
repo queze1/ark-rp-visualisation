@@ -3,7 +3,7 @@ import json
 import zlib
 from typing import Any
 
-from logging_setup import get_logger
+from utils.logging_setup import get_logger
 
 logger = get_logger(__name__)
 

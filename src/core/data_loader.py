@@ -7,7 +7,7 @@ import pandas as pd
 from dotenv import load_dotenv
 
 from enums import Field
-from logging_setup import get_logger
+from utils.logging_setup import get_logger
 
 logger = get_logger(__name__)
 

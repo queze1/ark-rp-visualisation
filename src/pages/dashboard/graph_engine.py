@@ -35,7 +35,7 @@ from models import AxisConfig, FigureConfig, FilterConfig
 from utils.serialisation import encode_state
 from data_loader import DataLoader
 from enums import Field, PlotType, Tab, Text
-from logging_setup import get_logger
+from utils.logging_setup import get_logger
 
 logger = get_logger(__name__)
 
