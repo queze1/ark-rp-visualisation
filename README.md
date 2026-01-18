@@ -11,6 +11,8 @@ A dashboard for analysing Discord message metadata from the *ARK: Journey Throug
 | :------------------------------------------------------------------- | :--------------------------------------------------------: | :--------------------------------------------------------: |
 | <img src="docs/images/time_series.png" title="Time Series" width="100%"> | <img src="docs/images/bar.png" title="Bar" width="100%"> | <img src="docs/images/scatter.png" title="Scatter" width="100%"> |
 
+</details>
+
 ## Getting Started
 
 ### Prerequisites
