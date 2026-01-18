@@ -13,6 +13,15 @@ A dashboard for analysing Discord message metadata from the *ARK: Journey Throug
 
 </details>
 
+## Built With
+
+* [![Dash][Dash-badge]][Dash-url]
+* [![Plotly][Plotly-badge]][Plotly-url]
+* [![Pandas][Pandas-badge]][Pandas-url]
+* [![Dash Mantine Components][DMC-badge]][DMC-url]
+* [![Boto3][Boto3-badge]][Boto3-url]
+* [![Docker][Docker-badge]][Docker-url]
+
 ## Getting Started
 
 ### Prerequisites
