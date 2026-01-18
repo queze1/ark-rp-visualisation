@@ -1,35 +1,51 @@
 # ARK RP Visualisation
+> *This project is unofficial and not endorsed by the UNSW Tabletop Games Society.*
 
-A dashboard for analysing Discord roleplay data. Built to visualise engagement and trends for the *ARK: Journey Through the Realms* (2024) Dungeons and Dragons campaign.
+A dashboard for analysing Discord message metadata from the *ARK: Journey Through the Realms* (2024) Dungeons and Dragons campaign.
 
-*Not endorsed by the UNSW Tabletop Games Society.*
+<details>
+<summary>Screenshots</summary>
+<br>
 
-## Technical Highlights
-- **Pattern Matching**: Uses Dash's `MATCH` and `ALL` selectors to handle dynamic filter groups.
-- **Data Pipeline**: Cleans and aggregates raw Discord exports via Pandas; serves data via AWS S3 in production.
+|                               Time Series                            |                               Bar                          |                               Scatter                      | 
+| :------------------------------------------------------------------- | :--------------------------------------------------------: | :--------------------------------------------------------: |
+| <img src="docs/images/time_series.png" title="Time Series" width="100%"> | <img src="docs/images/bar.png" title="Bar" width="100%"> | <img src="docs/images/scatter.png" title="Scatter" width="100%"> |
 
-## Setup
+## Getting Started
+
+### Prerequisites
+TODO
+
+### Installation
 1. `pip install -r requirements.txt`
 2. Create a `.env` with your S3 credentials.
 3. `python src/app.py`
 
-## Features
-- Time-series analysis with 7/30 day moving averages.
-- Multi-variable scatter plots.
-- Filtering by author, date, and reaction count.
-
-## Hosting
+## Usage
 TODO
 
-## Packages Used
-- [Dash](https://dash.plotly.com/) - Web framework.
-- [Plotly](https://plotly.com/python/) - Graphing library.
-- [Pandas](https://pandas.pydata.org/) - For data manipulation.
-- [Dash Mantine Components](https://wwwdash-mantine-components.com/) - Convenience library for prettifying the GUI.
-- [Gunicorn](https://gunicorn.org/) - HTTP server for running on Docker.
-- [Boto3](https://boto3.amazonaws.com/v1/documentation/api/latest/index.html) - AWS SDK for Python, for getting the dataset from Amazon S3.
-- [python-dotenv](https://github.com/theskumar/python-dotenv) - For easily setting enviroment variables in VSCode.
-- [pytest](https://docs.pytest.org/en/stable/) - For testing.
-- [Memray](https://github.com/bloomberg/memray) - For profiling memory usage.
-- [Mypy](https://www.mypy-lang.org/) - For static type checking with Python.
-- [Ruff](https://github.com/astral-sh/ruff) - For linting.
+## Roadmap
+- [ ] Add tooltips & help icons
+- [ ] Add demo site
+- [ ] Add GIF of usage
+- [ ] Add preset graphs to website
+
+## License
+
+This project is licensed under the **MIT license**.
+
+See [LICENSE](LICENSE) for more information.
+
+<!-- MARKDOWN LINKS & IMAGES -->
+[Dash-badge]: https://img.shields.io/badge/dash-008DE4.svg?style=for-the-badge&logo=plotly&logoColor=white
+[Dash-url]: https://dash.plotly.com/
+[Plotly-badge]: https://img.shields.io/badge/plotly-7A76FF.svg?style=for-the-badge&logo=plotly&logoColor=white
+[Plotly-url]: https://plotly.com/python/
+[Pandas-badge]: https://img.shields.io/badge/Pandas-150458?style=for-the-badge&logo=pandas&logoColor=white
+[Pandas-url]: https://pandas.pydata.org/
+[DMC-badge]: https://img.shields.io/badge/Dash_Mantine_Components-339af0?style=for-the-badge&logo=mantine&logoColor=white
+[DMC-url]: https://www.dash-mantine-components.com/
+[Boto3-badge]: https://img.shields.io/badge/boto3-%23FF9900.svg?style=for-the-badge&logoColor=white
+[Boto3-url]: https://aws.amazon.com/s3/
+[Docker-badge]: https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white
+[Docker-url]: https://www.docker.com/
