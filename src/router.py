@@ -4,7 +4,7 @@ import dash_mantine_components as dmc
 from dash import Input, Output
 
 from dashboard.layout import footer, header, tabs
-from dashboard.serialisation import decode_state
+from utils.serialisation import decode_state
 from dashboard.fullscreen_layout import make_fullscreen_layout
 from enums import Page
 

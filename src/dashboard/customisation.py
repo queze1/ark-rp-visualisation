@@ -2,7 +2,7 @@ import dash_mantine_components as dmc
 from dash import Input, Output
 from dash.exceptions import PreventUpdate
 
-from dashboard.callback_patterns import (
+from callback_patterns import (
     match_mavg_7,
     match_mavg_30,
     match_reset_customisation,

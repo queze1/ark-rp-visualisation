@@ -6,7 +6,7 @@ from dash import Input, Output, Patch, State, ctx
 from dash.exceptions import PreventUpdate
 from dash_iconify import DashIconify
 
-from dashboard.callback_patterns import (
+from callback_patterns import (
     match_add_filter,
     match_delete_filter,
     match_filter_container,

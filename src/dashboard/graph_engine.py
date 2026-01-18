@@ -10,7 +10,7 @@ from typing import Optional
 import pandas as pd
 from dash import Input, Output, State, ctx
 
-from dashboard.callback_patterns import (
+from callback_patterns import (
     match_agg_dropdowns,
     match_axes,
     match_fields,
@@ -32,7 +32,7 @@ from dashboard.callback_patterns import (
     match_y_log,
 )
 from models import AxisConfig, FigureConfig, FilterConfig
-from dashboard.serialisation import encode_state
+from utils.serialisation import encode_state
 from data_loader import DataLoader
 from enums import Field, PlotType, Tab, Text
 from logging_setup import get_logger

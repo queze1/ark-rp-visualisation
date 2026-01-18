@@ -4,7 +4,7 @@ import dash_mantine_components as dmc
 from dash import Input, Output, Patch, State, ctx
 from dash_iconify import DashIconify
 
-from dashboard.callback_patterns import (
+from callback_patterns import (
     match_agg_containers,
     match_agg_dropdowns,
     match_agg_spacings,
