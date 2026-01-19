@@ -6,8 +6,9 @@ import boto3
 import pandas as pd
 from dotenv import load_dotenv
 
-from enums import Field
 from utils.logging_setup import get_logger
+
+from .enums import Field
 
 logger = get_logger(__name__)
 

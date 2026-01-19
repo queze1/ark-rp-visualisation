@@ -1,12 +1,12 @@
 import dash_mantine_components as dmc
 from dash import dcc
 
-from dashboard.graph_engine import PlotBuilder
-from models import AxisConfig, FigureConfig, FilterConfig
-from enums import PlotType, Tab, Text
+from core import PlotBuilder
+from core.enums import PlotType, Tab, Text
+from core.models import AxisConfig, FigureConfig, FilterConfig
 
 
-def make_fullscreen_layout(state: dict):
+def make_layout(state: dict):
     active_tab = Tab(state["tab"])
     fig = PlotBuilder(
         plot_type=PlotType(active_tab.plot_type),

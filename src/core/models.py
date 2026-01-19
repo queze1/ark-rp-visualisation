@@ -4,7 +4,7 @@ from typing import Any, Optional
 
 import pandas as pd
 
-from enums import Field, Filter, GroupBy, Operator, Text
+from .enums import Field, Filter, GroupBy, Operator, Text
 
 
 def _add_derived_field(df: pd.DataFrame, field: Field) -> pd.DataFrame:

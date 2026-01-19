@@ -5,7 +5,7 @@ from dash_iconify import DashIconify
 from dashboard.customisation import make_customisation_controls
 from dashboard.fields import make_field_controls
 from dashboard.filters import make_filter_controls
-from enums import Page, Tab, Text
+from core.enums import Page, Tab, Text
 
 
 def make_tab(tab: Tab):
