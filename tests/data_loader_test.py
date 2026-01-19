@@ -8,8 +8,8 @@ from pandas.api.types import (
 )
 from pandas.testing import assert_frame_equal
 
-from data_loader import DataLoader
-from enums import Field
+from core import DataLoader
+from core.enums import Field
 
 
 def is_categorical_dtype(column):
@@ -117,7 +117,4 @@ def test_equal(load_data_nocache, load_data_other):
     df_nocache = load_data_nocache
     df_other = load_data_other
 
-    (
-        assert_frame_equal(df_nocache, df_other, check_dtype=True),
-        "DataFrames are not equal.",
-    )
+    assert_frame_equal(df_nocache, df_other, check_dtype=True)
