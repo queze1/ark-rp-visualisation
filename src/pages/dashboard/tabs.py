@@ -2,10 +2,11 @@ import dash_mantine_components as dmc
 from dash import dcc
 from dash_iconify import DashIconify
 
-from dashboard.customisation import make_customisation_controls
-from dashboard.fields import make_field_controls
-from dashboard.filters import make_filter_controls
 from core.enums import Page, Tab, Text
+
+from .customisation import make_customisation_controls
+from .fields import make_field_controls
+from .filters import make_filter_controls
 
 
 def make_tab(tab: Tab):
@@ -45,8 +46,8 @@ def make_tab(tab: Tab):
                 gap="sm",
             ),
             dmc.Space(h=20),
-            dcc.Loading(
-                dcc.Graph(
+            dcc.Loading(  # pyright: ignore[reportPrivateImportUsage]
+                dcc.Graph(  # pyright: ignore[reportPrivateImportUsage]
                     id={"type": Page.GRAPH, "tab": tab},
                 ),
                 type="default",

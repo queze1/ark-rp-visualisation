@@ -1,8 +1,9 @@
 import dash_mantine_components as dmc
-from dash import dcc, html
+from dash import html
 
-from dashboard.tabs import make_tab
-from core.enums import Tab, Text, Page
+from core.enums import Tab, Text
+
+from .tabs import make_tab
 
 header = dmc.Stack(
     [
@@ -59,9 +60,9 @@ footer = html.Footer(
 
 layout = dmc.Container(
     [
-        dcc.Location(id=Page.URL, refresh=False),
-        html.Div(id=Page.CONTENT),
+        header,
+        tabs,
+        footer,
     ],
-    id=Page.CONTAINER,
-    fluid=True,
+    fluid=False,
 )
