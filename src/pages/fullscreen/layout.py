@@ -1,3 +1,5 @@
+from typing import Any
+
 import dash_mantine_components as dmc
 from dash import dcc
 
@@ -6,7 +8,7 @@ from core.enums import PlotType, Tab, Text
 from core.models import AxisConfig, FigureConfig, FilterConfig
 
 
-def make_layout(state: dict):
+def layout(state: dict[str, Any]):
     active_tab = Tab(state["tab"])
     fig = PlotBuilder(
         plot_type=PlotType(active_tab.plot_type),
@@ -27,7 +29,7 @@ def make_layout(state: dict):
                     "color": "black",
                 },
             ),
-            dcc.Graph(
+            dcc.Graph(  # pyright: ignore[reportPrivateImportUsage]
                 figure=fig,
                 style={"height": "95vh"},
             ),

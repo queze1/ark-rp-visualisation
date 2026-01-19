@@ -413,7 +413,6 @@ class Text(StrEnum):
 
 
 class Page(StrEnum):
-    CONTAINER = "container"
     URL = "url"
     CONTENT = "content"
 

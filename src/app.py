@@ -1,22 +1,20 @@
 import dash_mantine_components as dmc
-from dash import Dash, _dash_renderer, page_container
+from dash import Dash, _dash_renderer
 
 from core.enums import Text
-from pages.dashboard import register_dashboard
+from layout import layout
+from pages.dashboard import register_dashboard_callbacks
+from router import register_router_callbacks
 
-# Required for DMC 0.14+
+# Required for DMC
 _dash_renderer._set_react_version("18.2.0")
 
-app = Dash(
-    __name__,
-    use_pages=True,
-    external_stylesheets=dmc.styles.ALL,
-    prevent_initial_callbacks=True,
-)
+app = Dash(external_stylesheets=dmc.styles.ALL, prevent_initial_callbacks=True)  # type: ignore
 app.title = Text.TITLE
-app.layout = dmc.MantineProvider(page_container)
+app.layout = layout
 
-register_dashboard()
+register_router_callbacks(app)
+register_dashboard_callbacks(app)
 
 if __name__ == "__main__":
     app.run(debug=True)
