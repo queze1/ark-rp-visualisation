@@ -1,7 +1,8 @@
 [tool.pytest.ini_options]
 pythonpath = "src"
 markers = [
-    "local",
+    "local",  # marks tests that rely on local files
+    "s3",     # marks tests that require AWS S3 access
 ]
 
 [[tool.mypy.overrides]]

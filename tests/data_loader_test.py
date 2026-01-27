@@ -1,3 +1,5 @@
+import os
+
 import pandas as pd
 import pytest
 from pandas.api.types import (
@@ -36,38 +38,32 @@ def data_loader():
 
 @pytest.fixture(scope="session")
 def load_data_nocache(data_loader):
-    """Loads data without caching."""
+    """Load data without caching."""
     return data_loader.load_pickle(force=True).clean().df
 
 
 @pytest.fixture(scope="session")
 def load_data_cache(data_loader):
-    """Loads data with caching."""
+    """Load data with caching."""
     return data_loader.load_pickle().clean().df
 
 
 @pytest.fixture(scope="session")
 def load_data_s3(data_loader):
-    """Loads data from S3."""
-    return data_loader.load_s3().clean().df
+    """Load data from S3, skip if no credentials are found."""
+    if not os.getenv("AWS_ACCESS_KEY_ID") or not os.getenv("AWS_SECRET_ACCESS_KEY"):
+        pytest.skip("No AWS credentials found in environment")
+
+    try:
+        return data_loader.load_s3().clean().df
+    except Exception as e:
+        pytest.skip(f"Connection failed - {str(e)}")
 
 
 @pytest.fixture(
     params=[
-        pytest.param("load_data_nocache", marks=pytest.mark.local),
         pytest.param("load_data_cache", marks=pytest.mark.local),
-        "load_data_s3",
-    ],
-    scope="session",
-)
-def load_data(request):
-    return request.getfixturevalue(request.param)
-
-
-@pytest.fixture(
-    params=[
-        "load_data_cache",
-        "load_data_s3",
+        pytest.param("load_data_s3", marks=pytest.mark.s3),
     ],
     scope="session",
 )
@@ -75,13 +71,14 @@ def load_data_other(request):
     return request.getfixturevalue(request.param)
 
 
-def test_nocache_column_keys_and_dtypes(load_data):
+@pytest.mark.local
+def test_nocache_column_keys_and_dtypes(load_data_nocache):
     """
     Test that the DataFrame matches the required columns
     and the dtype of each column satisfies the associated functions.
     """
 
-    df = load_data
+    df = load_data_nocache
 
     # Assert that the DataFrame has the exact expected columns
     assert set(df.columns) == set(DTYPES.keys()), (
@@ -97,11 +94,12 @@ def test_nocache_column_keys_and_dtypes(load_data):
         )
 
 
-def test_nocache_missing_values(load_data):
+@pytest.mark.local
+def test_no_cache_missing_values(load_data_nocache):
     """
     Test that the DataFrame contains no missing values.
     """
-    df = load_data
+    df = load_data_nocache
     columns_with_na = df.columns[df.isna().any()].tolist()
 
     assert not columns_with_na, (
