@@ -1,6 +1,6 @@
 name: Run Pytest
 
-on: [push, pull_request]
+on: [push, pull_request, workflow_dispatch]
 
 jobs:
   test:
@@ -12,18 +12,14 @@ jobs:
       ENV: ${{ secrets.ENV }}
 
     steps:
-      - uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.11"
-          cache: 'pip'
-          
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+      - uses: actions/checkout@v6
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Install the project
+        run: uv sync --locked --all-extras --dev
 
       - name: Test with pytest
         run: |
-          pytest -m "not (local or s3)"
+          uv run pytest -m "not (local or s3)"

@@ -1,3 +1,22 @@
+[project]
+name = "ark-rp-visualisation"
+version = "0.1.0"
+description = "A dashboard for analysing Discord message metadata from the ARK: Journey Through the Realms (2024) Dungeons and Dragons campaign."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "boto3>=1.42.35",
+    "dash>=3.4.0",
+    "dash-iconify>=0.1.2",
+    "dash-mantine-components>=2.5.1",
+    "gunicorn>=24.1.1",
+    "pandas>=3.0.0",
+    "pandas-stubs>=2.3.3.260113",
+    "plotly>=6.5.2",
+    "pytest>=9.0.2",
+    "python-dotenv>=1.2.1",
+]
+
 [tool.pytest.ini_options]
 pythonpath = "src"
 markers = [
