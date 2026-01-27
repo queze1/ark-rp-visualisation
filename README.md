@@ -42,7 +42,6 @@ TODO
 
 ## Roadmap
 - [ ] Add tooltips & help icons
-- [ ] Add demo site
 - [ ] Add GIF of usage
 - [ ] Add preset graphs to website
 
