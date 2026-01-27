@@ -25,12 +25,17 @@ A dashboard for analysing Discord message metadata from the *ARK: Journey Throug
 ## Getting Started
 
 ### Prerequisites
-TODO
+- [uv](https://docs.astral.sh/uv/)
+- [Docker](https://www.docker.com/) (optional)
 
 ### Installation
-1. `pip install -r requirements.txt`
-2. Create a `.env` with your S3 credentials.
-3. `python src/app.py`
+```bash
+git clone https://github.com/queze1/ark-rp-visualisation.git
+cd ark-rp-visualisation
+
+# Set up environment
+uv sync
+```
 
 ## Usage
 TODO

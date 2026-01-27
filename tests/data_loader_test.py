@@ -6,7 +6,6 @@ from pandas.api.types import (
     is_bool_dtype,
     is_datetime64_any_dtype,
     is_integer_dtype,
-    is_object_dtype,
 )
 from pandas.testing import assert_frame_equal
 
@@ -21,7 +20,6 @@ def is_categorical_dtype(column):
 DTYPES = {
     Field.AUTHOR: is_categorical_dtype,
     Field.DATETIME: is_datetime64_any_dtype,
-    Field.REACTIONS: is_object_dtype,
     Field.WORD_COUNT: is_integer_dtype,
     Field.CHANNEL_NAME: is_categorical_dtype,
     Field.REACTION_COUNT: is_integer_dtype,
@@ -37,27 +35,24 @@ def data_loader():
 
 
 @pytest.fixture(scope="session")
-def load_data_nocache(data_loader):
+def load_data_nocache(data_loader: DataLoader):
     """Load data without caching."""
-    return data_loader.load_pickle(force=True).clean().df
+    return data_loader.load_cache(force=True).clean().df
 
 
 @pytest.fixture(scope="session")
-def load_data_cache(data_loader):
+def load_data_cache(data_loader: DataLoader):
     """Load data with caching."""
-    return data_loader.load_pickle().clean().df
+    return data_loader.load_cache().clean().df
 
 
 @pytest.fixture(scope="session")
-def load_data_s3(data_loader):
+def load_data_s3(data_loader: DataLoader):
     """Load data from S3, skip if no credentials are found."""
     if not os.getenv("AWS_ACCESS_KEY_ID") or not os.getenv("AWS_SECRET_ACCESS_KEY"):
         pytest.skip("No AWS credentials found in environment")
 
-    try:
-        return data_loader.load_s3().clean().df
-    except Exception as e:
-        pytest.skip(f"Connection failed - {str(e)}")
+    return data_loader.load_s3().clean().df
 
 
 @pytest.fixture(

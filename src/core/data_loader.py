@@ -2,7 +2,6 @@ import glob
 import os
 import re
 
-import boto3
 import pandas as pd
 from dotenv import load_dotenv
 
@@ -17,8 +16,11 @@ load_dotenv(override=True)
 
 ENV = os.getenv("ENV", "development")
 DATA_PATH = "data/16-2-2025"
-CACHE_PATH = ".cache/16-2-2025.pkl"
-S3_PATH = dict(Bucket=os.getenv("S3_BUCKET"), Key="16-2-2025.pkl")
+CACHE_PATH = ".cache/16-2-2025.parquet"
+
+S3_BUCKET = os.getenv("S3_BUCKET")
+S3_KEY = "16-2-2025.parquet"
+S3_URL = f"s3://{S3_BUCKET}/{S3_KEY}"
 
 DATE_FORMAT = "%Y-%m-%dT%H:%M:%S.%f%z"
 TIME_ZONE = "Australia/Sydney"
@@ -106,13 +108,12 @@ class DataLoader:
     @staticmethod
     def _process_reactions(df: pd.DataFrame) -> pd.DataFrame:
         """
-        Process the 'reactions' column and add a 'reactionCount' column to a DataFrame.
+        Replace the 'reactions' column with a 'reactionCount' column in a DataFrame.
         """
-        reactions = df["reactions"].apply(DataLoader._reactions_to_dict)
+        reactions = df[Field.REACTIONS].apply(DataLoader._reactions_to_dict)
         reaction_count = [max(d.values(), default=0) for d in reactions]
-        df[Field.REACTIONS] = reactions
         df[Field.REACTION_COUNT] = pd.to_numeric(reaction_count, downcast="integer")
-        return df
+        return df.drop(Field.REACTIONS, axis=1)
 
     @staticmethod
     def _process_datetime(df, format=DATE_FORMAT):
@@ -140,12 +141,12 @@ class DataLoader:
         return df
 
     @staticmethod
-    def _write_cache(df):
+    def _write_cache(df: pd.DataFrame):
         os.makedirs(os.path.dirname(CACHE_PATH), exist_ok=True)
-        df.to_pickle(CACHE_PATH)
+        df.to_parquet(CACHE_PATH)
 
     @classmethod
-    def _read_csvs(cls):
+    def _read_csvs(cls) -> pd.DataFrame:
         # Read and combine CSVs
         csv_paths = glob.glob(os.path.join(DATA_PATH, "*.csv"))
         dfs = [cls._read_csv(path) for path in csv_paths]
@@ -157,13 +158,13 @@ class DataLoader:
         df[Field.AUTHOR] = df[Field.AUTHOR].astype("category")
         return df
 
-    def load_pickle(self, force: bool = False):
+    def load_cache(self, force: bool = False):
         """
-        Load the dataset from a pickle cache. If no cache exists, process raw CSVs and cache the result.
+        Load the dataset from a cache. If no cache exists, process raw CSVs and cache the result.
         """
         if not force and os.path.exists(CACHE_PATH):
             logger.info(f"Cache found: Loading from {CACHE_PATH}")
-            self._df = pd.read_pickle(CACHE_PATH)
+            self._df = pd.read_parquet(CACHE_PATH)
             return self
 
         # If cache not used, get from raw CSVs
@@ -174,13 +175,10 @@ class DataLoader:
 
     def load_s3(self):
         """
-        Load the dataset from a S3 object.
+        Load the dataset from Amazon S3.
         """
-        s3 = boto3.client("s3")
-        with s3.get_object(**S3_PATH)["Body"] as response:
-            self._df = pd.read_pickle(response)
-
-        logger.info(f"S3 found: Loading from {S3_PATH['Bucket']}/{S3_PATH['Key']}")
+        logger.info(f"S3 found: Loading from {S3_URL}")
+        self._df = pd.read_parquet(S3_URL)
         return self
 
     def clean(self):
@@ -200,7 +198,7 @@ class DataLoader:
         Load data based on the environment.
         """
         if ENV == "development":
-            self.load_pickle(force=force)
+            self.load_cache(force=force)
         elif ENV == "production":
             self.load_s3()
         else:
@@ -232,5 +230,5 @@ class DataLoader:
 
 if __name__ == "__main__":
     pd.options.display.max_columns = None  # type: ignore[assignment]
-    df = DataLoader().load_pickle(force=True).df
+    df = DataLoader().load_cache(force=True).df
     print(df)
