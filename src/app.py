@@ -13,6 +13,9 @@ app = Dash(external_stylesheets=dmc.styles.ALL, prevent_initial_callbacks=True) 
 app.title = Text.TITLE
 app.layout = layout
 
+# Expose Flask server to Gunicorn
+server = app.server
+
 register_router_callbacks(app)
 register_dashboard_callbacks(app)
 

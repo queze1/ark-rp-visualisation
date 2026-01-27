@@ -1,4 +1,4 @@
-# From https://github.com/astral-sh/uv-docker-example/blob/main/Dockerfile
+# Based on https://github.com/astral-sh/uv-docker-example/blob/main/Dockerfile
 
 # Use a Python image with uv pre-installed
 FROM ghcr.io/astral-sh/uv:python3.11-bookworm-slim
@@ -6,6 +6,9 @@ FROM ghcr.io/astral-sh/uv:python3.11-bookworm-slim
 # Setup a non-root user
 RUN groupadd --system --gid 999 nonroot \
  && useradd --system --gid 999 --uid 999 --create-home nonroot
+
+# Use the non-root user
+USER nonroot
 
 # Install the project into `/app`
 WORKDIR /app
@@ -40,9 +43,6 @@ ENV PATH="/app/.venv/bin:$PATH"
 # Reset the entrypoint, don't invoke `uv`
 ENTRYPOINT []
 
-# Use the non-root user to run our application
-USER nonroot
-
 # --- Project specific ---
 
 # Set PYTHONPATH
@@ -52,4 +52,4 @@ ENV PYTHONPATH=/app/src
 EXPOSE 10000
 
 # Run the application.
-CMD ["gunicorn", "src.app", "-b", "0.0.0.0:10000", "--workers=1"]
+CMD ["gunicorn", "src.app:server", "-b", "0.0.0.0:10000", "--workers=1"]

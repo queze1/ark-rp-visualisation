@@ -34,3 +34,6 @@ LICENSE
 README.md
 **/output
 **/notebooks
+
+__pycache__
+.cache
