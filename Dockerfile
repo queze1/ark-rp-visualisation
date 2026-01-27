@@ -48,8 +48,8 @@ ENTRYPOINT []
 # Set PYTHONPATH
 ENV PYTHONPATH=/app/src
 
-# Expose the port that the application listens on.
-EXPOSE 10000
-
-# Run the application.
-CMD ["gunicorn", "src.app:server", "-b", "0.0.0.0:10000", "--workers=1"]
+# Run the application
+# We use "sh -c" to allow the variable ${PORT} to be read.
+# "exec" is used to ensure gunicorn takes over the process ID so it can handle signals (like shutdown) correctly.
+# ${PORT:-10000} means: Use the PORT env var if it exists; otherwise use 10000.
+CMD ["sh", "-c", "exec gunicorn src.app:server -b 0.0.0.0:${PORT:-10000} --workers=1"]
