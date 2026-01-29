@@ -3,7 +3,7 @@
 
 A dashboard for analysing Discord message metadata from the *ARK: Journey Through the Realms* (2024) Dungeons and Dragons campaign.
 
-**Link:** https://ark-rp-visualisation.fly.dev/
+**Link:** https://ark-rp-visualisation.fly.dev/ (may take >30s for a cold start)
 
 <details>
 <summary>Screenshots</summary>
@@ -28,10 +28,12 @@ A dashboard for analysing Discord message metadata from the *ARK: Journey Throug
 
 ### Prerequisites
 - [uv](https://docs.astral.sh/uv/)
+- Your [Discord exports](https://github.com/Tyrrrz/DiscordChatExporter) (CSV format)
 - [Docker](https://www.docker.com/) (optional)
 - An [S3 bucket](https://aws.amazon.com/s3/) (if using S3)
 
 ### Installation
+*As the ARK dataset is private, this guide assumes you already have access to it, or intend to fork this repo.*
 1. Run the following commands:
 ```bash
 git clone https://github.com/queze1/ark-rp-visualisation.git
@@ -39,7 +41,6 @@ cd ark-rp-visualisation
 uv sync
 ```
 2. Create a `/data` directory if it does not exist, and place your Discord CSV exports in there.
-    - Recommended: [Tyrrrz/DiscordChatExporter](https://github.com/Tyrrrz/DiscordChatExporter).
 3. Create an `.env` file based on `.env.example`.
 4. Replace path constants in `src/core/data_loader.py`.
 
