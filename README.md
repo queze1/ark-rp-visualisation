@@ -29,17 +29,28 @@ A dashboard for analysing Discord message metadata from the *ARK: Journey Throug
 ### Prerequisites
 - [uv](https://docs.astral.sh/uv/)
 - [Docker](https://www.docker.com/) (optional)
+- An [S3 bucket](https://aws.amazon.com/s3/) (if using S3)
 
 ### Installation
+1. Run the following commands:
 ```bash
 git clone https://github.com/queze1/ark-rp-visualisation.git
 cd ark-rp-visualisation
-
-# Set up environment
 uv sync
 ```
+2. Create a `/data` directory if it does not exist, and place your Discord CSV exports in there.
+    - Recommended: [Tyrrrz/DiscordChatExporter](https://github.com/Tyrrrz/DiscordChatExporter).
+3. Create an `.env` file based on `.env.example`.
+4. Replace path constants in `src/core/data_loader.py`.
 
-## Usage
+### Usage
+1. `uv run src/app.py`
+    - This will create a file in `.cache`. To use S3, upload this file into your S3 bucket.
+
+### Usage (Docker)
+1. `docker compose up --build`
+
+## Features
 TODO
 
 ## Roadmap
