@@ -6,6 +6,8 @@ services:
       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
       - S3_BUCKET=${S3_BUCKET}
+      - S3_KEY=${S3_KEY}
       - ENV=${ENV}
     ports:
-      - "10000:10000"
+      # Map PORT -> 8050
+      - "${PORT:-8050}:8050"
