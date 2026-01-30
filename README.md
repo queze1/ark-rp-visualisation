@@ -23,6 +23,7 @@ A dashboard for analysing Discord message metadata from the *ARK: Journey Throug
 - Dynamic filtering.
 - Togglable log scale and moving averages.
 - Fullscreen view for graphs.
+- Customisation options for graph title, axes labels and sorting.
 
 ## Built With
 
