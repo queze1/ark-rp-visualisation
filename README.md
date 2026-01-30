@@ -5,15 +5,24 @@ A dashboard for analysing Discord message metadata from the *ARK: Journey Throug
 
 **Link:** https://ark-rp-visualisation.fly.dev/ (may take >30s for a cold start)
 
+## Demo
+[TODO
+](https://github.com/user-attachments/assets/88e137cf-af81-4ea2-9eb7-eec75e33a035
+)
+
 <details>
 <summary>Screenshots</summary>
 <br>
-
 |                               Time Series                            |                               Bar                          |                               Scatter                      | 
 | :------------------------------------------------------------------- | :--------------------------------------------------------: | :--------------------------------------------------------: |
 | <img src="docs/images/time_series.png" title="Time Series" width="100%"> | <img src="docs/images/bar.png" title="Bar" width="100%"> | <img src="docs/images/scatter.png" title="Scatter" width="100%"> |
-
 </details>
+
+## Features
+- Support for line, bar and scatter graphs.
+- Dynamic filtering.
+- Togglable log scale and moving averages.
+- Fullscreen view for graphs.
 
 ## Built With
 
@@ -54,9 +63,6 @@ uv run src/app.py
 2. Create a `/data` directory if it does not exist, and place your Discord CSV exports in there.
 3. Update data paths in `src/core/data_loader.py`.
 4. Update `.env`.
-
-## Features
-TODO
 
 ## Roadmap
 - [ ] Tooltips & help icons
