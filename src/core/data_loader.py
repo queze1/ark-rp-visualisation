@@ -19,7 +19,7 @@ DATA_PATH = "data/16-2-2025"
 CACHE_PATH = ".cache/16-2-2025.parquet"
 
 S3_BUCKET = os.getenv("S3_BUCKET")
-S3_KEY = "16-2-2025.parquet"
+S3_KEY = os.getenv("S3_KEY")
 S3_URL = f"s3://{S3_BUCKET}/{S3_KEY}"
 
 DATE_FORMAT = "%Y-%m-%dT%H:%M:%S.%f%z"
