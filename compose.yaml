@@ -9,5 +9,4 @@ services:
       - S3_KEY=${S3_KEY}
       - ENV=${ENV}
     ports:
-      # Map PORT -> 8050
-      - "${PORT:-8050}:8050"
+      - "${PORT:-8050}:${PORT:-8050}"

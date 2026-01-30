@@ -51,4 +51,5 @@ ENV PYTHONPATH=/app/src
 # Run the application
 # We use "sh -c" to allow the variable ${PORT} to be read.
 # "exec" is used to ensure gunicorn takes over the process ID so it can handle signals (like shutdown) correctly.
-CMD ["sh", "-c", "exec gunicorn src.app:server -b 0.0.0.0:8050 --workers=1"]
+# ${PORT:-8050} means: Use the PORT env var if it exists; otherwise use 8050.
+CMD ["sh", "-c", "exec gunicorn src.app:server -b 0.0.0.0:${PORT:-8050} --workers=1"]
