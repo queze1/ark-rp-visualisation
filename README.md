@@ -28,36 +28,40 @@ A dashboard for analysing Discord message metadata from the *ARK: Journey Throug
 
 ### Prerequisites
 - [uv](https://docs.astral.sh/uv/)
-- Your [Discord exports](https://github.com/Tyrrrz/DiscordChatExporter) (CSV format)
+- [Discord exports in CSV format](https://github.com/Tyrrrz/DiscordChatExporter) (if using own data)
 - [Docker](https://www.docker.com/) (optional)
 - An [S3 bucket](https://aws.amazon.com/s3/) (if using S3)
 
-### Installation
-*As the ARK dataset is private, this guide assumes you already have access to it, or intend to fork this repo.*
+### Quick Start
 1. Run the following commands:
 ```bash
 git clone https://github.com/queze1/ark-rp-visualisation.git
 cd ark-rp-visualisation
 uv sync
+
+# This will create a file in `.cache`. To use S3, upload this file into your S3 bucket.
+uv run src/app.py
+
+# If using Docker
+# docker compose up --build
 ```
+2. Go to http://127.0.0.1:8050/.
+    - **Note:** As the ARK dataset is private, the dashboard will use a dummy dataset by default.
+
+### Installation
+1. Follow the [quickstart](https://github.com/queze1/ark-rp-visualisation?tab=readme-ov-file#quick-start).
 2. Create a `/data` directory if it does not exist, and place your Discord CSV exports in there.
 3. Create an `.env` file based on `.env.example`.
-4. Replace path constants in `src/core/data_loader.py`.
-
-### Usage
-1. `uv run src/app.py`
-    - This will create a file in `.cache`. To use S3, upload this file into your S3 bucket.
-
-### Usage (Docker)
-1. `docker compose up --build`
+4. Update data paths in `src/core/data_loader.py`.
 
 ## Features
 TODO
 
 ## Roadmap
-- [ ] Add tooltips & help icons
-- [ ] Add GIF of usage
-- [ ] Add preset graphs to website
+- [ ] Tooltips & help icons
+- [ ] Preset graphs
+- [ ] Filter by an expression
+
 
 ## License
 
