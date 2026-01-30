@@ -2,6 +2,7 @@ import glob
 import os
 import re
 
+import numpy as np
 import pandas as pd
 from dotenv import load_dotenv
 
@@ -147,12 +148,55 @@ class DataLoader:
 
     @classmethod
     def _read_csvs(cls) -> pd.DataFrame:
+        """
+        Read and combine CSVs. If no CSVs were found, return dummy data.
+        """
         # Read and combine CSVs
         csv_paths = glob.glob(os.path.join(DATA_PATH, "*.csv"))
+
+        if not csv_paths:
+            logger.warning(f"No CSV files found in {DATA_PATH}. Generating dummy data.")
+            return cls._generate_dummy_data()
+
         dfs = [cls._read_csv(path) for path in csv_paths]
         df = pd.concat(dfs, ignore_index=True)
 
         # https://stackoverflow.com/questions/45639350/retaining-categorical-dtype-upon-dataframe-concatenation
+        df[Field.CHANNEL_NAME] = df[Field.CHANNEL_NAME].astype("category")
+        df[Field.AUTHOR_ID] = df[Field.AUTHOR_ID].astype("category")
+        df[Field.AUTHOR] = df[Field.AUTHOR].astype("category")
+        return df
+
+    @classmethod
+    def _generate_dummy_data(cls) -> pd.DataFrame:
+        num_rows = 500
+        authors = ["Aria", "Lyra", "Kaelen", "Solas", "Luna"]
+        channels = ["general", "rp-main", "dice-rolls", "lore"]
+
+        # Generate random dates over the last 30 days
+        start_date = pd.Timestamp.now(tz=TIME_ZONE) - pd.Timedelta(days=30)
+        dates = [
+            start_date + pd.Timedelta(seconds=np.random.randint(0, 30 * 24 * 3600))
+            for _ in range(num_rows)
+        ]
+
+        data = {
+            Field.AUTHOR: np.random.choice(authors, num_rows),
+            Field.AUTHOR_ID: np.random.choice(
+                ["101", "102", "103", "104", "105"], num_rows
+            ),
+            Field.DATETIME: dates,
+            Field.CHANNEL_NAME: np.random.choice(channels, num_rows),
+            Field.WORD_COUNT: np.random.randint(5, 200, num_rows),
+            Field.REACTION_COUNT: np.random.randint(0, 10, num_rows),
+            Field.SCENE_END: np.random.choice([True, False], num_rows, p=[0.05, 0.95]),
+            Field.CONTENT: "Dummy message content",
+            Field.ATTACHMENTS: "",
+        }
+
+        df = pd.DataFrame(data)
+
+        # Ensure data types match expected schema
         df[Field.CHANNEL_NAME] = df[Field.CHANNEL_NAME].astype("category")
         df[Field.AUTHOR_ID] = df[Field.AUTHOR_ID].astype("category")
         df[Field.AUTHOR] = df[Field.AUTHOR].astype("category")
