@@ -43,6 +43,10 @@ class DataLoader:
         return cls._instance
 
     @staticmethod
+    def get_csv_paths():
+        return glob.glob(os.path.join(DATA_PATH, "*.csv"))
+
+    @staticmethod
     def _rename_columns(df: pd.DataFrame) -> pd.DataFrame:
         """
         Rename columns to snake_case.
@@ -141,24 +145,10 @@ class DataLoader:
         df = cls._add_scene_end(df)
         return df
 
-    @staticmethod
-    def _write_cache(df: pd.DataFrame):
-        os.makedirs(os.path.dirname(CACHE_PATH), exist_ok=True)
-        df.to_parquet(CACHE_PATH)
-
     @classmethod
     def _read_csvs(cls) -> pd.DataFrame:
-        """
-        Read and combine CSVs. If no CSVs were found, return dummy data.
-        """
         # Read and combine CSVs
-        csv_paths = glob.glob(os.path.join(DATA_PATH, "*.csv"))
-
-        if not csv_paths:
-            logger.warning(f"No CSV files found in {DATA_PATH}. Generating dummy data.")
-            return cls._generate_dummy_data()
-
-        dfs = [cls._read_csv(path) for path in csv_paths]
+        dfs = [cls._read_csv(path) for path in cls.get_csv_paths()]
         df = pd.concat(dfs, ignore_index=True)
 
         # https://stackoverflow.com/questions/45639350/retaining-categorical-dtype-upon-dataframe-concatenation
@@ -166,6 +156,11 @@ class DataLoader:
         df[Field.AUTHOR_ID] = df[Field.AUTHOR_ID].astype("category")
         df[Field.AUTHOR] = df[Field.AUTHOR].astype("category")
         return df
+
+    @staticmethod
+    def _write_cache(df: pd.DataFrame):
+        os.makedirs(os.path.dirname(CACHE_PATH), exist_ok=True)
+        df.to_parquet(CACHE_PATH)
 
     @classmethod
     def _generate_dummy_data(cls) -> pd.DataFrame:
@@ -204,14 +199,20 @@ class DataLoader:
 
     def load_cache(self, force: bool = False):
         """
-        Load the dataset from a cache. If no cache exists, process raw CSVs and cache the result.
+        Load the dataset from a cache.
+        If no cache exists, process raw CSVs and cache the result.
+        If no CSVs exist, load a dummy dataset.
         """
         if not force and os.path.exists(CACHE_PATH):
             logger.info(f"Cache found: Loading from {CACHE_PATH}")
             self._df = pd.read_parquet(CACHE_PATH)
             return self
 
-        # If cache not used, get from raw CSVs
+        if not self.get_csv_paths():
+            logger.warning(f"No CSV files found in {DATA_PATH}. Generating dummy data.")
+            self._df = self._generate_dummy_data()
+            return self
+
         self._df = self._read_csvs()
         self._write_cache(self._df)
         logger.info(f"Cache written: {CACHE_PATH}")
