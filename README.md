@@ -37,6 +37,7 @@ A dashboard for analysing Discord message metadata from the *ARK: Journey Throug
 ```bash
 git clone https://github.com/queze1/ark-rp-visualisation.git
 cd ark-rp-visualisation
+cp .env.example .env
 uv sync
 
 # This will create a file in `.cache`. To use S3, upload this file into your S3 bucket.
@@ -51,8 +52,8 @@ uv run src/app.py
 ### Installation
 1. Follow the [quickstart](https://github.com/queze1/ark-rp-visualisation?tab=readme-ov-file#quick-start).
 2. Create a `/data` directory if it does not exist, and place your Discord CSV exports in there.
-3. Create an `.env` file based on `.env.example`.
-4. Update data paths in `src/core/data_loader.py`.
+3. Update data paths in `src/core/data_loader.py`.
+4. Update `.env`.
 
 ## Features
 TODO
