@@ -32,7 +32,7 @@ A dashboard for analysing Discord message metadata from the *ARK: Journey Throug
 * [![Plotly][Plotly-badge]][Plotly-url]
 * [![Pandas][Pandas-badge]][Pandas-url]
 * [![Dash Mantine Components][DMC-badge]][DMC-url]
-* [![Boto3][Boto3-badge]][Boto3-url]
+* [![S3][S3-badge]][S3-url]
 * [![Docker][Docker-badge]][Docker-url]
 
 ## Getting Started
@@ -87,7 +87,7 @@ See [LICENSE](LICENSE) for more information.
 [Pandas-url]: https://pandas.pydata.org/
 [DMC-badge]: https://img.shields.io/badge/Dash_Mantine_Components-339af0?style=for-the-badge&logo=mantine&logoColor=white
 [DMC-url]: https://www.dash-mantine-components.com/
-[Boto3-badge]: https://img.shields.io/badge/boto3-%23FF9900.svg?style=for-the-badge&logoColor=white
-[Boto3-url]: https://aws.amazon.com/s3/
+[S3-badge]: https://img.shields.io/badge/Amazon_S3-%23FF9900.svg?style=for-the-badge&logoColor=white
+[S3-url]: https://aws.amazon.com/s3/
 [Docker-badge]: https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white
 [Docker-url]: https://www.docker.com/
