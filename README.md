@@ -3,7 +3,7 @@
 
 A dashboard for analysing Discord message metadata from the *ARK: Journey Through the Realms* (2024) Dungeons and Dragons campaign.
 
-**Link:** https://ark-rp-visualisation.fly.dev/ (may take >30s for a cold start)
+**Link:** TBD
 
 ## Demo
 [TODO
