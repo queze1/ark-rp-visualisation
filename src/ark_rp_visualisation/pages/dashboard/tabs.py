@@ -2,7 +2,7 @@ import dash_mantine_components as dmc
 from dash import dcc
 from dash_iconify import DashIconify
 
-from core.enums import Page, Tab, Text
+from ark_rp_visualisation.core.enums import Page, Tab, Text
 
 from .customisation import make_customisation_controls
 from .fields import make_field_controls

@@ -3,9 +3,9 @@ from typing import Any
 import dash_mantine_components as dmc
 from dash import dcc
 
-from core import PlotBuilder
-from core.enums import PlotType, Tab, Text
-from core.models import AxisConfig, FigureConfig, FilterConfig
+from ark_rp_visualisation.core import PlotBuilder
+from ark_rp_visualisation.core.enums import PlotType, Tab, Text
+from ark_rp_visualisation.core.models import AxisConfig, FigureConfig, FilterConfig
 
 
 def layout(state: dict[str, Any]):

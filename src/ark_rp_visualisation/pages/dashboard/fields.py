@@ -4,7 +4,7 @@ import dash_mantine_components as dmc
 from dash import Input, Output, Patch, State, ctx
 from dash_iconify import DashIconify
 
-from pages.dashboard.patterns import (
+from ark_rp_visualisation.pages.dashboard.patterns import (
     match_agg_containers,
     match_agg_dropdowns,
     match_agg_spacings,
@@ -14,7 +14,7 @@ from pages.dashboard.patterns import (
     match_fields,
     match_swap_axes,
 )
-from core.enums import Field, GroupBy, Page, Tab, Text
+from ark_rp_visualisation.core.enums import Field, GroupBy, Page, Tab, Text
 
 FIELD_SPAN = 3
 SMALL_FIELD_SPAN = 2

@@ -1,7 +1,7 @@
 import dash_mantine_components as dmc
 from dash import html
 
-from core.enums import Tab, Text
+from ark_rp_visualisation.core.enums import Tab, Text
 
 from .tabs import make_tab
 

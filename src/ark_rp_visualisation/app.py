@@ -1,10 +1,10 @@
 import dash_mantine_components as dmc
 from dash import Dash, _dash_renderer
 
-from core.enums import Text
-from layout import layout
-from pages.dashboard import register_dashboard_callbacks
-from router import register_router_callbacks
+from ark_rp_visualisation.core.enums import Text
+from ark_rp_visualisation.layout import layout
+from ark_rp_visualisation.pages.dashboard import register_dashboard_callbacks
+from ark_rp_visualisation.router import register_router_callbacks
 
 # Required for DMC
 _dash_renderer._set_react_version("18.2.0")

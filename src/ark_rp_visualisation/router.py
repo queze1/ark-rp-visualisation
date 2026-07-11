@@ -2,11 +2,11 @@ from urllib.parse import parse_qs, urlparse
 
 from dash import Input, Output
 
-from core.enums import Page
-from pages.dashboard import layout as dashboard_layout
-from pages.fullscreen import layout as fullscreen_layout
-from pages.error import layout as error_layout
-from utils.serialisation import decode_state
+from ark_rp_visualisation.core.enums import Page
+from ark_rp_visualisation.pages.dashboard import layout as dashboard_layout
+from ark_rp_visualisation.pages.fullscreen import layout as fullscreen_layout
+from ark_rp_visualisation.pages.error import layout as error_layout
+from ark_rp_visualisation.utils.serialisation import decode_state
 
 
 def register_router_callbacks(app):

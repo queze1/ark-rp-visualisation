@@ -6,7 +6,7 @@ from dash import Input, Output, Patch, State, ctx
 from dash.exceptions import PreventUpdate
 from dash_iconify import DashIconify
 
-from pages.dashboard.patterns import (
+from ark_rp_visualisation.pages.dashboard.patterns import (
     match_add_filter,
     match_delete_filter,
     match_filter_container,
@@ -15,8 +15,8 @@ from pages.dashboard.patterns import (
     match_filter_value_container,
     match_reset_filter,
 )
-from core import DataLoader
-from core.enums import Filter, FilterOption, Page, Tab
+from ark_rp_visualisation.core import DataLoader
+from ark_rp_visualisation.core.enums import Filter, FilterOption, Page, Tab
 
 df = DataLoader().df
 

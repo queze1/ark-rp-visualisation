@@ -1,6 +1,6 @@
 from dash import ALL, MATCH
 
-from core.enums import Page
+from ark_rp_visualisation.core.enums import Page
 
 # Graph patterns
 match_graph = {"type": Page.GRAPH, "tab": MATCH}

@@ -2,7 +2,7 @@ import dash_mantine_components as dmc
 from dash import Input, Output
 from dash.exceptions import PreventUpdate
 
-from pages.dashboard.patterns import (
+from ark_rp_visualisation.pages.dashboard.patterns import (
     match_mavg_7,
     match_mavg_30,
     match_reset_customisation,
@@ -14,7 +14,7 @@ from pages.dashboard.patterns import (
     match_y_label,
     match_y_log,
 )
-from core.enums import Page, Tab, Text
+from ark_rp_visualisation.core.enums import Page, Tab, Text
 
 
 def make_customisation_controls(tab: Tab):

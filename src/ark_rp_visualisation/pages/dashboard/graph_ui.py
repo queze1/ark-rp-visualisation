@@ -1,10 +1,10 @@
 from dash import Input, Output, State, ctx
 
-from core import PlotBuilder
-from core.enums import PlotType, Tab
-from core.models import AxisConfig, FigureConfig, FilterConfig
-from utils.logging_setup import get_logger
-from utils.serialisation import encode_state
+from ark_rp_visualisation.core import PlotBuilder
+from ark_rp_visualisation.core.enums import PlotType, Tab
+from ark_rp_visualisation.core.models import AxisConfig, FigureConfig, FilterConfig
+from ark_rp_visualisation.utils.logging_setup import get_logger
+from ark_rp_visualisation.utils.serialisation import encode_state
 
 from .patterns import (
     match_agg_dropdowns,

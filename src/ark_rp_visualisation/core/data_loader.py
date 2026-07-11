@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from dotenv import load_dotenv
 
-from utils.logging_setup import get_logger
+from ark_rp_visualisation.utils.logging_setup import get_logger
 
 from .enums import Field
 

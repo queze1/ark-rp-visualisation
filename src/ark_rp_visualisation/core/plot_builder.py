@@ -9,7 +9,7 @@ from typing import Optional
 
 import pandas as pd
 
-from utils.logging_setup import get_logger
+from ark_rp_visualisation.utils.logging_setup import get_logger
 
 from . import DataLoader
 from .enums import Field, PlotType, Text
