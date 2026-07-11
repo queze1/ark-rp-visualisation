@@ -1,7 +1,7 @@
 import dash_mantine_components as dmc
 from dash import dcc, html
 
-from core.enums import Page
+from ark_rp_visualisation.core.enums import Page
 
 layout = dmc.MantineProvider(
     [

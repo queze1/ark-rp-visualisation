@@ -52,7 +52,7 @@ cp .env.example .env
 uv sync
 
 # This will create a file in `.cache`. To use S3, upload this file into your S3 bucket.
-uv run src/app.py
+uv run src/ark_rp_visualisation_app.py
 
 # If using Docker
 # docker compose up --build
