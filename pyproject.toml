@@ -31,9 +31,9 @@ module = ["dash.*", "dash_mantine_components.*", "boto3.*", "plotly.*", "dash_ic
 ignore_missing_imports = true
 
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["uv_build>=0.11.0,<0.12.0"]
+build-backend = "uv_build"
 
 [project.scripts]
-ark-rp-visualisation = "ark_rp_visualisation.app:main"
+ark-rp-visualisation = "ark_rp_visualisation:app:main"
 
