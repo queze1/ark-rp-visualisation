@@ -52,10 +52,15 @@ cp .env.example .env
 uv sync
 
 # This will create a file in `.cache`. To use S3, upload this file into your S3 bucket.
-uv run src/ark_rp_visualisation_app.py
+uv run src/ark_rp_visualisation/app.py
+
+# If using Nix
+nix develop
+python -m ark_rp_visualisation.app                            # development
+gunicorn ark_rp_visualisation.app:server --bind 0.0.0.0:8050  # production
 
 # If using Docker
-# docker compose up --build
+docker compose up --build
 ```
 2. Go to http://127.0.0.1:8050/.
     - **Note:** As the ARK dataset is private, the dashboard will use a dummy dataset by default.
