@@ -166,3 +166,5 @@ data/
 git-filter-repo
 memray*
 test.py
+result
+
