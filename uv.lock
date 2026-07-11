@@ -13,7 +13,7 @@ resolution-markers = [
 [[package]]
 name = "ark-rp-visualisation"
 version = "0.1.0"
-source = { virtual = "." }
+source = { editable = "." }
 dependencies = [
     { name = "boto3" },
     { name = "dash" },
