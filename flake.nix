@@ -84,9 +84,10 @@
     );
 
     packages = forAllSystems (system: {
-      default = pythonSets.${system}.mkVirtualEnv "ark-rp-visualisation" {
-        ark-rp-visualisation = [];
-      };
+      default = pythonSets.${system}.mkVirtualEnv "ark-rp-visualisation" (workspace.deps.default
+        // {
+          ark-rp-visualisation = [];
+        });
     });
   };
 }
