@@ -9,8 +9,8 @@ from pandas.api.types import (
 )
 from pandas.testing import assert_frame_equal
 
-from core import DataLoader
-from core.enums import Field
+from ark_rp_visualisation.core import DataLoader
+from ark_rp_visualisation.core.enums import Field
 
 
 def is_categorical_dtype(column):
