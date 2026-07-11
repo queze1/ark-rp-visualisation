@@ -83,11 +83,18 @@
       }
     );
 
-    packages = forAllSystems (system: {
-      default = pythonSets.${system}.mkVirtualEnv "ark-rp-visualisation" (workspace.deps.default
+    packages = forAllSystems (system: let
+      pkgs = nixpkgs.legacyPackages.${system};
+      pythonSet = pythonSets.${system};
+      venv = pythonSet.mkVirtualEnv "ark-rp-visualisation-env" (workspace.deps.default
         // {
-          ark-rp-visualisation = [];
+          "ark-rp-visualisation" = [];
         });
+    in {
+      default = pkgs.writeShellScriptBin "ark-rp-visualisation" ''
+        exec ${venv}/bin/gunicorn ark_rp_visualisation.app:server --bind 0.0.0.0:8050 "$@"
+      '';
+      dev = venv;
     });
   };
 }
