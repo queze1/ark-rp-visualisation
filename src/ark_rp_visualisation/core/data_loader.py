@@ -4,16 +4,12 @@ import re
 
 import numpy as np
 import pandas as pd
-from dotenv import load_dotenv
 
 from ark_rp_visualisation.utils.logging_setup import get_logger
 
 from .enums import Field
 
 logger = get_logger(__name__)
-
-
-load_dotenv(override=True)
 
 ENV = os.getenv("ENV", "development")
 DATA_PATH = "data/16-2-2025"

@@ -1,3 +1,9 @@
+import os
+from dotenv import load_dotenv
+
+_ = load_dotenv(override=True)
+PORT = os.getenv("PORT", 8050)
+
 import dash_mantine_components as dmc
 from dash import Dash, _dash_renderer
 
@@ -20,7 +26,7 @@ register_router_callbacks(app)
 register_dashboard_callbacks(app)
 
 def main():
-    app.run(debug=True, port=8050)
+    app.run(debug=True, port=PORT)
 
 if __name__ == "__main__":
     main()

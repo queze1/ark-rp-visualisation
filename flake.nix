@@ -92,7 +92,7 @@
         });
     in {
       default = pkgs.writeShellScriptBin "ark-rp-visualisation" ''
-        exec ${venv}/bin/gunicorn ark_rp_visualisation.app:server --bind 0.0.0.0:8050 "$@"
+        exec ${venv}/bin/gunicorn ark_rp_visualisation.app:server --bind 0.0.0.0:''${PORT:-8050} "$@"
       '';
       dev = venv;
     });
