@@ -25,4 +25,4 @@ jobs:
 
       - name: Test with pytest
         run: |
-          uv run pytest -m "not (local or s3)"
+          uv run pytest -m "not local"
