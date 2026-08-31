@@ -20,6 +20,9 @@ S3_BUCKET = os.getenv("S3_BUCKET")
 S3_KEY = os.getenv("S3_KEY")
 S3_URL = f"s3://{S3_BUCKET}/{S3_KEY}"
 
+AWS_ENDPOINT_URL = os.getenv("AWS_ENDPOINT_URL")
+S3_HUMAN_READABLE_URL = f"{AWS_ENDPOINT_URL}/{S3_BUCKET}/{S3_KEY}" if AWS_ENDPOINT_URL else S3_URL
+
 DATE_FORMAT = "%Y-%m-%dT%H:%M:%S.%f%z"
 TIME_ZONE = "Australia/Sydney"
 CHANNEL_NAME_REGEX = r".+ - (.+) \["
@@ -219,7 +222,7 @@ class DataLoader:
         """
         Load the dataset from S3-compatible object storage.
         """
-        logger.info(f"S3 found: Loading from {S3_URL}")
+        logger.info(f"S3 found: Loading from {S3_HUMAN_READABLE_URL}")
         self._df = pd.read_parquet(S3_URL, storage_options=get_s3_storage_options())
         return self
 
