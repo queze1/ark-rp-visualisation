@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 
 from ark_rp_visualisation.utils.logging_setup import get_logger
+from ark_rp_visualisation.utils.s3 import get_s3_storage_options
 
 from .enums import Field
 
@@ -216,10 +217,10 @@ class DataLoader:
 
     def load_s3(self):
         """
-        Load the dataset from Amazon S3.
+        Load the dataset from S3-compatible object storage.
         """
         logger.info(f"S3 found: Loading from {S3_URL}")
-        self._df = pd.read_parquet(S3_URL)
+        self._df = pd.read_parquet(S3_URL, storage_options=get_s3_storage_options())
         return self
 
     def clean(self):

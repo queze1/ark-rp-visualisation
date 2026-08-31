@@ -41,7 +41,7 @@ A dashboard for analysing Discord message metadata from the *ARK: Journey Throug
 - [uv](https://docs.astral.sh/uv/)
 - [Discord exports in CSV format](https://github.com/Tyrrrz/DiscordChatExporter) (if using own data)
 - [Docker](https://www.docker.com/) (optional)
-- An [S3 bucket](https://aws.amazon.com/s3/) (if using S3)
+- An S3-compatible bucket (AWS S3 or Cloudflare R2, if using remote storage)
 
 ### Quick Start
 1. Run the following commands:

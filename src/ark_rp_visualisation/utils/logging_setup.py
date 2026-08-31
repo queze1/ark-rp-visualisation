@@ -1,8 +1,9 @@
 import logging
 import os
 
-import boto3
 from dotenv import load_dotenv
+
+from ark_rp_visualisation.utils.s3 import create_s3_client
 
 load_dotenv(override=True)
 
@@ -13,7 +14,7 @@ S3_LOG_PATH = dict(Bucket=os.getenv("S3_BUCKET"), Key="app.log")
 class S3Handler(logging.Handler):
     def __init__(self):
         logging.Handler.__init__(self)
-        self.s3_client = boto3.client("s3")
+        self.s3_client = create_s3_client()
         self.logs = self._load_logs()
 
     def _load_logs(self) -> str:
