@@ -6,10 +6,7 @@ A dashboard for analysing Discord message metadata from the *ARK: Journey Throug
 **Link:** https://ark-rp-visualisation.osipol.uk/
 
 ## Demo
-[TODO
-](https://github.com/user-attachments/assets/88e137cf-af81-4ea2-9eb7-eec75e33a035
-)
-
+[TODO](https://github.com/user-attachments/assets/88e137cf-af81-4ea2-9eb7-eec75e33a035)
 <details>
 <summary>Screenshots</summary>
 <br>
